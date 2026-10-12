@@ -181,6 +181,7 @@ class Ship:
     subtarget: str | None = None
     weapons_active: bool = False
     fire_cooldown: float = 0.0
+    power_starve_logged: bool = False
 
 
 @dataclass

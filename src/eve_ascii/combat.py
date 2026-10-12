@@ -18,6 +18,8 @@ from eve_ascii.ship import (
     find_component,
     is_powerless,
     pirate_components,
+    tick_weapon_recharge,
+    try_fire_shot,
     weapon_charge_seconds,
     weapons_online,
 )
@@ -64,7 +66,7 @@ def start_fire(state: GameState) -> str | None:
         return "Not in combat."
     ship = state.player.ship
     if is_powerless(ship):
-        return "No power — reactor offline."
+        return "No power - reactor offline."
     if not weapons_online(ship):
         return "Weapons destroyed."
     if not ship.target_letter:
