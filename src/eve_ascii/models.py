@@ -125,6 +125,8 @@ class GameState:
     events: list[str] = field(default_factory=list)
 
     def log(self, message: str) -> None:
-        self.events.append(message)
+        from eve_ascii.ascii_ui import ascii_only
+
+        self.events.append(ascii_only(message))
         if len(self.events) > 200:
             self.events = self.events[-200:]

@@ -373,7 +373,7 @@
     },
     {
       "id": "sys_009",
-      "name": "Pohjantähti",
+      "name": "Pohjantahti",
       "position": {
         "x": -449.41167047511874,
         "y": 499.28246841272664,
@@ -473,7 +473,7 @@
     },
     {
       "id": "sys_012",
-      "name": "Kivijärvi",
+      "name": "Kivijarvi",
       "position": {
         "x": 5.884694048765368,
         "y": -367.5434296335327,
@@ -543,7 +543,7 @@
     },
     {
       "id": "sys_014",
-      "name": "Valojärvi",
+      "name": "Valojarvi",
       "position": {
         "x": 137.11337730137961,
         "y": -238.04473756565181,
@@ -562,13 +562,13 @@
         },
         {
           "id": "sys_014_p1",
-          "name": "Valojärvi 1",
+          "name": "Valojarvi 1",
           "orbit_radius": 206.69190039772033,
           "angle": 3.660015549460224
         },
         {
           "id": "sys_014_p2",
-          "name": "Valojärvi 2",
+          "name": "Valojarvi 2",
           "orbit_radius": 310.83657716337717,
           "angle": 2.291173043344987
         },
@@ -861,7 +861,7 @@
     },
     {
       "id": "sys_022",
-      "name": "Havumetsä",
+      "name": "Havumetsa",
       "position": {
         "x": -169.11860896191644,
         "y": -34.07569664884937,

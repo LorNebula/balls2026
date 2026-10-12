@@ -42,12 +42,12 @@ STATION_PREFIXES = ("Satama", "Telakka", "Kaivos", "Terminaali", "Telakointi", "
 
 CURATED_SYSTEMS = (
     "Aurinko",
-    "Pohjantähti",
-    "Valojärvi",
-    "Kivijärvi",
+    "Pohjantahti",
+    "Valojarvi",
+    "Kivijarvi",
     "Lumimaa",
     "Merenranta",
-    "Havumetsä",
+    "Havumetsa",
     "Usvalahti",
 )
 

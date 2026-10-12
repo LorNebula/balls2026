@@ -20,14 +20,18 @@ textual run --dev src/eve_ascii/app.py
 
 ## Controls
 
-- `Ctrl+P` — command palette (travel, dock, jump, …)
-- `:` — command line input
+- `:` — focus command line (always visible at bottom)
+- `Tab` / `Right` — accept inline completion ghost text
+- `Esc` — focus map (so `g`, `h/j/k/l` work)
+- `?` — list commands in the log
 - `h` / `j` / `k` / `l` — pan map
 - `+` / `-` — zoom map
 - `g` — toggle galaxy / system view
 - `q` — quit
 
-## Commands (palette or `:` line)
+UI uses only printable ASCII (`+`, `-`, `|`, letters, map symbols). No Unicode box-drawing.
+
+## Commands (`:` line)
 
 | Command | Effect |
 |---------|--------|

@@ -2,30 +2,25 @@ Screen {
     background: #0a1628;
 }
 
-Header {
+#title_bar, #footer_bar {
+    height: 1;
     background: #132238;
     color: #e8b84a;
-}
-
-Footer {
-    background: #132238;
+    padding: 0 0;
 }
 
 #status_line {
     height: 1;
     background: #1a3050;
     color: #c9d6e3;
-    padding: 0 1;
-}
-
-.panel-title {
-    height: 1;
-    color: #e8b84a;
-    background: #132238;
-    padding: 0 1;
+    padding: 0 0;
 }
 
 Horizontal {
+    height: 1fr;
+}
+
+#main_pane {
     height: 1fr;
 }
 
@@ -34,16 +29,54 @@ Vertical {
     height: 1fr;
 }
 
+StarMap, EventLog, #event_log {
+    border: none;
+    padding: 0 0;
+}
+
+#cmd_row {
+    height: 1;
+    background: #1a3050;
+}
+
+#cmd_prefix {
+    width: 2;
+    height: 1;
+    color: #e8b84a;
+    background: #1a3050;
+}
+
 #cmd_input {
-    dock: bottom;
-    margin: 0 1 1 1;
-    border: tall #e8b84a;
+    width: 1fr;
+    height: 1;
+    border: none;
+    padding: 0 0;
+    background: #1a3050;
+    color: #ffffff;
 }
 
-StarMap {
-    border: solid #2a5080;
+#cmd_input:focus {
+    border: none;
+    background: #243850;
+    background-tint: transparent;
+    color: #ffffff;
 }
 
-EventLog {
-    border: solid #2a5080;
+#cmd_input > .input--cursor {
+    background: #e8b84a;
+    color: #0a1628;
+}
+
+#cmd_input > .input--placeholder {
+    color: #6a8aaa;
+}
+
+#cmd_input > .input--suggestion {
+    color: #6a8aaa;
+}
+
+#cmd_completions {
+    height: 1;
+    color: #8aa4be;
+    background: #132238;
 }

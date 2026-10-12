@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from textual.widgets import Static
 
+from eve_ascii.ascii_ui import ascii_only, box_wrap
 from eve_ascii.galaxy import planet_position, station_position
 from eve_ascii.models import GameState
 
@@ -13,10 +14,12 @@ class StarMap(Static):
     StarMap {
         width: 1fr;
         height: 1fr;
-        border: solid $primary;
-        padding: 0 1;
+        border: none;
+        padding: 0 0;
     }
     """
+
+    MAP_WIDTH = 70
 
     def __init__(self, **kwargs) -> None:
         super().__init__("", **kwargs)
@@ -26,12 +29,10 @@ class StarMap(Static):
         self._pan_y = 0.0
         self._scale = 2.0
 
-    def set_state(self, state: GameState) -> None:
+    def update_map(self, state: GameState, *, galaxy_view: bool) -> None:
+        """Refresh map content (not Textual's Widget.render)."""
         self._state = state
-        self.refresh_map()
-
-    def toggle_galaxy_view(self) -> None:
-        self._galaxy_view = not self._galaxy_view
+        self._galaxy_view = galaxy_view
         self.refresh_map()
 
     @property
@@ -80,11 +81,10 @@ class StarMap(Static):
         if not sys:
             return "System missing."
 
-        w, h = 72, 22
+        w, h = self.MAP_WIDTH - 2, 20
         grid = self._blank_grid(w, h)
         self._plot(grid, w // 2, h // 2, "*")
 
-        planets_map = {p.id: p for p in sys.planets}
         for p in sys.planets:
             pos = planet_position(p)
             pt = self._project(pos.x, pos.y, w, h)
@@ -95,7 +95,7 @@ class StarMap(Static):
             pos = station_position(sys, st)
             pt = self._project(pos.x, pos.y, w, h)
             if pt:
-                self._plot(grid, pt[0], pt[1], "#")
+                self._plot(grid, pt[0], pt[1], "S")
 
         from eve_ascii.travel import current_ship_coords
 
@@ -111,17 +111,19 @@ class StarMap(Static):
                 self._plot(grid, pt[0], pt[1], "X")
 
         lines = ["".join(row) for row in grid]
-        header = f" SYSTEM: {sys.name}  |  ship: {ship.status.value}"
+        title = ascii_only(sys.name)
+        meta = f"ship={ship.status.value}"
         if ship.eta_seconds > 0:
-            header += f"  ETA: {ship.eta_seconds:.1f}s"
-        return header + "\n" + "\n".join(lines)
+            meta += f" eta={ship.eta_seconds:.1f}s"
+        legend = "* sun  o planet  S station  @ you  X target"
+        return box_wrap(self.MAP_WIDTH, f"SYSTEM {title} | {meta}", [legend, *lines])
 
     def _render_galaxy(self) -> str:
         state = self._state
         assert state
         ship = state.player.ship
         cur = state.galaxy.get_system(ship.location.system_id)
-        w, h = 72, 22
+        w, h = self.MAP_WIDTH - 2, 20
         grid = self._blank_grid(w, h)
 
         if not state.galaxy.systems:
@@ -148,5 +150,5 @@ class StarMap(Static):
             self._plot(grid, gx, gy, ch)
 
         lines = ["".join(row) for row in grid]
-        header = " GALAXY MAP  (+ systems, @ you)  [g] system view"
-        return header + "\n" + "\n".join(lines)
+        legend = "GALAXY  + linked  * system  @ you  [g] system view"
+        return box_wrap(self.MAP_WIDTH, "GALAXY", [legend, *lines])
