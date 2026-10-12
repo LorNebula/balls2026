@@ -113,7 +113,8 @@ class MapScreen(Screen):
         self.refresh_ui()
 
     def action_help(self) -> None:
-        self.game_state.log("travel, jump, lock A [reactor|shield|01-04], fire, cease")
+        self.game_state.log("travel, jump, lock A [reactor|thrusters|shields|weapons|01-04], fire, cease")
+        self.game_state.log("ship - inspect hull components, power, shield")
         self.game_state.log("comms, quests, quest start q_scout, quest status")
         self.refresh_ui()
 

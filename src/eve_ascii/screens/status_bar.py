@@ -8,6 +8,7 @@ def format_status(state: GameState) -> str:
     sys_name = ascii_only(sys.name) if sys else "?"
     line = (
         f" {sys_name} | {state.mode.value} | {ship.status.value} | "
+        f"pwr {ship.power:.0f} | shd {ship.shield:.0f}/{ship.max_shield:.0f} | "
         f"fuel {ship.fuel:.0f}/{ship.max_fuel:.0f}"
     )
     if ship.target_letter:

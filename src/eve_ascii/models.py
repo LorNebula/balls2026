@@ -4,8 +4,16 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Literal
 
-COMPONENT_NAMES = ("reactor", "shield", "hyperdrive", "cargo")
-COMPONENT_IDS = {"01": "reactor", "02": "shield", "03": "hyperdrive", "04": "cargo"}
+COMPONENT_KINDS = ("reactor", "thrusters", "shields", "weapons")
+COMPONENT_ALIASES = {
+    "reactor": "reactor",
+    "thruster": "thrusters",
+    "thrusters": "thrusters",
+    "shield": "shields",
+    "shields": "shields",
+    "weapon": "weapons",
+    "weapons": "weapons",
+}
 
 
 class ShipStatus(str, Enum):
@@ -123,8 +131,32 @@ class TravelTarget:
     label: str = ""
 
 
-def default_components() -> dict[str, float]:
-    return {"reactor": 100.0, "shield": 100.0, "hyperdrive": 100.0, "cargo": 100.0}
+@dataclass
+class ShipComponent:
+    slot_id: str
+    kind: str
+    max_health: float = 100.0
+    health: float = 100.0
+
+    @property
+    def destroyed(self) -> bool:
+        return self.health <= 0.0
+
+    @property
+    def integrity(self) -> float:
+        if self.max_health <= 0:
+            return 0.0
+        return max(0.0, min(1.0, self.health / self.max_health))
+
+
+def starter_components() -> list[ShipComponent]:
+    """Starter hull: one of each main component, slots 01-04."""
+    return [
+        ShipComponent("01", "reactor"),
+        ShipComponent("02", "thrusters"),
+        ShipComponent("03", "shields"),
+        ShipComponent("04", "weapons"),
+    ]
 
 
 @dataclass
@@ -139,7 +171,12 @@ class Ship:
     fuel: float = 100.0
     max_fuel: float = 100.0
     fuel_per_jump: float = 15.0
-    components: dict[str, float] = field(default_factory=default_components)
+    max_slots: int = 4
+    components: list[ShipComponent] = field(default_factory=starter_components)
+    power: float = 100.0
+    max_power: float = 100.0
+    shield: float = 100.0
+    max_shield: float = 100.0
     target_letter: str | None = None
     subtarget: str | None = None
     weapons_active: bool = False
@@ -152,7 +189,12 @@ class NpcShip:
     name: str
     position: Vec3
     hostile: bool = True
-    components: dict[str, float] = field(default_factory=default_components)
+    max_slots: int = 4
+    components: list[ShipComponent] = field(default_factory=starter_components)
+    power: float = 100.0
+    max_power: float = 100.0
+    shield: float = 40.0
+    max_shield: float = 40.0
     alive: bool = True
 
 

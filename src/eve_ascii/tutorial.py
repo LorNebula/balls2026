@@ -51,10 +51,10 @@ def tick(state: GameState, dt: float) -> None:
         state.mode = GameMode.COMBAT
         state.player.ship.status = ShipStatus.IDLE
         state.log("INTERDICT: pulled from hyperspace!")
-        combat.spawn_pirates(state, 2)
+        combat.spawn_pirates(state, 1)
         _set_step(state, TutorialStep.COMBAT)
         state.combat_time = 0.0
-        state.log("Hostile hulls on scope. Subsystems marked 01-04. lock A / lock A 02")
+        state.log("Hostile hull on scope. Components 01-04 on the hull. lock A / lock A 01")
         push_message(state, "CMDR Crosshair", "Engage hostiles. Weapons free.")
 
     elif step == TutorialStep.COMBAT:

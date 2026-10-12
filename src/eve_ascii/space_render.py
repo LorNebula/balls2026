@@ -9,7 +9,8 @@ from rich.style import Style
 from rich.text import Text
 
 from eve_ascii.galaxy import planet_position, station_position
-from eve_ascii.models import GameMode, GameState, NpcShip, Ship
+from eve_ascii.models import GameMode, GameState, Ship, ShipComponent, TutorialStep
+from eve_ascii.ship import BASE_SHIELD_GEN, is_powerless, shield_gen_per_sec, weapon_charge_seconds
 
 SPACE_BG = Style(color="#1a3a5c", bgcolor="#050d18")
 STAR_STYLE = Style(color="#6a8aaa")
@@ -21,6 +22,8 @@ HULL_PLAYER = Style(color="#00e5ff", bold=True)
 HULL_ENEMY = Style(color="#ff5566", bold=True)
 COMP_STYLE = Style(color="#ffee00", bold=True, bgcolor="#223344")
 COMP_HIT = Style(color="#ff4400", bold=True, bgcolor="#442200")
+COMP_DAMAGED = Style(color="#ffaa33", bold=True, bgcolor="#332200")
+COMP_DEAD = Style(color="#664444", bgcolor="#221111")
 ID_STYLE = Style(color="#ffffff", bold=True)
 LASER_STYLE = Style(color="#66ff66", bold=True)
 EXPLOSION_STYLE = Style(color="#ffaa00", bold=True)
@@ -30,7 +33,7 @@ PARTICLE_STYLES = (
     Style(color="#8866cc"),
 )
 
-# 01=reactor 02=shield 03=hyperdrive 04=cargo (embedded in art)
+# 01=reactor 02=thrusters 03=shields 04=weapons (embedded in art)
 PLAYER_SHIP = [
     "        ______        ",
     "       /  01  \\       ",
@@ -45,6 +48,18 @@ ENEMY_SHIP = [
     "  <====|02||03|====   ",
     "       \\  04  /       ",
     "        ------        ",
+]
+
+PLAYER_SHIP_ZOOM = [
+    "              ______________              ",
+    "             /              \\             ",
+    "            /      01        \\            ",
+    "           /    REACTOR       \\           ",
+    "   >======|  02          03    |======>   ",
+    "          | THRUST     SHIELD  |          ",
+    "           \\      04          /           ",
+    "            \\   WEAPONS      /            ",
+    "             \\______________/             ",
 ]
 
 STATION_ART = [
@@ -92,13 +107,25 @@ class SpaceCanvas:
         if 0 <= x < self.width and 0 <= y < self.height:
             self.cells[y][x] = Cell(ch, style)
 
-    def _style_at(self, line: str, col: int, hull: Style, ship: Ship | None, subtarget: str | None) -> Style:
-        for tag, comp in (("01", "reactor"), ("02", "shield"), ("03", "hyperdrive"), ("04", "cargo")):
-            idx = line.find(tag)
-            if idx >= 0 and idx <= col < idx + len(tag):
-                if subtarget == comp and ship:
-                    return COMP_HIT
-                return COMP_STYLE
+    def _style_at(
+        self,
+        line: str,
+        col: int,
+        hull: Style,
+        components: list[ShipComponent] | None,
+        subtarget: str | None,
+    ) -> Style:
+        if components:
+            for comp in components:
+                idx = line.find(comp.slot_id)
+                if idx >= 0 and idx <= col < idx + len(comp.slot_id):
+                    if subtarget in (comp.slot_id, comp.kind):
+                        return COMP_HIT
+                    if comp.destroyed:
+                        return COMP_DEAD
+                    if comp.integrity < 0.5:
+                        return COMP_DAMAGED
+                    return COMP_STYLE
         return hull
 
     def stamp_art(
@@ -108,7 +135,7 @@ class SpaceCanvas:
         lines: list[str],
         hull: Style,
         *,
-        ship: Ship | None = None,
+        components: list[ShipComponent] | None = None,
         subtarget: str | None = None,
         id_letter: str = "",
     ) -> None:
@@ -120,7 +147,7 @@ class SpaceCanvas:
                 self.put(x0 - 2, y, id_letter, ID_STYLE)
             for dx, ch in enumerate(row):
                 if ch != " ":
-                    st = self._style_at(row, dx, hull, ship, subtarget)
+                    st = self._style_at(row, dx, hull, components, subtarget)
                     self.put(x0 + dx, y, ch, st)
 
     def to_text(self) -> Text:
@@ -148,28 +175,16 @@ def _draw_player(canvas: SpaceCanvas, ship: Ship) -> None:
         canvas.anchor_y,
         PLAYER_SHIP,
         HULL_PLAYER,
-        ship=ship,
+        components=ship.components,
         subtarget=ship.subtarget,
     )
 
 
-def _draw_npc(canvas: SpaceCanvas, npc: NpcShip, sx: int, sy: int, locked: bool) -> None:
-    sub = None
-    fake = Ship(name="", location=None)  # type: ignore[arg-type]
-    if locked:
-        from eve_ascii.models import ShipLocation, Vec3
-
-        fake = Ship(name="x", location=ShipLocation("x", "space", Vec3(0, 0, 0)))
-        fake.subtarget = None
-    subtarget = None
-    canvas.stamp_art(
-        sx,
-        sy,
-        ENEMY_SHIP,
-        HULL_ENEMY,
-        subtarget=subtarget,
-        id_letter=npc.letter,
-    )
+def tutorial_arena(state: GameState) -> bool:
+    """Tutorial combat: player + pirate only (no station / planets / sun)."""
+    if state.mode == GameMode.HYPERSPACE:
+        return True
+    return state.mode == GameMode.COMBAT and state.tutorial_step != TutorialStep.DONE
 
 
 def render_open_space(
@@ -200,12 +215,12 @@ def render_open_space(
         _draw_player(canvas, ship)
         header = Text(" HYPERSPACE  ", style=Style(color="#bb88ff", bold=True))
         header.append(f"fuel {ship.fuel:.0f}\n", style=Style(color="#aaccee"))
-        header.append(" components 01-04 on hull\n", style=Style(color="#668899"))
+        header.append(" hull 01 reactor  02 thrusters  03 shields  04 weapons\n", style=Style(color="#668899"))
         header.append(canvas.to_text())
         return header
 
     sys = state.galaxy.get_system(ship.location.system_id)
-    if sys:
+    if sys and not tutorial_arena(state):
         sx, sy = canvas.world_to_screen(0, 0, ship_x, ship_y, scale)
         canvas.stamp_art(sx, sy, SUN_ART, SUN_STYLE)
 
@@ -230,6 +245,7 @@ def render_open_space(
             py,
             ENEMY_SHIP,
             HULL_ENEMY,
+            components=npc.components,
             subtarget=sub,
             id_letter=npc.letter,
         )
@@ -257,12 +273,56 @@ def render_open_space(
         f"| {state.mode.value} lock={lock or '-'} wpn={wpn} ",
         style=Style(color="#aaccee"),
     )
-    header.append("01-04 on ships ", style=Style(color="#ffee66"))
+    header.append("01-04 components ", style=Style(color="#ffee66"))
     if ship.eta_seconds > 0:
         header.append(f"eta {ship.eta_seconds:.1f}s ", style=Style(color="#88ccff"))
     header.append("\n", style=Style())
     header.append(canvas.to_text())
     return header
+
+
+def render_ship_inspect(state: GameState) -> Text:
+    ship = state.player.ship
+    width = 78
+    height = 11
+    canvas = SpaceCanvas(width, height, width // 2, height // 2)
+    canvas.stamp_art(
+        width // 2,
+        height // 2,
+        PLAYER_SHIP_ZOOM,
+        HULL_PLAYER,
+        components=ship.components,
+    )
+    out = Text(" SHIP ", style=Style(color="#e8b84a", bold=True))
+    out.append(f"{ship.name}  fit {len(ship.components)}/{ship.max_slots}\n", style=Style(color="#aaccee"))
+    out.append(canvas.to_text())
+    out.append("\n")
+    pwr_style = Style(color="#ff5566", bold=True) if is_powerless(ship) else Style(color="#88ffaa")
+    out.append(
+        f" POWER {ship.power:.0f}/{ship.max_power:.0f}   SHIELD {ship.shield:.0f}/{ship.max_shield:.0f}  "
+        f"gen {shield_gen_per_sec(ship):.1f}/s\n",
+        style=pwr_style,
+    )
+    if is_powerless(ship):
+        out.append(" REACTOR DESTROYED - SHIP POWERLESS\n", style=Style(color="#ff3344", bold=True))
+    for c in ship.components:
+        mark = "X" if c.destroyed else ("!" if c.integrity < 0.5 else " ")
+        extra = ""
+        if c.kind == "reactor":
+            extra = f"  power {c.integrity * 100:.0f}%"
+        elif c.kind == "shields":
+            extra = "  gen none" if c.destroyed else f"  gen {BASE_SHIELD_GEN * c.integrity:.1f}/s"
+        elif c.kind == "weapons":
+            extra = "  OFFLINE" if c.destroyed else f"  charge {weapon_charge_seconds(ship):.2f}s"
+        elif c.kind == "thrusters":
+            extra = "  (idle)"
+        st = COMP_DEAD if c.destroyed else (COMP_DAMAGED if c.integrity < 0.5 else Style(color="#ddeeff"))
+        out.append(
+            f" {c.slot_id} {c.kind.upper():<10}  hp {c.health:5.0f}/{c.max_health:.0f}  {mark}{extra}\n",
+            style=st,
+        )
+    out.append(" Esc close   command: ship\n", style=Style(color="#6688aa"))
+    return out
 
 
 def render_galaxy_map(state: GameState, width: int, height: int) -> Text:

@@ -3,12 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 from textual.app import App
 
-from eve_ascii import combat, tutorial, travel
+from eve_ascii import combat, ship as ship_sys, tutorial, travel
 from eve_ascii.ascii_ui import ascii_only
 from eve_ascii.commands import execute_command
 from eve_ascii.galaxy import load_galaxy
-from eve_ascii.models import GameMode, GameState, ShipStatus
+from eve_ascii.models import GameState, ShipStatus
 from eve_ascii.screens.map_screen import MapScreen
+from eve_ascii.screens.ship_screen import ShipScreen
 
 
 class EveApp(App):
@@ -32,11 +33,14 @@ class EveApp(App):
         dt = 0.2
         tutorial.tick(self.game_state, dt)
         combat.tick_hyperspace_vfx(self.game_state, dt)
+        ship_sys.tick_all(self.game_state, dt)
         combat.tick(self.game_state, dt)
         travel.tick(self.game_state, dt)
         screen = self.screen
         if isinstance(screen, MapScreen):
             screen.refresh_ui(refresh_command_line=False)
+        elif isinstance(screen, ShipScreen):
+            screen.refresh_view()
         self.refresh_sub_title()
 
     def refresh_sub_title(self) -> None:
@@ -51,12 +55,20 @@ class EveApp(App):
         )
 
     def run_game_command(self, line: str) -> None:
+        raw = line.strip()
+        cmd = raw.split()[0].lower() if raw else ""
+        if cmd in ("ship", "fit"):
+            if not isinstance(self.screen, ShipScreen):
+                self.push_screen(ShipScreen(self.game_state))
+            return
         err = execute_command(self.game_state, line)
         if err:
             self.game_state.log(f"ERR: {err}")
         screen = self.screen
         if isinstance(screen, MapScreen):
             screen.refresh_ui()
+        elif isinstance(screen, ShipScreen):
+            screen.refresh_view()
         self.refresh_sub_title()
 
 

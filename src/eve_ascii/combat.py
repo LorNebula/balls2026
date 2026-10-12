@@ -6,8 +6,6 @@ import math
 import random
 
 from eve_ascii.models import (
-    COMPONENT_IDS,
-    COMPONENT_NAMES,
     Explosion,
     GameMode,
     GameState,
@@ -16,35 +14,30 @@ from eve_ascii.models import (
     Projectile,
     Vec3,
 )
+from eve_ascii.ship import (
+    find_component,
+    is_powerless,
+    pirate_components,
+    weapon_charge_seconds,
+    weapons_online,
+)
 
 
-def resolve_subtarget(name: str) -> str | None:
-    key = name.lower().strip()
-    if key in COMPONENT_NAMES:
-        return key
-    if key in COMPONENT_IDS:
-        return COMPONENT_IDS[key]
-    return None
-
-
-def spawn_pirates(state: GameState, count: int = 2) -> None:
+def spawn_pirates(state: GameState, count: int = 1) -> None:
     state.npc_ships.clear()
-    letters = "AB"
-    for i in range(count):
+    letters = "ABCDEFGH"
+    for i in range(min(count, len(letters))):
         state.npc_ships.append(
             NpcShip(
                 letter=letters[i],
                 name=f"Pirate-{letters[i]}",
-                position=Vec3(420.0 + i * 140, -20.0 + i * 60, 0.0),
-                components={
-                    "reactor": 30.0,
-                    "shield": 25.0,
-                    "hyperdrive": 20.0,
-                    "cargo": 15.0,
-                },
+                position=Vec3(200.0 + i * 140, -8.0 + i * 40, 0.0),
+                components=pirate_components(),
+                shield=40.0,
+                max_shield=40.0,
             )
         )
-    state.log("HOSTILE CONTACT: pirates on scope. lock / fire")
+    state.log("HOSTILE CONTACT: pirate on scope. lock / fire")
 
 
 def lock_target(state: GameState, letter: str, subtarget: str | None = None) -> str | None:
@@ -55,11 +48,11 @@ def lock_target(state: GameState, letter: str, subtarget: str | None = None) -> 
     ship = state.player.ship
     ship.target_letter = letter
     if subtarget:
-        comp = resolve_subtarget(subtarget)
+        comp = find_component(npc.components, subtarget)
         if not comp:
-            return "Subtarget: reactor|shield|hyperdrive|cargo or 01-04"
-        ship.subtarget = comp
-        state.log(f"Locked {letter} subtarget {comp}")
+            return "Subtarget: reactor|thrusters|shields|weapons or 01-04"
+        ship.subtarget = comp.slot_id
+        state.log(f"Locked {letter} {comp.slot_id} {comp.kind}")
     else:
         ship.subtarget = None
         state.log(f"Locked target {letter} ({npc.name})")
@@ -70,6 +63,10 @@ def start_fire(state: GameState) -> str | None:
     if state.mode != GameMode.COMBAT:
         return "Not in combat."
     ship = state.player.ship
+    if is_powerless(ship):
+        return "No power — reactor offline."
+    if not weapons_online(ship):
+        return "Weapons destroyed."
     if not ship.target_letter:
         return "No target locked."
     ship.weapons_active = True
@@ -123,11 +120,18 @@ def tick(state: GameState, dt: float) -> None:
     ship = state.player.ship
     ship.fire_cooldown = max(0.0, ship.fire_cooldown - dt)
 
-    if ship.weapons_active and ship.target_letter and ship.fire_cooldown <= 0:
-        npc = _npc_by_letter(state, ship.target_letter)
-        if npc:
-            ship.fire_cooldown = 0.35
-            _spawn_laser(state, npc.position.x, npc.position.y, npc.letter)
+    if ship.weapons_active:
+        if not weapons_online(ship) or is_powerless(ship):
+            ship.weapons_active = False
+            if is_powerless(ship):
+                state.log("Weapons offline — no power.")
+            else:
+                state.log("Weapons destroyed.")
+        elif ship.target_letter and ship.fire_cooldown <= 0:
+            npc = _npc_by_letter(state, ship.target_letter)
+            if npc:
+                ship.fire_cooldown = weapon_charge_seconds(ship)
+                _spawn_laser(state, npc.position.x, npc.position.y, npc.letter)
 
     _tick_projectiles(state, dt)
     _decay_fx(state, dt)
@@ -150,20 +154,31 @@ def _tick_projectiles(state: GameState, dt: float) -> None:
         npc = _npc_by_letter(state, p.target_letter)
         if npc:
             if math.hypot(p.x - npc.position.x, p.y - npc.position.y) < 35:
-                comp = state.player.ship.subtarget or "shield"
-                npc.components[comp] = max(0.0, npc.components.get(comp, 0) - 22.0)
-                npc.components["reactor"] = max(0.0, npc.components.get("reactor", 0) - 8.0)
-                state.explosions.append(Explosion(x=npc.position.x, y=npc.position.y))
-                state.log(f"HIT {npc.letter} {comp} ({npc.components[comp]:.0f}%)")
-                if npc.components["reactor"] <= 0 or sum(npc.components.values()) <= 5:
-                    npc.alive = False
-                    state.explosions.append(
-                        Explosion(x=npc.position.x, y=npc.position.y, ttl=0.8)
-                    )
-                    state.log(f"{npc.name} destroyed.")
+                _apply_hit(state, npc)
                 continue
         remaining.append(p)
     state.projectiles = remaining
+
+
+def _apply_hit(state: GameState, npc: NpcShip) -> None:
+    ship = state.player.ship
+    ref = ship.subtarget or "shields"
+    comp = find_component(npc.components, ref) or (npc.components[0] if npc.components else None)
+    if not comp:
+        return
+    comp.health = max(0.0, comp.health - 22.0)
+    npc.shield = max(0.0, npc.shield - 8.0)
+    state.explosions.append(Explosion(x=npc.position.x, y=npc.position.y))
+    state.log(f"HIT {npc.letter} {comp.slot_id} {comp.kind} ({comp.health:.0f} hp)")
+    if is_powerless(npc):
+        npc.alive = False
+        state.explosions.append(Explosion(x=npc.position.x, y=npc.position.y, ttl=0.8))
+        state.log(f"{npc.name} reactor destroyed — ship powerless.")
+        return
+    if all(c.destroyed for c in npc.components):
+        npc.alive = False
+        state.explosions.append(Explosion(x=npc.position.x, y=npc.position.y, ttl=0.8))
+        state.log(f"{npc.name} destroyed.")
 
 
 def _decay_fx(state: GameState, dt: float) -> None:

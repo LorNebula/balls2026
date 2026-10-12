@@ -49,9 +49,11 @@ def execute_command(state: GameState, line: str) -> str | None:
                 return "Coordinates must be numbers."
             return travel.travel_coords(state, x, y, z)
         return "Usage: travel <x> <y> <z> | travel planet <name> | travel station <name>"
+    if cmd in ("ship", "fit"):
+        return None
     if cmd == "lock":
         if not args:
-            return "Usage: lock <A-Z> [reactor|shield|hyperdrive|cargo|01-04]"
+            return "Usage: lock <A-Z> [reactor|thrusters|shields|weapons|01-04]"
         sub = args[1] if len(args) > 1 else None
         return combat.lock_target(state, args[0], sub)
     if cmd == "fire":
@@ -75,7 +77,7 @@ def execute_command(state: GameState, line: str) -> str | None:
             return quests.quest_status(state)
         return quests.start_quest(state, " ".join(args))
     if cmd == "help":
-        state.log("travel, jump, lock, fire, cease, comms, quests, quest start <id>")
+        state.log("travel, jump, lock, fire, cease, ship, comms, quests, quest start <id>")
         return None
     return f"Unknown command: {cmd}. Type help."
 
@@ -83,6 +85,7 @@ def execute_command(state: GameState, line: str) -> str | None:
 def palette_suggestions(state: GameState) -> list[tuple[str, str]]:
     items: list[tuple[str, str]] = [
         ("Help", "help"),
+        ("Ship", "ship"),
         ("Fire", "fire"),
         ("Cease fire", "cease"),
         ("Comms", "comms"),
