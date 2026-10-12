@@ -144,8 +144,8 @@ def tick_all(state: GameState, dt: float) -> None:
 
 def pirate_components() -> list[ShipComponent]:
     return [
-        ShipComponent("01", "reactor", health=45.0),
-        ShipComponent("02", "thrusters", health=40.0),
-        ShipComponent("03", "shields", health=40.0),
-        ShipComponent("04", "weapons", health=35.0),
+        ShipComponent("01", "reactor", max_health=75.0, health=75.0),
+        ShipComponent("02", "thrusters", max_health=70.0, health=70.0),
+        ShipComponent("03", "shields", max_health=70.0, health=70.0),
+        ShipComponent("04", "weapons", max_health=65.0, health=65.0),
     ]

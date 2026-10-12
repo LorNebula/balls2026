@@ -174,6 +174,7 @@ def dock(state: GameState) -> str | None:
     ship.status = ShipStatus.DOCKED
     ship.destination = None
     ship.eta_seconds = 0.0
+    state.station_view = "hangar"
     state.log(f"Docked at {best.name}")
     return None
 
@@ -283,7 +284,9 @@ def new_game(galaxy) -> GameState:
         max_fuel=100.0,
         fuel_per_jump=15.0,
     )
-    player = Player(ship=ship, system_id=start.id)
+    from eve_ascii.market import starter_cargo
+
+    player = Player(ship=ship, system_id=start.id, cargo=starter_cargo())
     state = GameState(galaxy=galaxy, player=player)
     init_background_stars(state)
     init_tutorial(state)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import shlex
 
-from eve_ascii import combat, travel
+from eve_ascii import combat, market, travel
 from eve_ascii.comms import list_messages
 from eve_ascii.models import GameState
 from eve_ascii import quests
@@ -26,7 +26,25 @@ def execute_command(state: GameState, line: str) -> str | None:
     if cmd in ("dock",):
         return travel.dock(state)
     if cmd in ("undock",):
+        state.station_view = "hangar"
         return travel.undock(state)
+    if cmd in ("inventory", "inv", "market"):
+        return market.show_inventory(state)
+    if cmd == "hangar":
+        return market.show_hangar(state)
+    if cmd == "sell":
+        if len(args) < 2:
+            return "Usage: sell <item> <quantity>"
+        try:
+            qty = int(args[-1])
+        except ValueError:
+            return "Quantity must be an integer."
+        item_ref = " ".join(args[:-1])
+        return market.sell_item(state, item_ref, qty)
+    if cmd == "upgrade":
+        if not args:
+            return "Usage: upgrade reactor|weapons"
+        return market.upgrade_component(state, args[0])
     if cmd in ("jump", "gate"):
         if not args:
             return "Usage: jump <system>"
@@ -77,7 +95,10 @@ def execute_command(state: GameState, line: str) -> str | None:
             return quests.quest_status(state)
         return quests.start_quest(state, " ".join(args))
     if cmd == "help":
-        state.log("travel, jump, lock, fire, cease, ship, comms, quests, quest start <id>")
+        state.log(
+            "travel, jump, dock, inventory, sell <item> <qty>, upgrade reactor|weapons, "
+            "lock, fire, cease, ship, comms, quests"
+        )
         return None
     return f"Unknown command: {cmd}. Type help."
 
@@ -101,4 +122,13 @@ def palette_suggestions(state: GameState) -> list[tuple[str, str]]:
             other = state.galaxy.get_system(nid)
             if other:
                 items.append((f"Jump to {other.name}", f"jump {other.name}"))
+    if ship.status.value == "docked":
+        items.append(("Inventory", "inventory"))
+        for stack in state.player.cargo:
+            if stack.quantity > 0:
+                items.append(
+                    (f"Sell {stack.name}", f"sell {stack.item_id} {stack.quantity}"),
+                )
+        items.append(("Upgrade reactor", "upgrade reactor"))
+        items.append(("Upgrade weapons", "upgrade weapons"))
     return items

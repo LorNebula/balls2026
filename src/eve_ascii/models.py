@@ -36,6 +36,9 @@ class TutorialStep(str, Enum):
     INTERDICT = "interdict"
     COMBAT = "combat"
     JUMP_STATION = "jump_station"
+    DOCK = "dock"
+    SELL = "sell"
+    UPGRADE = "upgrade"
     GALAXY = "galaxy"
     QUESTS = "quests"
     DONE = "done"
@@ -252,9 +255,18 @@ class Quest:
 
 
 @dataclass
+class CargoStack:
+    item_id: str
+    name: str
+    quantity: int
+
+
+@dataclass
 class Player:
     ship: Ship
     system_id: str
+    credits: float = 0.0
+    cargo: list[CargoStack] = field(default_factory=list)
 
     @property
     def location(self) -> ShipLocation:
@@ -280,6 +292,12 @@ class GameState:
     tutorial_force_galaxy: bool = False
     tutorial_step_elapsed: float = 0.0
     tutorial_post_combat: bool = False
+    tutorial_jump_from_system: str | None = None
+    screen_flash: float = 0.0
+    station_view: str = "hangar"
+    tutorial_sell_done: bool = False
+    tutorial_upgraded_reactor: bool = False
+    tutorial_upgraded_weapons: bool = False
     star_scroll: float = 0.0
     background_stars: list[BackgroundStar] = field(default_factory=list)
 

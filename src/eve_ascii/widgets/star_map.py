@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from textual.widgets import Static
 
-from eve_ascii.models import GameMode, GameState
-from eve_ascii.space_render import render_galaxy_map, render_open_space
+from eve_ascii.models import GameMode, GameState, ShipStatus
+from eve_ascii.market import render_inventory_view
+from eve_ascii.space_render import render_docked_view, render_galaxy_map, render_open_space
 
 
 class StarMap(Static):
@@ -30,7 +31,20 @@ class StarMap(Static):
         if state.tutorial_force_galaxy:
             galaxy_view = True
         self._galaxy_view = galaxy_view
+        self._sync_ambient_classes(state)
         self.refresh_map()
+
+    def _sync_ambient_classes(self, state: GameState) -> None:
+        self.remove_class("-hyperspace", "-docked", "-flash", "-space")
+        ship = state.player.ship
+        if state.screen_flash > 0:
+            self.add_class("-flash")
+        elif ship.status == ShipStatus.DOCKED:
+            self.add_class("-docked")
+        elif state.mode == GameMode.HYPERSPACE:
+            self.add_class("-hyperspace")
+        else:
+            self.add_class("-space")
 
     @property
     def galaxy_view(self) -> bool:
@@ -52,8 +66,14 @@ class StarMap(Static):
             self.update("No galaxy loaded.")
             return
         w, h = self._view_size()
+        ship = self._state.player.ship
         if self._galaxy_view:
             self.update(render_galaxy_map(self._state, w, h))
+        elif ship.status == ShipStatus.DOCKED:
+            if self._state.station_view == "inventory":
+                self.update(render_inventory_view(self._state, w, h))
+            else:
+                self.update(render_docked_view(self._state, w, h))
         elif self._state.mode == GameMode.HYPERSPACE:
             self.update(render_open_space(self._state, w, h, self._scale, hyperspace=True))
         else:

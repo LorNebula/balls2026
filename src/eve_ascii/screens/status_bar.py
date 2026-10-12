@@ -9,7 +9,8 @@ def format_status(state: GameState) -> str:
     line = (
         f" {sys_name} | {state.mode.value} | {ship.status.value} | "
         f"pwr {ship.power:.0f} | shd {ship.shield:.0f}/{ship.max_shield:.0f} | "
-        f"fuel {ship.fuel:.0f}/{ship.max_fuel:.0f}"
+        f"fuel {ship.fuel:.0f}/{ship.max_fuel:.0f} | "
+        f"cr {state.player.credits:.0f}"
     )
     if ship.target_letter:
         sub = ship.subtarget or "hull"

@@ -14,15 +14,18 @@ from eve_ascii.models import (
     Explosion,
     GameMode,
     GameState,
-    NpcShip,
     Ship,
+    ShipComponent,
     TutorialStep,
 )
-from eve_ascii.models import GameMode, GameState, Ship, ShipComponent, TutorialStep
 from eve_ascii.ship import BASE_SHIELD_GEN, is_powerless, shield_gen_per_sec, weapon_charge_seconds
 
 SPACE_BG = Style(color="#1a3a5c", bgcolor="#050d18")
+HYPERSPACE_BG = Style(color="#5533aa", bgcolor="#120828")
+DOCK_BG = Style(color="#6a7088", bgcolor="#141018")
 STAR_STYLE = Style(color="#6a8aaa")
+HYPERSPACE_STAR = Style(color="#9977cc")
+DOCK_STAR = Style(color="#4a5566")
 SUN_STYLE = Style(color="#ffcc33", bold=True)
 PLANET_STYLE = Style(color="#44cc88")
 STATION_STYLE = Style(color="#88aaff")
@@ -72,13 +75,9 @@ PLAYER_SHIP_ZOOM = [
     "             \\______________/             ",
 ]
 
-STATION_ART = [
-    "   +----------------+   ",
-    "   |   STATION      |   ",
-    "   |  [01] dock     |   ",
-    "   |  [02] services |   ",
-    "   |  [03] market   |   ",
-    "   +----------------+   ",
+STATION_MARKER = [
+    "  (S)  ",
+    " /===\\ ",
 ]
 
 SUN_ART = [
@@ -110,12 +109,23 @@ class Cell:
 
 
 class SpaceCanvas:
-    def __init__(self, width: int, height: int, anchor_x: int, anchor_y: int) -> None:
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        anchor_x: int,
+        anchor_y: int,
+        *,
+        bg_style: Style | None = None,
+    ) -> None:
         self.width = width
         self.height = height
         self.anchor_x = anchor_x
         self.anchor_y = anchor_y
-        self.cells = [[Cell() for _ in range(width)] for _ in range(height)]
+        self.bg_style = bg_style or SPACE_BG
+        self.cells = [
+            [Cell(" ", self.bg_style) for _ in range(width)] for _ in range(height)
+        ]
 
     def world_to_screen(self, wx: float, wy: float, ship_x: float, ship_y: float, scale: float) -> tuple[int, int]:
         px = self.anchor_x + int((wx - ship_x) / scale)
@@ -157,7 +167,6 @@ class SpaceCanvas:
         components: list[ShipComponent] | None = None,
         subtarget: str | None = None,
         id_letter: str = "",
-        destroyed_components: set[str] | None = None,
     ) -> None:
         y0 = cy - len(lines) // 2
         for dy, row in enumerate(lines):
@@ -167,7 +176,7 @@ class SpaceCanvas:
                 self.put(x0 - 2, y, id_letter, ID_STYLE)
             for dx, ch in enumerate(row):
                 if ch != " ":
-                    st = self._style_at(row, dx, hull, components, subtarget, destroyed_components)
+                    st = self._style_at(row, dx, hull, components, subtarget)
                     self.put(x0 + dx, y, ch, st)
 
     def to_text(self) -> Text:
@@ -211,17 +220,74 @@ def tutorial_arena(state: GameState) -> bool:
     if state.mode == GameMode.HYPERSPACE:
         return True
     return state.mode == GameMode.COMBAT and state.tutorial_step != TutorialStep.DONE
-def _draw_drifting_stars(canvas: SpaceCanvas, state: GameState, height: int) -> None:
+
+
+def _show_stations_on_map(state: GameState) -> bool:
+    if tutorial_arena(state):
+        return False
+    if state.tutorial_step == TutorialStep.DONE:
+        return True
+    return state.tutorial_step in (TutorialStep.JUMP_STATION, TutorialStep.DOCK)
+
+
+def _draw_drifting_stars(
+    canvas: SpaceCanvas, state: GameState, height: int, *, star_style: Style | None = None
+) -> None:
     w = canvas.width
+    style = star_style or STAR_STYLE
     for star in state.background_stars:
         drift = state.star_scroll * star.parallax
         x = int(star.x * w + drift) % w
         y = star.y % max(1, height)
-        canvas.put(x, y, star.char, STAR_STYLE)
+        canvas.put(x, y, star.char, style)
 
 
-def _destroyed_components(components: dict[str, float]) -> set[str]:
-    return {name for name, hp in components.items() if hp <= 0}
+def _apply_screen_flash(canvas: SpaceCanvas, state: GameState) -> None:
+    t = state.screen_flash
+    if t <= 0:
+        return
+    peak = 0.32
+    in_hyperspace = state.mode == GameMode.HYPERSPACE
+    if t >= peak:
+        wash = Style(
+            color="#ffffff",
+            bgcolor="#ddd0ff" if in_hyperspace else "#fff4dd",
+            bold=True,
+        )
+        fill = 0.5
+    else:
+        wash = Style(
+            color="#bbaaff" if in_hyperspace else "#ffcc88",
+            bgcolor="#2a1848" if in_hyperspace else "#2a2210",
+        )
+        fill = 0.22 * (t / peak)
+    rng = random.Random(int(t * 800) + canvas.width)
+    for y in range(canvas.height):
+        for x in range(canvas.width):
+            roll = rng.random()
+            if roll < fill:
+                canvas.put(x, y, " ", wash)
+            elif roll < fill + 0.08:
+                canvas.put(x, y, rng.choice("/\\|*"), wash)
+
+
+def _draw_station_markers(
+    canvas: SpaceCanvas,
+    sys,
+    ship_x: float,
+    ship_y: float,
+    scale: float,
+) -> None:
+    """One marker per screen cluster (systems often have two stations on one planet)."""
+    placed: list[tuple[int, int]] = []
+    min_dx, min_dy = 9, 4
+    for st in sys.stations:
+        pos = station_position(sys, st)
+        px, py = canvas.world_to_screen(pos.x, pos.y, ship_x, ship_y, scale)
+        if any(abs(px - qx) < min_dx and abs(py - qy) < min_dy for qx, qy in placed):
+            continue
+        placed.append((px, py))
+        canvas.stamp_art(px, py, STATION_MARKER, STATION_STYLE)
 
 
 def _draw_explosion(canvas: SpaceCanvas, ex: Explosion, px: int, py: int) -> None:
@@ -229,6 +295,38 @@ def _draw_explosion(canvas: SpaceCanvas, ex: Explosion, px: int, py: int) -> Non
         canvas.stamp_art(px, py, EXPLOSION_LARGE_ART, EXPLOSION_LARGE)
     else:
         canvas.stamp_art(px, py, EXPLOSION_SMALL, EXPLOSION_STYLE)
+
+
+def render_docked_view(state: GameState, width: int, height: int) -> Text:
+    anchor_x = width // 2
+    anchor_y = height // 2
+    canvas = SpaceCanvas(width, height, anchor_x, anchor_y, bg_style=DOCK_BG)
+    ship = state.player.ship
+    sys = state.galaxy.get_system(ship.location.system_id)
+    st_name = "station"
+    if sys and ship.location.station_id:
+        st = next((s for s in sys.stations if s.id == ship.location.station_id), None)
+        if st:
+            st_name = st.name
+    _draw_drifting_stars(canvas, state, height, star_style=DOCK_STAR)
+    ring = [
+        "    dock ring    ",
+        "  ..========..  ",
+        "   hangar open   ",
+    ]
+    canvas.stamp_art(anchor_x, anchor_y - 2, ring, Style(color="#88aacc", bold=True))
+    canvas.stamp_art(
+        anchor_x,
+        anchor_y + 3,
+        PLAYER_SHIP,
+        Style(color="#66bbdd", bold=True),
+        components=ship.components,
+    )
+    _apply_screen_flash(canvas, state)
+    header = Text(f" DOCKED @ {st_name} ", style=Style(color="#c9a86a", bold=True))
+    header.append("| type undock to leave\n", style=Style(color="#8899aa"))
+    header.append(canvas.to_text())
+    return header
 
 
 def render_open_space(
@@ -241,7 +339,8 @@ def render_open_space(
 ) -> Text:
     anchor_x = max(14, width // 6)
     anchor_y = height // 2
-    canvas = SpaceCanvas(width, height, anchor_x, anchor_y)
+    bg = HYPERSPACE_BG if hyperspace else SPACE_BG
+    canvas = SpaceCanvas(width, height, anchor_x, anchor_y, bg_style=bg)
     inner_h = height
 
     from eve_ascii.travel import current_ship_coords
@@ -249,10 +348,10 @@ def render_open_space(
     sc = current_ship_coords(state)
     ship_x, ship_y = sc.x, sc.y
     ship = state.player.ship
-    show_stations = state.tutorial_step == TutorialStep.DONE
+    show_stations = _show_stations_on_map(state)
 
     if hyperspace:
-        _draw_drifting_stars(canvas, state, inner_h)
+        _draw_drifting_stars(canvas, state, inner_h, star_style=HYPERSPACE_STAR)
         for p in state.hyperspace_particles:
             sx = anchor_x + int((p.x - 400) / 70)
             sy = anchor_y + int(p.y / 35)
@@ -262,10 +361,10 @@ def render_open_space(
             canvas.anchor_y,
             PLAYER_SHIP,
             HULL_PLAYER,
-            ship=ship,
+            components=ship.components,
             subtarget=ship.subtarget,
-            destroyed_components=_destroyed_components(ship.components),
         )
+        _apply_screen_flash(canvas, state)
         header = Text(" HYPERSPACE  ", style=Style(color="#bb88ff", bold=True))
         header.append(f"fuel {ship.fuel:.0f}\n", style=Style(color="#aaccee"))
         header.append(" hull 01 reactor  02 thrusters  03 shields  04 weapons\n", style=Style(color="#668899"))
@@ -285,10 +384,7 @@ def render_open_space(
             canvas.stamp_art(px, py, PLANET_ART, PLANET_STYLE)
 
         if show_stations:
-            for st in sys.stations:
-                pos = station_position(sys, st)
-                px, py = canvas.world_to_screen(pos.x, pos.y, ship_x, ship_y, scale)
-                canvas.stamp_art(px, py, STATION_ART, STATION_STYLE)
+            _draw_station_markers(canvas, sys, ship_x, ship_y, scale)
 
     lock = ship.target_letter
     for npc in state.npc_ships:
@@ -304,7 +400,6 @@ def render_open_space(
             components=npc.components,
             subtarget=sub,
             id_letter=npc.letter,
-            destroyed_components=_destroyed_components(npc.components),
         )
 
     for proj in state.projectiles:
@@ -326,9 +421,8 @@ def render_open_space(
         canvas.anchor_y,
         PLAYER_SHIP,
         HULL_PLAYER,
-        ship=ship,
+        components=ship.components,
         subtarget=ship.subtarget,
-        destroyed_components=_destroyed_components(ship.components),
     )
 
     wpn = "ON" if ship.weapons_active else "off"
@@ -342,6 +436,7 @@ def render_open_space(
     if ship.eta_seconds > 0:
         header.append(f"eta {ship.eta_seconds:.1f}s ", style=Style(color="#88ccff"))
     header.append("\n", style=Style())
+    _apply_screen_flash(canvas, state)
     header.append(canvas.to_text())
     return header
 

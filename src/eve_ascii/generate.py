@@ -10,38 +10,39 @@ from pathlib import Path
 from eve_ascii.models import Galaxy, Planet, StarSystem, Station, Vec3
 from eve_ascii.names import planet_name, station_name, system_name
 
-
-def _connect_systems(systems: list[StarSystem], rng: random.Random) -> None:
+# Stargate grid spacing: at jump_speed 1.0, linked hops are ~5 seconds.
+JUMP_UNIT = 5.0
+def _connect_systems(systems: list[StarSystem], cols: int, rng: random.Random) -> None:
     n = len(systems)
     if n < 2:
         return
-    # Minimum spanning tree via greedy on distance
-    in_tree = {systems[0].id}
-    while len(in_tree) < n:
-        best = None
-        best_dist = float("inf")
-        for sid in in_tree:
-            s = next(x for x in systems if x.id == sid)
-            for t in systems:
-                if t.id in in_tree:
-                    continue
-                d = s.position.distance_to(t.position)
-                if d < best_dist:
-                    best_dist = d
-                    best = (sid, t.id)
-        if best:
-            a, b = best
-            sa = next(x for x in systems if x.id == a)
-            sb = next(x for x in systems if x.id == b)
-            sa.neighbors.append(b)
-            sb.neighbors.append(a)
-            in_tree.add(b)
-    # Extra random links
-    for _ in range(max(1, n // 4)):
-        a, b = rng.sample(systems, 2)
+    by_id = {s.id: s for s in systems}
+
+    def link(a: StarSystem, b: StarSystem) -> None:
         if b.id not in a.neighbors:
             a.neighbors.append(b.id)
             b.neighbors.append(a.id)
+
+    # Grid stargates: east and south links only (~JUMP_UNIT light-seconds per hop).
+    for i, s in enumerate(systems):
+        row, col = divmod(i, cols)
+        if col + 1 < cols and i + 1 < n:
+            link(s, systems[i + 1])
+        if i + cols < n:
+            link(s, systems[i + cols])
+
+    # Extra short links between existing grid neighbors (loops / alternate routes).
+    grid_pairs: list[tuple[StarSystem, StarSystem]] = []
+    for i, s in enumerate(systems):
+        row, col = divmod(i, cols)
+        if col + 1 < cols and i + 1 < n:
+            grid_pairs.append((s, systems[i + 1]))
+        if i + cols < n:
+            grid_pairs.append((s, systems[i + cols]))
+    rng.shuffle(grid_pairs)
+    target_extra = max(1, n // 6)
+    for a, b in grid_pairs[:target_extra]:
+        link(a, b)
 
 
 def build_galaxy(seed: int, num_systems: int = 32) -> Galaxy:
@@ -49,16 +50,18 @@ def build_galaxy(seed: int, num_systems: int = 32) -> Galaxy:
     systems: list[StarSystem] = []
     used_names: set[str] = set()
 
+    cols = max(1, int(math.ceil(math.sqrt(num_systems))))
     for i in range(num_systems):
         name = system_name(rng)
         while name in used_names:
             name = system_name(rng)
         used_names.add(name)
         sid = f"sys_{i:03d}"
+        row, col = divmod(i, cols)
         pos = Vec3(
-            rng.uniform(-500, 500),
-            rng.uniform(-500, 500),
-            rng.uniform(-200, 200),
+            col * JUMP_UNIT + rng.uniform(-0.25, 0.25),
+            row * JUMP_UNIT + rng.uniform(-0.25, 0.25),
+            rng.uniform(-0.5, 0.5),
         )
         num_planets = rng.randint(1, 4)
         planets: list[Planet] = []
@@ -72,15 +75,14 @@ def build_galaxy(seed: int, num_systems: int = 32) -> Galaxy:
                     angle=rng.uniform(0, 2 * math.pi),
                 )
             )
-        num_stations = rng.randint(0, 2)
         stations: list[Station] = []
-        for s in range(num_stations):
-            planet = rng.choice(planets) if planets else None
+        if rng.random() < 0.75 and planets:
+            planet = rng.choice(planets)
             stations.append(
                 Station(
-                    id=f"{sid}_st{s}",
-                    name=station_name(rng, s + 1),
-                    planet_id=planet.id if planet else None,
+                    id=f"{sid}_st0",
+                    name=station_name(rng, 1),
+                    planet_id=planet.id,
                     offset=Vec3(rng.uniform(30, 80), rng.uniform(-20, 20), 0.0),
                 )
             )
@@ -94,7 +96,7 @@ def build_galaxy(seed: int, num_systems: int = 32) -> Galaxy:
             )
         )
 
-    _connect_systems(systems, rng)
+    _connect_systems(systems, cols, rng)
     return Galaxy(seed=seed, systems={s.id: s for s in systems})
 
 

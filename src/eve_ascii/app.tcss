@@ -35,6 +35,18 @@ StarMap {
     background: #050d18;
 }
 
+StarMap.-hyperspace {
+    background: #120828;
+}
+
+StarMap.-docked {
+    background: #141018;
+}
+
+StarMap.-flash {
+    background: #3a2860;
+}
+
 EventLog {
     border: none;
     padding: 0 0;

@@ -22,6 +22,12 @@ def completion_candidates(state: GameState) -> list[str]:
         "travel planet ",
         "travel station ",
         "jump ",
+        "dock",
+        "inventory",
+        "hangar",
+        "sell ",
+        "upgrade reactor",
+        "upgrade weapons",
     ]
     for npc in state.npc_ships:
         if npc.alive:
@@ -34,6 +40,11 @@ def completion_candidates(state: GameState) -> list[str]:
             cmds.append(f"quest start {q.id}")
     ship = state.player.ship
     sys = state.galaxy.get_system(ship.location.system_id)
+    if ship.status.value == "docked":
+        for stack in state.player.cargo:
+            if stack.quantity > 0:
+                cmds.append(f"sell {stack.item_id} ")
+                cmds.append(f"sell {stack.name} ")
     if sys:
         for p in sys.planets:
             cmds.append(f"travel planet {ascii_only(p.name)}")

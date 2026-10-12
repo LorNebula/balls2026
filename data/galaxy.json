@@ -5,13 +5,13 @@
       "id": "sys_000",
       "name": "Koskimaa",
       "position": {
-        "x": -360.4620714748561,
-        "y": -397.5048238284925,
-        "z": 96.26709786707033
+        "x": -0.18023103573742805,
+        "y": -0.19875241191424625,
+        "z": 0.24066774466767582
       },
       "neighbors": [
-        "sys_002",
-        "sys_026"
+        "sys_001",
+        "sys_006"
       ],
       "planets": [
         {
@@ -24,21 +24,11 @@
       "stations": [
         {
           "id": "sys_000_st0",
-          "name": "Telakointi-1",
+          "name": "Satelliitti-1",
           "planet_id": "sys_000_p0",
           "offset": {
-            "x": 39.94188253433242,
-            "y": 5.995377511180926,
-            "z": 0.0
-          }
-        },
-        {
-          "id": "sys_000_st1",
-          "name": "Telakka-2",
-          "planet_id": "sys_000_p0",
-          "offset": {
-            "x": 52.46045231419268,
-            "y": -8.872371670773491,
+            "x": 62.49422188897616,
+            "y": 1.7976592241286653,
             "z": 0.0
           }
         }
@@ -46,42 +36,45 @@
     },
     {
       "id": "sys_001",
-      "name": "Jokiasema",
+      "name": "UsvaYotajarvi",
       "position": {
-        "x": -344.5205001882184,
-        "y": 457.21307220678125,
-        "z": -65.3621819549493
+        "x": 5.099069697494113,
+        "y": -0.07987474174100406,
+        "z": -0.34452050018821845
       },
       "neighbors": [
-        "sys_024",
-        "sys_017"
+        "sys_000",
+        "sys_002",
+        "sys_007"
       ],
       "planets": [
         {
           "id": "sys_001_p0",
-          "name": "Tahtila",
-          "orbit_radius": 82.07452062733782,
-          "angle": 5.071336507646816
+          "name": "UsvaYotajarvi 4",
+          "orbit_radius": 71.93432753666929,
+          "angle": 5.324964150551833
+        },
+        {
+          "id": "sys_001_p1",
+          "name": "Usva",
+          "orbit_radius": 204.59463573387634,
+          "angle": 3.369220465525127
+        },
+        {
+          "id": "sys_001_p2",
+          "name": "Pohja",
+          "orbit_radius": 321.0408126254645,
+          "angle": 5.211303200140635
         }
       ],
       "stations": [
         {
           "id": "sys_001_st0",
           "name": "Telakointi-1",
-          "planet_id": "sys_001_p0",
+          "planet_id": "sys_001_p1",
           "offset": {
-            "x": 36.241308142660465,
-            "y": 16.891814881126393,
-            "z": 0.0
-          }
-        },
-        {
-          "id": "sys_001_st1",
-          "name": "Telakointi-2",
-          "planet_id": "sys_001_p0",
-          "offset": {
-            "x": 44.65891407035464,
-            "y": 5.145591979777734,
+            "x": 39.614429512833,
+            "y": -17.21779404705036,
             "z": 0.0
           }
         }
@@ -89,33 +82,39 @@
     },
     {
       "id": "sys_002",
-      "name": "NiemiMeri",
+      "name": "JarYotala",
       "position": {
-        "x": -454.17561634433775,
-        "y": -272.1017243484531,
-        "z": -84.24481455915713
+        "x": 9.940063112519583,
+        "y": -0.023294848815782254,
+        "z": 0.3341104266407503
       },
       "neighbors": [
-        "sys_000",
-        "sys_004",
-        "sys_018"
+        "sys_001",
+        "sys_003",
+        "sys_008"
       ],
       "planets": [
         {
           "id": "sys_002_p0",
-          "name": "Yota",
-          "orbit_radius": 77.60252450078332,
-          "angle": 2.8488609499652076
+          "name": "Merila",
+          "orbit_radius": 84.03640626917102,
+          "angle": 4.294856648856894
+        },
+        {
+          "id": "sys_002_p1",
+          "name": "JarYotala 2",
+          "orbit_radius": 200.68279754059415,
+          "angle": 1.5381924079484826
         }
       ],
       "stations": [
         {
           "id": "sys_002_st0",
-          "name": "Kaivos-1",
-          "planet_id": "sys_002_p0",
+          "name": "Satelliitti-1",
+          "planet_id": "sys_002_p1",
           "offset": {
-            "x": 47.76353501137608,
-            "y": 6.807006975107733,
+            "x": 64.40809792166566,
+            "y": -11.215393041189241,
             "z": 0.0
           }
         }
@@ -123,56 +122,45 @@
     },
     {
       "id": "sys_003",
-      "name": "Saari",
+      "name": "Suo",
       "position": {
-        "x": 34.13987702970803,
-        "y": -255.1890748485738,
-        "z": -15.095915259553692
+        "x": 15.152522900385607,
+        "y": -0.04941760648883553,
+        "z": -0.43381139478845276
       },
       "neighbors": [
-        "sys_025",
-        "sys_018",
-        "sys_012",
-        "sys_006"
+        "sys_002",
+        "sys_004",
+        "sys_009"
       ],
       "planets": [
         {
           "id": "sys_003_p0",
-          "name": "Lahtinen",
-          "orbit_radius": 83.6922850197975,
-          "angle": 5.295794801064713
+          "name": "Kesamaa",
+          "orbit_radius": 87.69366307773404,
+          "angle": 4.039157425536224
         },
         {
           "id": "sys_003_p1",
-          "name": "Suo",
-          "orbit_radius": 206.10091601542427,
-          "angle": 2.520592695576525
+          "name": "Suo 2",
+          "orbit_radius": 194.93255015387967,
+          "angle": 3.5271800124927277
         },
         {
           "id": "sys_003_p2",
-          "name": "Saari 3",
-          "orbit_radius": 314.2525308810828,
-          "angle": 3.136762514526636
+          "name": "Niemimaa",
+          "orbit_radius": 327.9564576720495,
+          "angle": 2.509507385578249
         }
       ],
       "stations": [
         {
           "id": "sys_003_st0",
-          "name": "Telakka-1",
-          "planet_id": "sys_003_p1",
+          "name": "Telakointi-1",
+          "planet_id": "sys_003_p0",
           "offset": {
-            "x": 43.24400832490262,
-            "y": -10.134899692240662,
-            "z": 0.0
-          }
-        },
-        {
-          "id": "sys_003_st1",
-          "name": "Telakointi-2",
-          "planet_id": "sys_003_p2",
-          "offset": {
-            "x": 43.13708042614677,
-            "y": 3.3834396089416217,
+            "x": 54.67579174448155,
+            "y": 10.231286301349513,
             "z": 0.0
           }
         }
@@ -180,189 +168,164 @@
     },
     {
       "id": "sys_004",
-      "name": "TahtiSuo",
+      "name": "Lahtiniemi",
       "position": {
-        "x": -361.6682551091441,
-        "y": -6.484165110368963,
-        "z": 102.31286301349513
+        "x": 20.04820451536599,
+        "y": -0.057616344162749966,
+        "z": 0.0958884283611281
       },
       "neighbors": [
-        "sys_002",
-        "sys_011",
+        "sys_003",
+        "sys_005",
         "sys_010"
       ],
       "planets": [
         {
           "id": "sys_004_p0",
-          "name": "TahtiSuo 2",
-          "orbit_radius": 85.84158728725929,
-          "angle": 2.6525093006751965
-        }
-      ],
-      "stations": []
-    },
-    {
-      "id": "sys_005",
-      "name": "TalviMetsa",
-      "position": {
-        "x": 360.779702234498,
-        "y": -488.5189780571804,
-        "z": 88.28872774407785
-      },
-      "neighbors": [
-        "sys_016",
-        "sys_010"
-      ],
-      "planets": [
-        {
-          "id": "sys_005_p0",
-          "name": "Kuu",
-          "orbit_radius": 75.87000257294852,
-          "angle": 0.9937344783149472
+          "name": "Ranta",
+          "orbit_radius": 83.60566820513037,
+          "angle": 0.7197498284269122
         },
         {
-          "id": "sys_005_p1",
-          "name": "TalviMetsa 3",
-          "orbit_radius": 209.4377619774023,
-          "angle": 4.787549693710179
+          "id": "sys_004_p1",
+          "name": "Hallala",
+          "orbit_radius": 205.37197465314892,
+          "angle": 2.137385534011529
         },
         {
-          "id": "sys_005_p2",
-          "name": "Valola",
-          "orbit_radius": 326.83338696344936,
-          "angle": 3.189739961042316
-        }
-      ],
-      "stations": []
-    },
-    {
-      "id": "sys_006",
-      "name": "Ranta",
-      "position": {
-        "x": 422.4340806182747,
-        "y": 418.4934943957022,
-        "z": 39.57783378409161
-      },
-      "neighbors": [
-        "sys_020",
-        "sys_003"
-      ],
-      "planets": [
-        {
-          "id": "sys_006_p0",
-          "name": "Ranta 3",
-          "orbit_radius": 87.57443755646369,
-          "angle": 5.225508634569896
+          "id": "sys_004_p2",
+          "name": "Lumimaa",
+          "orbit_radius": 310.0649063220346,
+          "angle": 4.537038230053453
         },
         {
-          "id": "sys_006_p1",
-          "name": "Tuonen",
-          "orbit_radius": 207.5601919840808,
-          "angle": 5.949858841338216
-        },
-        {
-          "id": "sys_006_p2",
-          "name": "Ranta 4",
-          "orbit_radius": 326.32046506840175,
-          "angle": 6.144857801322893
-        },
-        {
-          "id": "sys_006_p3",
-          "name": "Kivinen",
-          "orbit_radius": 443.19501645494734,
-          "angle": 5.949225712444789
-        }
-      ],
-      "stations": []
-    },
-    {
-      "id": "sys_007",
-      "name": "MeriRanta",
-      "position": {
-        "x": 189.86763209962146,
-        "y": 212.94897281912188,
-        "z": -40.40308000102834
-      },
-      "neighbors": [
-        "sys_030",
-        "sys_020",
-        "sys_027"
-      ],
-      "planets": [
-        {
-          "id": "sys_007_p0",
-          "name": "Talvimaa",
-          "orbit_radius": 72.42008391736532,
-          "angle": 1.4118150065990607
-        },
-        {
-          "id": "sys_007_p1",
-          "name": "Nieminen",
-          "orbit_radius": 201.768802288207,
-          "angle": 0.04518137385743389
-        },
-        {
-          "id": "sys_007_p2",
-          "name": "Tuonen",
-          "orbit_radius": 311.34800656220614,
-          "angle": 0.1973734364937722
+          "id": "sys_004_p3",
+          "name": "Talvinen",
+          "orbit_radius": 440.1536334920865,
+          "angle": 0.6685989183274305
         }
       ],
       "stations": [
         {
-          "id": "sys_007_st0",
-          "name": "Telakointi-1",
-          "planet_id": "sys_007_p0",
+          "id": "sys_004_st0",
+          "name": "Telakka-1",
+          "planet_id": "sys_004_p1",
           "offset": {
-            "x": 41.90023171844976,
-            "y": 6.759111131851224,
+            "x": 48.6956926295574,
+            "y": -13.538038569873866,
             "z": 0.0
           }
         }
       ]
     },
     {
-      "id": "sys_008",
-      "name": "Koski",
+      "id": "sys_005",
+      "name": "Saarinen",
       "position": {
-        "x": 71.04309332528442,
-        "y": -27.32897368820585,
-        "z": 113.84776971630134
+        "x": 24.805933862660446,
+        "y": -0.06850961640953324,
+        "z": 0.4853213789438122
       },
       "neighbors": [
-        "sys_018"
+        "sys_004",
+        "sys_011"
       ],
       "planets": [
         {
-          "id": "sys_008_p0",
-          "name": "Koski 1",
-          "orbit_radius": 83.17965499029326,
-          "angle": 2.2261172647649654
+          "id": "sys_005_p0",
+          "name": "Suo",
+          "orbit_radius": 71.71306904135757,
+          "angle": 3.0535681385403475
         },
         {
-          "id": "sys_008_p1",
-          "name": "Yota",
-          "orbit_radius": 203.46729094586604,
-          "angle": 6.1836923958919305
+          "id": "sys_005_p1",
+          "name": "Saarinen 2",
+          "orbit_radius": 192.56782928999525,
+          "angle": 2.9862872548313213
         },
         {
-          "id": "sys_008_p2",
-          "name": "Koski 4",
-          "orbit_radius": 324.56427176882363,
-          "angle": 5.03027110128424
+          "id": "sys_005_p2",
+          "name": "Metsamaa",
+          "orbit_radius": 329.2872581201491,
+          "angle": 5.836535610872145
+        }
+      ],
+      "stations": []
+    },
+    {
+      "id": "sys_006",
+      "name": "PohjaVuori",
+      "position": {
+        "x": -0.03094995804274797,
+        "y": 5.008787920517795,
+        "z": -0.3789958041317343
+      },
+      "neighbors": [
+        "sys_000",
+        "sys_007",
+        "sys_012"
+      ],
+      "planets": [
+        {
+          "id": "sys_006_p0",
+          "name": "PohjaVuori 1",
+          "orbit_radius": 81.76617436914466,
+          "angle": 1.445853506816372
         },
         {
-          "id": "sys_008_p3",
-          "name": "Koski 2",
-          "orbit_radius": 433.80417816881624,
-          "angle": 2.818722052346841
+          "id": "sys_006_p1",
+          "name": "Jar",
+          "orbit_radius": 194.5788356762231,
+          "angle": 5.6889217225464535
+        }
+      ],
+      "stations": []
+    },
+    {
+      "id": "sys_007",
+      "name": "Kivijarvi",
+      "position": {
+        "x": 4.889238631982273,
+        "y": 4.992707249575245,
+        "z": 0.03923393139475462
+      },
+      "neighbors": [
+        "sys_001",
+        "sys_006",
+        "sys_008",
+        "sys_013"
+      ],
+      "planets": [
+        {
+          "id": "sys_007_p0",
+          "name": "Kesamaa",
+          "orbit_radius": 73.80819828723756,
+          "angle": 0.6090342677754967
+        },
+        {
+          "id": "sys_007_p1",
+          "name": "Itamaa",
+          "orbit_radius": 199.3404933607335,
+          "angle": 4.580918665145609
+        },
+        {
+          "id": "sys_007_p2",
+          "name": "Lahti",
+          "orbit_radius": 311.2122534815403,
+          "angle": 4.575500919382161
+        },
+        {
+          "id": "sys_007_p3",
+          "name": "Valonen",
+          "orbit_radius": 433.83180144283307,
+          "angle": 3.3695827694192033
         }
       ],
       "stations": [
         {
-          "id": "sys_008_st0",
+          "id": "sys_007_st0",
           "name": "Kaivos-1",
-          "planet_id": "sys_008_p1",
+          "planet_id": "sys_007_p1",
           "offset": {
             "x": 53.13140342004837,
             "y": 14.9794381628232,
@@ -372,292 +335,368 @@
       ]
     },
     {
-      "id": "sys_009",
+      "id": "sys_008",
       "name": "Pohjantahti",
       "position": {
-        "x": -449.41167047511874,
-        "y": 499.28246841272664,
-        "z": 134.41103403198076
+        "x": 9.77529416476244,
+        "y": 5.249641234206363,
+        "z": 0.3360275850799519
       },
       "neighbors": [
-        "sys_017"
+        "sys_002",
+        "sys_007",
+        "sys_009",
+        "sys_014"
       ],
       "planets": [
         {
-          "id": "sys_009_p0",
+          "id": "sys_008_p0",
           "name": "Yotanen",
           "orbit_radius": 73.32622221207828,
           "angle": 3.0513731839941123
         }
       ],
-      "stations": []
-    },
-    {
-      "id": "sys_010",
-      "name": "Luminiemi",
-      "position": {
-        "x": -234.79694182784806,
-        "y": 284.07060194856933,
-        "z": -17.996653064342695
-      },
-      "neighbors": [
-        "sys_028",
-        "sys_024",
-        "sys_026",
-        "sys_015",
-        "sys_005",
-        "sys_004"
-      ],
-      "planets": [
-        {
-          "id": "sys_010_p0",
-          "name": "Koskimaa",
-          "orbit_radius": 73.09593650548128,
-          "angle": 1.8642702496726504
-        },
-        {
-          "id": "sys_010_p1",
-          "name": "Niemi",
-          "orbit_radius": 204.95951120758127,
-          "angle": 0.35918000281320894
-        },
-        {
-          "id": "sys_010_p2",
-          "name": "Talvinen",
-          "orbit_radius": 311.1375915945737,
-          "angle": 3.1907805508761395
-        },
-        {
-          "id": "sys_010_p3",
-          "name": "Jar",
-          "orbit_radius": 443.5042510720818,
-          "angle": 1.477829657261261
-        }
-      ],
-      "stations": []
-    },
-    {
-      "id": "sys_011",
-      "name": "Niemivuori",
-      "position": {
-        "x": -418.01659450512454,
-        "y": 157.3731644725225,
-        "z": 26.090769537635794
-      },
-      "neighbors": [
-        "sys_004",
-        "sys_028",
-        "sys_015"
-      ],
-      "planets": [
-        {
-          "id": "sys_011_p0",
-          "name": "Merila",
-          "orbit_radius": 74.77371905231692,
-          "angle": 2.4867958173484412
-        },
-        {
-          "id": "sys_011_p1",
-          "name": "Havumaa",
-          "orbit_radius": 196.3235439254371,
-          "angle": 4.724103931728209
-        },
-        {
-          "id": "sys_011_p2",
-          "name": "Niemivuori 4",
-          "orbit_radius": 322.42318510986183,
-          "angle": 3.5373934023140965
-        }
-      ],
-      "stations": []
-    },
-    {
-      "id": "sys_012",
-      "name": "Kivijarvi",
-      "position": {
-        "x": 5.884694048765368,
-        "y": -367.5434296335327,
-        "z": -60.396466014193976
-      },
-      "neighbors": [
-        "sys_003"
-      ],
-      "planets": [
-        {
-          "id": "sys_012_p0",
-          "name": "Tahtila",
-          "orbit_radius": 73.15493664714464,
-          "angle": 5.238574048927946
-        }
-      ],
       "stations": [
         {
-          "id": "sys_012_st0",
-          "name": "Telakointi-1",
-          "planet_id": "sys_012_p0",
+          "id": "sys_008_st0",
+          "name": "Satama-1",
+          "planet_id": "sys_008_p0",
           "offset": {
-            "x": 79.19266551257411,
-            "y": 12.283997730605691,
-            "z": 0.0
-          }
-        },
-        {
-          "id": "sys_012_st1",
-          "name": "Satelliitti-2",
-          "planet_id": "sys_012_p0",
-          "offset": {
-            "x": 70.85520675577308,
-            "y": -8.024849912000885,
+            "x": 38.23185607007635,
+            "y": -19.913784865942944,
             "z": 0.0
           }
         }
       ]
     },
     {
-      "id": "sys_013",
-      "name": "Metsala",
+      "id": "sys_009",
+      "name": "HavuIta",
       "position": {
-        "x": 242.41668398099864,
-        "y": -344.5520902250096,
-        "z": -87.29749141684229
+        "x": 15.115252658707734,
+        "y": 5.141680764242143,
+        "z": 0.16187131195074522
       },
       "neighbors": [
-        "sys_021",
+        "sys_003",
+        "sys_008",
+        "sys_010",
+        "sys_015"
+      ],
+      "planets": [
+        {
+          "id": "sys_009_p0",
+          "name": "HavuIta 3",
+          "orbit_radius": 74.3540179682835,
+          "angle": 0.36746136105575694
+        },
+        {
+          "id": "sys_009_p1",
+          "name": "Tuola",
+          "orbit_radius": 191.14330545814965,
+          "angle": 3.6704960782881226
+        },
+        {
+          "id": "sys_009_p2",
+          "name": "Yotanen",
+          "orbit_radius": 311.1375915945737,
+          "angle": 3.1907805508761395
+        },
+        {
+          "id": "sys_009_p3",
+          "name": "Jar",
+          "orbit_radius": 443.5042510720818,
+          "angle": 1.477829657261261
+        }
+      ],
+      "stations": [
+        {
+          "id": "sys_009_st0",
+          "name": "Telakointi-1",
+          "planet_id": "sys_009_p1",
+          "offset": {
+            "x": 59.72595767667206,
+            "y": 4.775260413284123,
+            "z": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "sys_010",
+      "name": "MetsaMeri",
+      "position": {
+        "x": 19.907091931397787,
+        "y": 4.882807256265677,
+        "z": -0.36912171787254355
+      },
+      "neighbors": [
+        "sys_004",
+        "sys_009",
+        "sys_011",
         "sys_016"
       ],
       "planets": [
         {
-          "id": "sys_013_p0",
-          "name": "Merila",
-          "orbit_radius": 80.10818116195975,
-          "angle": 1.5778413613261
+          "id": "sys_010_p0",
+          "name": "Halla",
+          "orbit_radius": 70.18630913768493,
+          "angle": 3.9028587075328116
         },
         {
-          "id": "sys_013_p1",
-          "name": "Tuo",
-          "orbit_radius": 202.6856889461839,
-          "angle": 5.21094772968099
+          "id": "sys_010_p1",
+          "name": "Valo",
+          "orbit_radius": 200.75268808203253,
+          "angle": 3.178567276774243
+        },
+        {
+          "id": "sys_010_p2",
+          "name": "MetsaMeri 3",
+          "orbit_radius": 327.6172834737288,
+          "angle": 5.524617868619111
+        }
+      ],
+      "stations": [
+        {
+          "id": "sys_010_st0",
+          "name": "Terminaali-1",
+          "planet_id": "sys_010_p0",
+          "offset": {
+            "x": 71.68724773199035,
+            "y": 8.141597003494837,
+            "z": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "sys_011",
+      "name": "Vuori",
+      "position": {
+        "x": 24.89968937609999,
+        "y": 5.081694357483038,
+        "z": 0.4389300039271039
+      },
+      "neighbors": [
+        "sys_005",
+        "sys_010",
+        "sys_017"
+      ],
+      "planets": [
+        {
+          "id": "sys_011_p0",
+          "name": "Paiva",
+          "orbit_radius": 84.84833367961997,
+          "angle": 0.976708022729998
+        },
+        {
+          "id": "sys_011_p1",
+          "name": "Merila",
+          "orbit_radius": 194.07194624654906,
+          "angle": 3.9850346245223034
+        }
+      ],
+      "stations": [
+        {
+          "id": "sys_011_st0",
+          "name": "Kaivos-1",
+          "planet_id": "sys_011_p1",
+          "offset": {
+            "x": 75.26682455396616,
+            "y": 13.844148531794218,
+            "z": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "sys_012",
+      "name": "Havumetsa",
+      "position": {
+        "x": 0.16467404468610963,
+        "y": 9.772043380899525,
+        "z": -0.16644346139491184
+      },
+      "neighbors": [
+        "sys_006",
+        "sys_013",
+        "sys_018"
+      ],
+      "planets": [
+        {
+          "id": "sys_012_p0",
+          "name": "Metsanen",
+          "orbit_radius": 84.82461816695862,
+          "angle": 3.466310316279988
+        },
+        {
+          "id": "sys_012_p1",
+          "name": "Kai",
+          "orbit_radius": 191.50487720147535,
+          "angle": 5.5487211150598155
         }
       ],
       "stations": []
     },
     {
-      "id": "sys_014",
-      "name": "Valojarvi",
+      "id": "sys_013",
+      "name": "NiemiRantajarvi",
       "position": {
-        "x": 137.11337730137961,
-        "y": -238.04473756565181,
-        "z": 96.4923633391723
+        "x": 4.770914429084429,
+        "y": 9.932325757663628,
+        "z": 0.43308801052065415
       },
       "neighbors": [
-        "sys_018",
-        "sys_029"
+        "sys_007",
+        "sys_012",
+        "sys_014",
+        "sys_019"
+      ],
+      "planets": [
+        {
+          "id": "sys_013_p0",
+          "name": "Merinen",
+          "orbit_radius": 83.33866821271086,
+          "angle": 2.2222284004739072
+        }
+      ],
+      "stations": [
+        {
+          "id": "sys_013_st0",
+          "name": "Telakointi-1",
+          "planet_id": "sys_013_p0",
+          "offset": {
+            "x": 67.47388055717695,
+            "y": 17.03055290278226,
+            "z": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "sys_014",
+      "name": "Usva",
+      "position": {
+        "x": 10.190708102331662,
+        "y": 9.762393180949095,
+        "z": 0.2365644717550821
+      },
+      "neighbors": [
+        "sys_008",
+        "sys_013",
+        "sys_015",
+        "sys_020"
       ],
       "planets": [
         {
           "id": "sys_014_p0",
-          "name": "Valo",
-          "orbit_radius": 88.90101878093279,
-          "angle": 4.341804346955689
+          "name": "Itanen",
+          "orbit_radius": 75.33611419188944,
+          "angle": 4.947219947047731
         },
         {
           "id": "sys_014_p1",
-          "name": "Valojarvi 1",
-          "orbit_radius": 206.69190039772033,
-          "angle": 3.660015549460224
+          "name": "Usva 1",
+          "orbit_radius": 207.17186502675563,
+          "angle": 1.397592265904253
         },
         {
           "id": "sys_014_p2",
-          "name": "Valojarvi 2",
-          "orbit_radius": 310.83657716337717,
-          "angle": 2.291173043344987
-        },
-        {
-          "id": "sys_014_p3",
-          "name": "Yota",
-          "orbit_radius": 447.97849273052947,
-          "angle": 1.3199498190794916
+          "name": "Lansila",
+          "orbit_radius": 316.103817346772,
+          "angle": 4.997303154408676
         }
       ],
-      "stations": []
+      "stations": [
+        {
+          "id": "sys_014_st0",
+          "name": "Satelliitti-1",
+          "planet_id": "sys_014_p0",
+          "offset": {
+            "x": 39.65648941638543,
+            "y": -6.869521952091739,
+            "z": 0.0
+          }
+        }
+      ]
     },
     {
       "id": "sys_015",
-      "name": "HallaRanta",
+      "name": "TahtiLahtilahti",
       "position": {
-        "x": -93.62261016788318,
-        "y": 120.66151015071284,
-        "z": -138.17866466711814
+        "x": 14.915574934107203,
+        "y": 9.763800267559818,
+        "z": 0.3770384115755603
       },
       "neighbors": [
-        "sys_010",
-        "sys_022",
-        "sys_019",
-        "sys_011"
+        "sys_009",
+        "sys_014",
+        "sys_016",
+        "sys_021"
       ],
       "planets": [
         {
           "id": "sys_015_p0",
-          "name": "Usvanen",
-          "orbit_radius": 87.62832409326649,
-          "angle": 0.1557373048971353
+          "name": "TahtiLahtilahti 3",
+          "orbit_radius": 70.76514394706525,
+          "angle": 3.7483677440246836
         },
         {
           "id": "sys_015_p1",
-          "name": "Kuumaa",
-          "orbit_radius": 206.0447027787428,
-          "angle": 5.429074407549961
+          "name": "Usvala",
+          "orbit_radius": 198.72787767741215,
+          "angle": 6.184136227225419
+        },
+        {
+          "id": "sys_015_p2",
+          "name": "TahtiLahtilahti 2",
+          "orbit_radius": 315.09445012277166,
+          "angle": 4.453429281331974
         }
       ],
-      "stations": []
+      "stations": [
+        {
+          "id": "sys_015_st0",
+          "name": "Satelliitti-1",
+          "planet_id": "sys_015_p2",
+          "offset": {
+            "x": 65.97149995724227,
+            "y": 9.67800311357906,
+            "z": 0.0
+          }
+        }
+      ]
     },
     {
       "id": "sys_016",
-      "name": "Pohja",
+      "name": "ItaJar",
       "position": {
-        "x": 358.5932513377817,
-        "y": -277.5662824543356,
-        "z": 126.63464223877156
+        "x": 20.21038542810902,
+        "y": 10.061577704973205,
+        "z": 0.16338747626554428
       },
       "neighbors": [
-        "sys_029",
-        "sys_005",
-        "sys_013"
+        "sys_010",
+        "sys_015",
+        "sys_017",
+        "sys_022"
       ],
       "planets": [
         {
           "id": "sys_016_p0",
-          "name": "Aamunen",
-          "orbit_radius": 74.45847094411619,
-          "angle": 4.147110796097165
-        },
-        {
-          "id": "sys_016_p1",
-          "name": "Metsa",
-          "orbit_radius": 209.33778208096723,
-          "angle": 1.7537940531366714
-        },
-        {
-          "id": "sys_016_p2",
-          "name": "Pohjala",
-          "orbit_radius": 328.7847428064943,
-          "angle": 0.7247136005372437
-        },
-        {
-          "id": "sys_016_p3",
-          "name": "Lumila",
-          "orbit_radius": 430.76514394706527,
-          "angle": 3.7483677440246836
+          "name": "Havula",
+          "orbit_radius": 83.3378580821146,
+          "angle": 2.0494676352531718
         }
       ],
       "stations": [
         {
           "id": "sys_016_st0",
-          "name": "Terminaali-1",
-          "planet_id": "sys_016_p2",
+          "name": "Telakka-1",
+          "planet_id": "sys_016_p0",
           "offset": {
-            "x": 60.310442665307164,
-            "y": 0.456922386779123,
+            "x": 51.02231668864542,
+            "y": 17.61454682920732,
             "z": 0.0
           }
         }
@@ -665,38 +704,51 @@
     },
     {
       "id": "sys_017",
-      "name": "Metsaniemi",
+      "name": "Saariniemi",
       "position": {
-        "x": -498.30872178137054,
-        "y": 425.5751654990827,
-        "z": 15.380798837116771
+        "x": 25.02396860656785,
+        "y": 9.750202969848644,
+        "z": -0.2130862831310728
       },
       "neighbors": [
-        "sys_001",
-        "sys_009"
+        "sys_011",
+        "sys_016",
+        "sys_023"
       ],
       "planets": [
         {
           "id": "sys_017_p0",
-          "name": "Jarla",
-          "orbit_radius": 82.46310819892818,
-          "angle": 4.168186443838614
+          "name": "Saarila",
+          "orbit_radius": 79.29976380494028,
+          "angle": 2.7781719544174406
         },
         {
           "id": "sys_017_p1",
-          "name": "Metsaniemi 3",
-          "orbit_radius": 200.14245008070537,
-          "angle": 4.190211696539445
+          "name": "Kesanen",
+          "orbit_radius": 203.17701489996844,
+          "angle": 1.7830825702295054
+        },
+        {
+          "id": "sys_017_p2",
+          "name": "Saarila",
+          "orbit_radius": 311.86774400151126,
+          "angle": 5.981590291561318
+        },
+        {
+          "id": "sys_017_p3",
+          "name": "Havunen",
+          "orbit_radius": 446.1312578915253,
+          "angle": 0.9258522505373344
         }
       ],
       "stations": [
         {
           "id": "sys_017_st0",
-          "name": "Satelliitti-1",
-          "planet_id": "sys_017_p1",
+          "name": "Telakointi-1",
+          "planet_id": "sys_017_p3",
           "offset": {
-            "x": 44.78276012629735,
-            "y": -14.908488037633871,
+            "x": 72.48688473123659,
+            "y": -17.086870832617237,
             "z": 0.0
           }
         }
@@ -704,134 +756,93 @@
     },
     {
       "id": "sys_018",
-      "name": "VuoriKoski",
+      "name": "Joki",
       "position": {
-        "x": 115.51491595138054,
-        "y": -199.05012543443468,
-        "z": 19.174885254279275
+        "x": -0.002811415494781533,
+        "y": 14.87199221978922,
+        "z": 0.15605801111178408
       },
       "neighbors": [
-        "sys_003",
-        "sys_014",
-        "sys_021",
-        "sys_008",
-        "sys_002"
+        "sys_012",
+        "sys_019",
+        "sys_024"
       ],
       "planets": [
         {
           "id": "sys_018_p0",
-          "name": "Merimaa",
-          "orbit_radius": 85.7151765495516,
-          "angle": 3.8117670660689376
+          "name": "Yota",
+          "orbit_radius": 85.5684081353465,
+          "angle": 1.375019415425643
         }
       ],
-      "stations": [
-        {
-          "id": "sys_018_st0",
-          "name": "Terminaali-1",
-          "planet_id": "sys_018_p0",
-          "offset": {
-            "x": 52.10798996524037,
-            "y": -11.451943960435989,
-            "z": 0.0
-          }
-        }
-      ]
+      "stations": []
     },
     {
       "id": "sys_019",
-      "name": "Vuorilahti",
+      "name": "TuoRantala",
       "position": {
-        "x": 163.8538363049987,
-        "y": 119.26080536237544,
-        "z": -162.64511996977492
+        "x": 4.9782309127350866,
+        "y": 15.150708300861131,
+        "z": 0.1675777325863531
       },
       "neighbors": [
-        "sys_015",
-        "sys_030"
+        "sys_013",
+        "sys_018",
+        "sys_020",
+        "sys_025"
       ],
       "planets": [
         {
           "id": "sys_019_p0",
-          "name": "Suonen",
-          "orbit_radius": 72.94707924491546,
-          "angle": 0.2903693545105592
+          "name": "Paivamaa",
+          "orbit_radius": 82.25304645523525,
+          "angle": 4.519331585326015
         },
         {
           "id": "sys_019_p1",
-          "name": "Saari",
-          "orbit_radius": 199.10832336760177,
-          "angle": 5.567762407098661
-        }
-      ],
-      "stations": [
-        {
-          "id": "sys_019_st0",
-          "name": "Satelliitti-1",
-          "planet_id": "sys_019_p0",
-          "offset": {
-            "x": 64.81771252452525,
-            "y": -0.22491323958252352,
-            "z": 0.0
-          }
+          "name": "Aamumaa",
+          "orbit_radius": 207.94416206466525,
+          "angle": 4.672524947781242
         },
         {
-          "id": "sys_019_st1",
-          "name": "Telakka-2",
-          "planet_id": "sys_019_p0",
-          "offset": {
-            "x": 62.802900555589204,
-            "y": -19.77820727447873,
-            "z": 0.0
-          }
+          "id": "sys_019_p2",
+          "name": "Metsanen",
+          "orbit_radius": 326.7972577568384,
+          "angle": 1.7423986195051586
         }
-      ]
+      ],
+      "stations": []
     },
     {
       "id": "sys_020",
-      "name": "Hallajarvi",
+      "name": "Metsaasema",
       "position": {
-        "x": 304.10985617314304,
-        "y": 195.91177640823832,
-        "z": -14.180046170299136
+        "x": 9.867246789007318,
+        "y": 14.917923768310658,
+        "z": 0.3930268327903168
       },
       "neighbors": [
-        "sys_007",
-        "sys_006",
-        "sys_023"
+        "sys_014",
+        "sys_019",
+        "sys_021",
+        "sys_026"
       ],
       "planets": [
         {
           "id": "sys_020_p0",
-          "name": "Valomaa",
-          "orbit_radius": 72.66678211114058,
-          "angle": 2.9194395629292758
-        },
-        {
-          "id": "sys_020_p1",
-          "name": "Rantala",
-          "orbit_radius": 209.00079216886311,
-          "angle": 5.600994279491098
+          "name": "Metsaasema 2",
+          "orbit_radius": 77.66070584862676,
+          "angle": 0.9601038058171961
         }
       ],
       "stations": [
         {
           "id": "sys_020_st0",
-          "name": "Telakointi-1",
-          "planet_id": "sys_020_p1",
+          "name": "Terminaali-1",
+          "planet_id": "sys_020_p0",
           "offset": {
-            "x": 52.295680603835024,
-            "y": -13.633683698280027,
-            "z": 0.0
-          }
-        },
-        {
-          "id": "sys_020_st1",
-          "name": "Terminaali-2",
-          "planet_id": "sys_020_p1",
-          "offset": {
-            "x": 42.95957742325097,
-            "y": -10.110410499613618,
+            "x": 46.54406955190418,
+            "y": -1.363027865953974,
             "z": 0.0
           }
         }
@@ -839,72 +850,99 @@
     },
     {
       "id": "sys_021",
-      "name": "LahtiSuola",
+      "name": "Yota",
       "position": {
-        "x": 213.54486261105637,
-        "y": -265.5064219853647,
-        "z": -65.66098535147441
+        "x": 15.03784517340504,
+        "y": 14.988489866278679,
+        "z": 0.4427416574340969
       },
       "neighbors": [
-        "sys_018",
-        "sys_013"
+        "sys_015",
+        "sys_020",
+        "sys_022",
+        "sys_027"
       ],
       "planets": [
         {
           "id": "sys_021_p0",
-          "name": "LahtiSuola 2",
-          "orbit_radius": 77.66070584862676,
-          "angle": 0.9601038058171961
+          "name": "Yotamaa",
+          "orbit_radius": 80.76441135220463,
+          "angle": 4.615841936698023
+        },
+        {
+          "id": "sys_021_p1",
+          "name": "Paivanen",
+          "orbit_radius": 199.764589551005,
+          "angle": 1.7149031406813735
+        },
+        {
+          "id": "sys_021_p2",
+          "name": "Pohjala",
+          "orbit_radius": 323.37747241245836,
+          "angle": 5.014876125835094
         }
       ],
-      "stations": []
+      "stations": [
+        {
+          "id": "sys_021_st0",
+          "name": "Telakka-1",
+          "planet_id": "sys_021_p1",
+          "offset": {
+            "x": 79.03609887594615,
+            "y": 1.3649451813001754,
+            "z": 0.0
+          }
+        }
+      ]
     },
     {
       "id": "sys_022",
-      "name": "Havumetsa",
+      "name": "Jar",
       "position": {
-        "x": -169.11860896191644,
-        "y": -34.07569664884937,
-        "z": -175.09371576656588
+        "x": 19.817849743615284,
+        "y": 14.980849222025755,
+        "z": -0.44971536651137245
       },
       "neighbors": [
-        "sys_015",
-        "sys_025"
+        "sys_016",
+        "sys_021",
+        "sys_023",
+        "sys_028"
       ],
       "planets": [
         {
           "id": "sys_022_p0",
-          "name": "Halla",
-          "orbit_radius": 87.13464064607868,
-          "angle": 4.810372591921437
+          "name": "Lansila",
+          "orbit_radius": 76.75001096147741,
+          "angle": 5.526941035654766
         },
         {
           "id": "sys_022_p1",
-          "name": "Kaila",
-          "orbit_radius": 195.97225304744768,
-          "angle": 2.4503583771101747
+          "name": "Aamumaa",
+          "orbit_radius": 195.04543063564762,
+          "angle": 0.5146320382543838
         },
         {
           "id": "sys_022_p2",
-          "name": "Aamumaa",
-          "orbit_radius": 320.7644113522046,
-          "angle": 4.615841936698023
+          "name": "Jar 1",
+          "orbit_radius": 329.99815657018416,
+          "angle": 2.1988656897581773
         },
         {
           "id": "sys_022_p3",
-          "name": "Paivanen",
-          "orbit_radius": 439.76458955100503,
-          "angle": 1.7149031406813735
+          "name": "Halla",
+          "orbit_radius": 445.0846640811905,
+          "angle": 5.96658648652645
         }
       ],
       "stations": [
         {
           "id": "sys_022_st0",
-          "name": "Terminaali-1",
+          "name": "Telakointi-1",
           "planet_id": "sys_022_p0",
           "offset": {
-            "x": 46.80647718491912,
-            "y": 7.1656754011339885,
+            "x": 37.61911728923952,
+            "y": -14.95116100503175,
             "z": 0.0
           }
         }
@@ -912,83 +950,20 @@
     },
     {
       "id": "sys_023",
-      "name": "Aamujarvi",
+      "name": "Lansi",
       "position": {
-        "x": 480.72197751892315,
-        "y": 34.12362953250431,
-        "z": 162.77154503470734
+        "x": 25.13344904917812,
+        "y": 14.833894571683901,
+        "z": 0.10724749389093169
       },
       "neighbors": [
-        "sys_020"
+        "sys_017",
+        "sys_022",
+        "sys_029"
       ],
       "planets": [
         {
           "id": "sys_023_p0",
-          "name": "Aamujarvi 4",
-          "orbit_radius": 72.71398974461128,
-          "angle": 2.900936880012135
-        }
-      ],
-      "stations": []
-    },
-    {
-      "id": "sys_024",
-      "name": "MeriLansiniemi",
-      "position": {
-        "x": -221.743384361194,
-        "y": 451.2041198605617,
-        "z": -31.3740692965045
-      },
-      "neighbors": [
-        "sys_010",
-        "sys_001"
-      ],
-      "planets": [
-        {
-          "id": "sys_024_p0",
-          "name": "Koski",
-          "orbit_radius": 89.9981565701842,
-          "angle": 2.1988656897581773
-        }
-      ],
-      "stations": [
-        {
-          "id": "sys_024_st0",
-          "name": "Satelliitti-1",
-          "planet_id": "sys_024_p0",
-          "offset": {
-            "x": 32.012906877038326,
-            "y": -18.758800044771515,
-            "z": 0.0
-          }
-        },
-        {
-          "id": "sys_024_st1",
-          "name": "Telakka-2",
-          "planet_id": "sys_024_p0",
-          "offset": {
-            "x": 71.96144231422991,
-            "y": 4.853426263446316,
-            "z": 0.0
-          }
-        }
-      ]
-    },
-    {
-      "id": "sys_025",
-      "name": "VuoriValomaa",
-      "position": {
-        "x": -34.966016564779295,
-        "y": -243.75630343781341,
-        "z": -52.441930270823434
-      },
-      "neighbors": [
-        "sys_022",
-        "sys_003"
-      ],
-      "planets": [
-        {
-          "id": "sys_025_p0",
           "name": "Lumila",
           "orbit_radius": 72.16197499315213,
           "angle": 0.16134230579718414
@@ -996,9 +971,9 @@
       ],
       "stations": [
         {
-          "id": "sys_025_st0",
+          "id": "sys_023_st0",
           "name": "Terminaali-1",
-          "planet_id": "sys_025_p0",
+          "planet_id": "sys_023_p0",
           "offset": {
             "x": 77.07352992706548,
             "y": -12.06680891633139,
@@ -1008,72 +983,179 @@
       ]
     },
     {
-      "id": "sys_026",
+      "id": "sys_024",
       "name": "Valo",
       "position": {
-        "x": -198.417314512333,
-        "y": 184.25903916665618,
-        "z": 122.21118545846656
+        "x": -0.09920865725616651,
+        "y": 20.092129519583327,
+        "z": 0.3055279636461664
       },
       "neighbors": [
-        "sys_010",
-        "sys_000"
+        "sys_018",
+        "sys_025",
+        "sys_030"
       ],
       "planets": [
         {
-          "id": "sys_026_p0",
+          "id": "sys_024_p0",
           "name": "Itala",
           "orbit_radius": 71.3791347303928,
           "angle": 4.068634259652976
         }
       ],
-      "stations": []
+      "stations": [
+        {
+          "id": "sys_024_st0",
+          "name": "Terminaali-1",
+          "planet_id": "sys_024_p0",
+          "offset": {
+            "x": 35.27694353219993,
+            "y": 18.431502688583144,
+            "z": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "sys_025",
+      "name": "JokiKivilahti",
+      "position": {
+        "x": 5.232736865619039,
+        "y": 19.8850411981937,
+        "z": 0.30819921880675594
+      },
+      "neighbors": [
+        "sys_019",
+        "sys_024",
+        "sys_026",
+        "sys_031"
+      ],
+      "planets": [
+        {
+          "id": "sys_025_p0",
+          "name": "Aamula",
+          "orbit_radius": 76.44609165962237,
+          "angle": 1.5424916394330463
+        },
+        {
+          "id": "sys_025_p1",
+          "name": "Metsamaa",
+          "orbit_radius": 194.87726878381912,
+          "angle": 2.919849409483381
+        },
+        {
+          "id": "sys_025_p2",
+          "name": "Pohjala",
+          "orbit_radius": 310.5739999554018,
+          "angle": 5.346694358221239
+        },
+        {
+          "id": "sys_025_p3",
+          "name": "JokiKivilahti 2",
+          "orbit_radius": 437.0964993235219,
+          "angle": 1.623276059415299
+        }
+      ],
+      "stations": [
+        {
+          "id": "sys_025_st0",
+          "name": "Telakointi-1",
+          "planet_id": "sys_025_p2",
+          "offset": {
+            "x": 30.507555721933855,
+            "y": 17.922503111081248,
+            "z": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "sys_026",
+      "name": "Jokiranta",
+      "position": {
+        "x": 9.974087274793286,
+        "y": 19.758621629674188,
+        "z": -0.20576441867950268
+      },
+      "neighbors": [
+        "sys_020",
+        "sys_025",
+        "sys_027"
+      ],
+      "planets": [
+        {
+          "id": "sys_026_p0",
+          "name": "Havula",
+          "orbit_radius": 79.46520977519049,
+          "angle": 3.3358808770345
+        },
+        {
+          "id": "sys_026_p1",
+          "name": "Koskila",
+          "orbit_radius": 197.03621055228336,
+          "angle": 2.8509655687614304
+        },
+        {
+          "id": "sys_026_p2",
+          "name": "Suo",
+          "orbit_radius": 324.4256866265214,
+          "angle": 1.9826462054891412
+        },
+        {
+          "id": "sys_026_p3",
+          "name": "Hallanen",
+          "orbit_radius": 433.8308194602109,
+          "angle": 4.640789906741908
+        }
+      ],
+      "stations": [
+        {
+          "id": "sys_026_st0",
+          "name": "Satama-1",
+          "planet_id": "sys_026_p2",
+          "offset": {
+            "x": 71.6314181663534,
+            "y": -8.150141469394221,
+            "z": 0.0
+          }
+        }
+      ]
     },
     {
       "id": "sys_027",
-      "name": "ValoIta",
+      "name": "KaiJokiasema",
       "position": {
-        "x": 135.58510610144594,
-        "y": 328.70731100245825,
-        "z": 82.92345748243076
+        "x": 14.77275785049161,
+        "y": 19.777263010119494,
+        "z": -0.20786335544722245
       },
       "neighbors": [
-        "sys_007"
+        "sys_021",
+        "sys_026",
+        "sys_028"
       ],
       "planets": [
         {
           "id": "sys_027_p0",
-          "name": "ValoIta 3",
-          "orbit_radius": 82.31824708107102,
-          "angle": 5.778128150074383
+          "name": "Hallamaa",
+          "orbit_radius": 72.05175293575522,
+          "angle": 0.07706580227562256
         },
         {
           "id": "sys_027_p1",
-          "name": "Lansimaa",
-          "orbit_radius": 206.51469196841512,
-          "angle": 3.722627821377873
-        },
-        {
-          "id": "sys_027_p2",
-          "name": "Suo",
-          "orbit_radius": 315.5785649838494,
-          "angle": 2.832472504064668
-        },
-        {
-          "id": "sys_027_p3",
-          "name": "Niemimaa",
-          "orbit_radius": 436.7279323978275,
-          "angle": 3.105819360762874
+          "name": "Kesamaa",
+          "orbit_radius": 196.81411865120586,
+          "angle": 6.066400605483053
         }
       ],
       "stations": [
         {
           "id": "sys_027_st0",
-          "name": "Terminaali-1",
+          "name": "Satama-1",
           "planet_id": "sys_027_p1",
           "offset": {
-            "x": 40.60599250898695,
-            "y": 11.91329427312386,
+            "x": 71.10578226497151,
+            "y": -3.97170230992241,
             "z": 0.0
           }
         }
@@ -1081,40 +1163,33 @@
     },
     {
       "id": "sys_028",
-      "name": "RantaKaimaa",
+      "name": "Aurinko",
       "position": {
-        "x": -414.3870380419787,
-        "y": 220.0746641041943,
-        "z": -4.5688612604850505
+        "x": 19.825863503475478,
+        "y": 20.155571038137523,
+        "z": 0.4491256423580312
       },
       "neighbors": [
-        "sys_011",
-        "sys_010",
-        "sys_031",
-        "sys_030"
+        "sys_022",
+        "sys_027",
+        "sys_029"
       ],
       "planets": [
         {
           "id": "sys_028_p0",
-          "name": "Lahtimaa",
-          "orbit_radius": 78.96349099173142,
-          "angle": 0.10834259378558224
-        },
-        {
-          "id": "sys_028_p1",
-          "name": "Pohjanen",
-          "orbit_radius": 196.12412060260178,
-          "angle": 3.6540215090685537
+          "name": "Valomaa",
+          "orbit_radius": 82.12635302485926,
+          "angle": 4.9683711638591666
         }
       ],
       "stations": [
         {
           "id": "sys_028_st0",
           "name": "Terminaali-1",
-          "planet_id": "sys_028_p1",
+          "planet_id": "sys_028_p0",
           "offset": {
-            "x": 79.8315731979666,
-            "y": 2.015538910267143,
+            "x": 75.42521888119019,
+            "y": -8.105874699304504,
             "z": 0.0
           }
         }
@@ -1122,38 +1197,38 @@
     },
     {
       "id": "sys_029",
-      "name": "MetsaHavula",
+      "name": "HavuNiemi",
       "position": {
-        "x": 221.2843313260696,
-        "y": -184.4520559940135,
-        "z": 97.1524254556416
+        "x": 25.054815456122565,
+        "y": 20.120044652742273,
+        "z": 0.447590200325378
       },
       "neighbors": [
-        "sys_014",
-        "sys_016"
+        "sys_023",
+        "sys_028"
       ],
       "planets": [
         {
           "id": "sys_029_p0",
-          "name": "MetsaHavula 4",
-          "orbit_radius": 75.52999253937378,
-          "angle": 3.7044837848383136
+          "name": "Metsa",
+          "orbit_radius": 73.14114186761755,
+          "angle": 1.092102733033402
         },
         {
           "id": "sys_029_p1",
-          "name": "Saarila",
-          "orbit_radius": 209.61021260925025,
-          "angle": 5.231558298797619
+          "name": "HavuNiemi 1",
+          "orbit_radius": 198.17035145320054,
+          "angle": 4.331446591556563
         }
       ],
       "stations": [
         {
           "id": "sys_029_st0",
-          "name": "Kaivos-1",
+          "name": "Telakka-1",
           "planet_id": "sys_029_p0",
           "offset": {
-            "x": 38.97207718427016,
-            "y": -19.434065309757447,
+            "x": 44.40524447968446,
+            "y": -8.69126507550849,
             "z": 0.0
           }
         }
@@ -1161,60 +1236,83 @@
     },
     {
       "id": "sys_030",
-      "name": "TuoTuojarvi",
+      "name": "Vuoriasema",
       "position": {
-        "x": 137.86965510592756,
-        "y": 252.79217579125384,
-        "z": -158.96494128489573
+        "x": 0.14391401332336567,
+        "y": 25.06252900358211,
+        "z": 0.16118304285336782
       },
       "neighbors": [
-        "sys_019",
-        "sys_007",
-        "sys_028"
+        "sys_024",
+        "sys_031"
       ],
       "planets": [
         {
           "id": "sys_030_p0",
-          "name": "Kesamaa",
-          "orbit_radius": 78.80937596272021,
-          "angle": 1.1583911049726616
+          "name": "Rantanen",
+          "orbit_radius": 82.95269446804961,
+          "angle": 5.70771744543362
+        },
+        {
+          "id": "sys_030_p1",
+          "name": "Jar",
+          "orbit_radius": 193.31845578441448,
+          "angle": 1.9327820213326259
         }
       ],
-      "stations": []
+      "stations": [
+        {
+          "id": "sys_030_st0",
+          "name": "Terminaali-1",
+          "planet_id": "sys_030_p1",
+          "offset": {
+            "x": 36.21768290873541,
+            "y": 7.547119648483751,
+            "z": 0.0
+          }
+        }
+      ]
     },
     {
       "id": "sys_031",
-      "name": "ValoAamuranta",
+      "name": "TalviRantala",
       "position": {
-        "x": -425.91782974436023,
-        "y": 129.44570695199832,
-        "z": -178.55637028298673
+        "x": 5.049018331020552,
+        "y": 25.194711444646227,
+        "z": 0.2345339232856153
       },
       "neighbors": [
-        "sys_028"
+        "sys_025",
+        "sys_030"
       ],
       "planets": [
         {
           "id": "sys_031_p0",
-          "name": "Havu",
-          "orbit_radius": 89.8783624542044,
-          "angle": 0.7442531152995241
+          "name": "TalviRantala 2",
+          "orbit_radius": 89.23822204385674,
+          "angle": 5.252482880305531
         },
         {
           "id": "sys_031_p1",
-          "name": "Saarinen",
-          "orbit_radius": 205.51387079396434,
-          "angle": 2.3899856250579714
+          "name": "Kaila",
+          "orbit_radius": 201.52493969205494,
+          "angle": 4.794755282788105
+        },
+        {
+          "id": "sys_031_p2",
+          "name": "TalviRantala 4",
+          "orbit_radius": 328.32145575853536,
+          "angle": 1.1403299432448977
         }
       ],
       "stations": [
         {
           "id": "sys_031_st0",
-          "name": "Telakointi-1",
-          "planet_id": "sys_031_p1",
+          "name": "Terminaali-1",
+          "planet_id": "sys_031_p2",
           "offset": {
-            "x": 79.5015630233399,
-            "y": -7.784790227225585,
+            "x": 78.45276180328518,
+            "y": -1.1995842015859317,
             "z": 0.0
           }
         }
