@@ -17,6 +17,14 @@ from eve_ascii.models import (
     Vec3,
 )
 
+# Local offset from ship center for component explosions (world units)
+COMP_BLAST_OFFSET = {
+    "reactor": (0.0, -18.0),
+    "shield": (-14.0, 0.0),
+    "hyperdrive": (14.0, 0.0),
+    "cargo": (0.0, 18.0),
+}
+
 
 def resolve_subtarget(name: str) -> str | None:
     key = name.lower().strip()
@@ -104,6 +112,25 @@ def _spawn_laser(state: GameState, tx: float, ty: float, target: str) -> None:
     )
 
 
+def _spawn_component_explosion(state: GameState, npc: NpcShip, comp: str) -> None:
+    ox, oy = COMP_BLAST_OFFSET.get(comp, (0.0, 0.0))
+    state.explosions.append(
+        Explosion(x=npc.position.x + ox, y=npc.position.y + oy, ttl=0.75, large=True)
+    )
+    state.explosions.append(
+        Explosion(x=npc.position.x + ox * 0.5, y=npc.position.y + oy * 0.5, ttl=0.5, large=False)
+    )
+
+
+def _apply_damage(state: GameState, npc: NpcShip, comp: str, amount: float) -> None:
+    before = npc.components.get(comp, 0.0)
+    after = max(0.0, before - amount)
+    npc.components[comp] = after
+    if before > 0 and after <= 0:
+        _spawn_component_explosion(state, npc, comp)
+        state.log(f"{npc.letter} component {comp} DESTROYED")
+
+
 def current_ship_xy(state: GameState) -> tuple[float, float]:
     from eve_ascii.travel import current_ship_coords
 
@@ -116,8 +143,8 @@ def all_hostiles_dead(state: GameState) -> bool:
 
 
 def tick(state: GameState, dt: float) -> None:
+    _decay_fx(state, dt)
     if state.mode != GameMode.COMBAT:
-        _decay_fx(state, dt)
         return
     state.combat_time += dt
     ship = state.player.ship
@@ -130,13 +157,14 @@ def tick(state: GameState, dt: float) -> None:
             _spawn_laser(state, npc.position.x, npc.position.y, npc.letter)
 
     _tick_projectiles(state, dt)
-    _decay_fx(state, dt)
 
     if state.tutorial_step.value == "combat" and state.combat_time >= 18.0:
         for n in state.npc_ships:
             if n.alive:
                 n.alive = False
-                state.explosions.append(Explosion(x=n.position.x, y=n.position.y))
+                state.explosions.append(
+                    Explosion(x=n.position.x, y=n.position.y, ttl=0.8, large=True)
+                )
 
 
 def _tick_projectiles(state: GameState, dt: float) -> None:
@@ -150,15 +178,17 @@ def _tick_projectiles(state: GameState, dt: float) -> None:
         npc = _npc_by_letter(state, p.target_letter)
         if npc:
             if math.hypot(p.x - npc.position.x, p.y - npc.position.y) < 35:
-                comp = state.player.ship.subtarget or "shield"
-                npc.components[comp] = max(0.0, npc.components.get(comp, 0) - 22.0)
-                npc.components["reactor"] = max(0.0, npc.components.get("reactor", 0) - 8.0)
-                state.explosions.append(Explosion(x=npc.position.x, y=npc.position.y))
-                state.log(f"HIT {npc.letter} {comp} ({npc.components[comp]:.0f}%)")
-                if npc.components["reactor"] <= 0 or sum(npc.components.values()) <= 5:
+                primary = state.player.ship.subtarget or "shield"
+                _apply_damage(state, npc, primary, 22.0)
+                _apply_damage(state, npc, "reactor", 8.0)
+                state.explosions.append(
+                    Explosion(x=npc.position.x, y=npc.position.y, ttl=0.25, large=False)
+                )
+                state.log(f"HIT {npc.letter} {primary} ({npc.components.get(primary, 0):.0f}%)")
+                if npc.components.get("reactor", 0) <= 0 or sum(npc.components.values()) <= 5:
                     npc.alive = False
                     state.explosions.append(
-                        Explosion(x=npc.position.x, y=npc.position.y, ttl=0.8)
+                        Explosion(x=npc.position.x, y=npc.position.y, ttl=0.9, large=True)
                     )
                     state.log(f"{npc.name} destroyed.")
                 continue

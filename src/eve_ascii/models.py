@@ -172,6 +172,17 @@ class Explosion:
     x: float
     y: float
     ttl: float = 0.4
+    large: bool = False
+
+
+@dataclass
+class BackgroundStar:
+    """Normalized star field for slow parallax drift."""
+
+    x: float
+    y: int
+    char: str
+    parallax: float = 0.5
 
 
 @dataclass
@@ -226,6 +237,8 @@ class GameState:
     tutorial_force_galaxy: bool = False
     tutorial_step_elapsed: float = 0.0
     tutorial_post_combat: bool = False
+    star_scroll: float = 0.0
+    background_stars: list[BackgroundStar] = field(default_factory=list)
 
     def log(self, message: str) -> None:
         from eve_ascii.ascii_ui import ascii_only

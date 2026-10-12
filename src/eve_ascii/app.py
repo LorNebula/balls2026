@@ -4,6 +4,7 @@ from pathlib import Path
 from textual.app import App
 
 from eve_ascii import combat, tutorial, travel
+from eve_ascii.space_render import tick_star_scroll
 from eve_ascii.ascii_ui import ascii_only
 from eve_ascii.commands import execute_command
 from eve_ascii.galaxy import load_galaxy
@@ -31,6 +32,7 @@ class EveApp(App):
     def game_tick(self) -> None:
         dt = 0.2
         tutorial.tick(self.game_state, dt)
+        tick_star_scroll(self.game_state, dt)
         combat.tick_hyperspace_vfx(self.game_state, dt)
         combat.tick(self.game_state, dt)
         travel.tick(self.game_state, dt)

@@ -267,6 +267,7 @@ def tick(state: GameState, dt: float) -> None:
 
 def new_game(galaxy) -> GameState:
     from eve_ascii.models import Galaxy, Player, Ship
+    from eve_ascii.space_render import init_background_stars
     from eve_ascii.tutorial import init_tutorial
 
     assert isinstance(galaxy, Galaxy)
@@ -284,5 +285,6 @@ def new_game(galaxy) -> GameState:
     )
     player = Player(ship=ship, system_id=start.id)
     state = GameState(galaxy=galaxy, player=player)
+    init_background_stars(state)
     init_tutorial(state)
     return state

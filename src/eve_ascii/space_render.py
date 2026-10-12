@@ -9,28 +9,36 @@ from rich.style import Style
 from rich.text import Text
 
 from eve_ascii.galaxy import planet_position, station_position
-from eve_ascii.models import GameMode, GameState, NpcShip, Ship
+from eve_ascii.models import (
+    BackgroundStar,
+    Explosion,
+    GameMode,
+    GameState,
+    NpcShip,
+    Ship,
+    TutorialStep,
+)
 
 SPACE_BG = Style(color="#1a3a5c", bgcolor="#050d18")
 STAR_STYLE = Style(color="#6a8aaa")
 SUN_STYLE = Style(color="#ffcc33", bold=True)
 PLANET_STYLE = Style(color="#44cc88")
 STATION_STYLE = Style(color="#88aaff")
-STATION_ACCENT = Style(color="#cce0ff", bold=True)
 HULL_PLAYER = Style(color="#00e5ff", bold=True)
 HULL_ENEMY = Style(color="#ff5566", bold=True)
 COMP_STYLE = Style(color="#ffee00", bold=True, bgcolor="#223344")
 COMP_HIT = Style(color="#ff4400", bold=True, bgcolor="#442200")
+COMP_DESTROYED = Style(color="#555555", bold=False)
 ID_STYLE = Style(color="#ffffff", bold=True)
 LASER_STYLE = Style(color="#66ff66", bold=True)
 EXPLOSION_STYLE = Style(color="#ffaa00", bold=True)
+EXPLOSION_LARGE = Style(color="#ff6622", bold=True)
 PARTICLE_STYLES = (
     Style(color="#446688"),
     Style(color="#6688aa"),
     Style(color="#8866cc"),
 )
 
-# 01=reactor 02=shield 03=hyperdrive 04=cargo (embedded in art)
 PLAYER_SHIP = [
     "        ______        ",
     "       /  01  \\       ",
@@ -68,6 +76,15 @@ PLANET_ART = [
     "    '---'     ",
 ]
 
+EXPLOSION_SMALL = [" * ", "!*!"]
+EXPLOSION_LARGE_ART = [
+    "  *!!!*  ",
+    " !*****! ",
+    "*!!***!!*",
+    " !*****! ",
+    "  *!!!*  ",
+]
+
 
 @dataclass
 class Cell:
@@ -92,11 +109,21 @@ class SpaceCanvas:
         if 0 <= x < self.width and 0 <= y < self.height:
             self.cells[y][x] = Cell(ch, style)
 
-    def _style_at(self, line: str, col: int, hull: Style, ship: Ship | None, subtarget: str | None) -> Style:
+    def _style_at(
+        self,
+        line: str,
+        col: int,
+        hull: Style,
+        ship: Ship | None,
+        subtarget: str | None,
+        destroyed: set[str] | None,
+    ) -> Style:
         for tag, comp in (("01", "reactor"), ("02", "shield"), ("03", "hyperdrive"), ("04", "cargo")):
             idx = line.find(tag)
             if idx >= 0 and idx <= col < idx + len(tag):
-                if subtarget == comp and ship:
+                if destroyed and comp in destroyed:
+                    return COMP_DESTROYED
+                if subtarget == comp and ship is not None:
                     return COMP_HIT
                 return COMP_STYLE
         return hull
@@ -111,6 +138,7 @@ class SpaceCanvas:
         ship: Ship | None = None,
         subtarget: str | None = None,
         id_letter: str = "",
+        destroyed_components: set[str] | None = None,
     ) -> None:
         y0 = cy - len(lines) // 2
         for dy, row in enumerate(lines):
@@ -120,7 +148,7 @@ class SpaceCanvas:
                 self.put(x0 - 2, y, id_letter, ID_STYLE)
             for dx, ch in enumerate(row):
                 if ch != " ":
-                    st = self._style_at(row, dx, hull, ship, subtarget)
+                    st = self._style_at(row, dx, hull, ship, subtarget, destroyed_components)
                     self.put(x0 + dx, y, ch, st)
 
     def to_text(self) -> Text:
@@ -133,43 +161,41 @@ class SpaceCanvas:
         return out
 
 
-def _scatter_stars(canvas: SpaceCanvas, seed: int, count: int) -> None:
-    rng = random.Random(seed)
-    for _ in range(count):
-        x = rng.randint(0, canvas.width - 1)
-        y = rng.randint(0, canvas.height - 1)
-        ch = rng.choice(".+*")
-        canvas.put(x, y, ch, STAR_STYLE)
+def init_background_stars(state: GameState, count: int = 48) -> None:
+    rng = random.Random(state.galaxy.seed + 991)
+    state.background_stars = [
+        BackgroundStar(
+            x=rng.random(),
+            y=rng.randint(0, 40),
+            char=rng.choice(".+*"),
+            parallax=rng.uniform(0.15, 0.55),
+        )
+        for _ in range(count)
+    ]
 
 
-def _draw_player(canvas: SpaceCanvas, ship: Ship) -> None:
-    canvas.stamp_art(
-        canvas.anchor_x,
-        canvas.anchor_y,
-        PLAYER_SHIP,
-        HULL_PLAYER,
-        ship=ship,
-        subtarget=ship.subtarget,
-    )
+def tick_star_scroll(state: GameState, dt: float) -> None:
+    state.star_scroll += dt
 
 
-def _draw_npc(canvas: SpaceCanvas, npc: NpcShip, sx: int, sy: int, locked: bool) -> None:
-    sub = None
-    fake = Ship(name="", location=None)  # type: ignore[arg-type]
-    if locked:
-        from eve_ascii.models import ShipLocation, Vec3
+def _draw_drifting_stars(canvas: SpaceCanvas, state: GameState, height: int) -> None:
+    w = canvas.width
+    for star in state.background_stars:
+        drift = state.star_scroll * star.parallax
+        x = int(star.x * w + drift) % w
+        y = star.y % max(1, height)
+        canvas.put(x, y, star.char, STAR_STYLE)
 
-        fake = Ship(name="x", location=ShipLocation("x", "space", Vec3(0, 0, 0)))
-        fake.subtarget = None
-    subtarget = None
-    canvas.stamp_art(
-        sx,
-        sy,
-        ENEMY_SHIP,
-        HULL_ENEMY,
-        subtarget=subtarget,
-        id_letter=npc.letter,
-    )
+
+def _destroyed_components(components: dict[str, float]) -> set[str]:
+    return {name for name, hp in components.items() if hp <= 0}
+
+
+def _draw_explosion(canvas: SpaceCanvas, ex: Explosion, px: int, py: int) -> None:
+    if ex.large:
+        canvas.stamp_art(px, py, EXPLOSION_LARGE_ART, EXPLOSION_LARGE)
+    else:
+        canvas.stamp_art(px, py, EXPLOSION_SMALL, EXPLOSION_STYLE)
 
 
 def render_open_space(
@@ -183,26 +209,37 @@ def render_open_space(
     anchor_x = max(14, width // 6)
     anchor_y = height // 2
     canvas = SpaceCanvas(width, height, anchor_x, anchor_y)
-    seed = state.galaxy.seed + hash(state.player.system_id)
-    _scatter_stars(canvas, seed, max(12, width * height // 80))
+    inner_h = height
 
     from eve_ascii.travel import current_ship_coords
 
     sc = current_ship_coords(state)
     ship_x, ship_y = sc.x, sc.y
     ship = state.player.ship
+    show_stations = state.tutorial_step == TutorialStep.DONE
 
     if hyperspace:
+        _draw_drifting_stars(canvas, state, inner_h)
         for p in state.hyperspace_particles:
             sx = anchor_x + int((p.x - 400) / 70)
             sy = anchor_y + int(p.y / 35)
             canvas.put(sx, sy, p.char, PARTICLE_STYLES[int(p.x) % len(PARTICLE_STYLES)])
-        _draw_player(canvas, ship)
+        canvas.stamp_art(
+            canvas.anchor_x,
+            canvas.anchor_y,
+            PLAYER_SHIP,
+            HULL_PLAYER,
+            ship=ship,
+            subtarget=ship.subtarget,
+            destroyed_components=_destroyed_components(ship.components),
+        )
         header = Text(" HYPERSPACE  ", style=Style(color="#bb88ff", bold=True))
         header.append(f"fuel {ship.fuel:.0f}\n", style=Style(color="#aaccee"))
         header.append(" components 01-04 on hull\n", style=Style(color="#668899"))
         header.append(canvas.to_text())
         return header
+
+    _draw_drifting_stars(canvas, state, inner_h)
 
     sys = state.galaxy.get_system(ship.location.system_id)
     if sys:
@@ -214,10 +251,11 @@ def render_open_space(
             px, py = canvas.world_to_screen(pos.x, pos.y, ship_x, ship_y, scale)
             canvas.stamp_art(px, py, PLANET_ART, PLANET_STYLE)
 
-        for st in sys.stations:
-            pos = station_position(sys, st)
-            px, py = canvas.world_to_screen(pos.x, pos.y, ship_x, ship_y, scale)
-            canvas.stamp_art(px, py, STATION_ART, STATION_STYLE)
+        if show_stations:
+            for st in sys.stations:
+                pos = station_position(sys, st)
+                px, py = canvas.world_to_screen(pos.x, pos.y, ship_x, ship_y, scale)
+                canvas.stamp_art(px, py, STATION_ART, STATION_STYLE)
 
     lock = ship.target_letter
     for npc in state.npc_ships:
@@ -232,6 +270,7 @@ def render_open_space(
             HULL_ENEMY,
             subtarget=sub,
             id_letter=npc.letter,
+            destroyed_components=_destroyed_components(npc.components),
         )
 
     for proj in state.projectiles:
@@ -241,14 +280,22 @@ def render_open_space(
 
     for ex in state.explosions:
         px, py = canvas.world_to_screen(ex.x, ex.y, ship_x, ship_y, scale)
-        canvas.stamp_art(px, py, [" *!* ", "!***!", " *!* "], EXPLOSION_STYLE)
+        _draw_explosion(canvas, ex, px, py)
 
     if ship.destination and ship.destination.coords:
         dp = ship.destination.coords
         px, py = canvas.world_to_screen(dp.x, dp.y, ship_x, ship_y, scale)
         canvas.put(px, py, "X", Style(color="#ff66aa", bold=True))
 
-    _draw_player(canvas, ship)
+    canvas.stamp_art(
+        canvas.anchor_x,
+        canvas.anchor_y,
+        PLAYER_SHIP,
+        HULL_PLAYER,
+        ship=ship,
+        subtarget=ship.subtarget,
+        destroyed_components=_destroyed_components(ship.components),
+    )
 
     wpn = "ON" if ship.weapons_active else "off"
     title = sys.name if sys else "?"
@@ -267,7 +314,9 @@ def render_open_space(
 
 def render_galaxy_map(state: GameState, width: int, height: int) -> Text:
     canvas = SpaceCanvas(width, height, width // 2, height // 2)
-    _scatter_stars(canvas, state.galaxy.seed, width // 3)
+    rng = random.Random(state.galaxy.seed)
+    for _ in range(width // 3):
+        canvas.put(rng.randint(0, width - 1), rng.randint(0, height - 1), ".", STAR_STYLE)
     cur = state.galaxy.get_system(state.player.ship.location.system_id)
     if not state.galaxy.systems:
         return Text("Empty galaxy.", style=Style(color="#aaccee"))
