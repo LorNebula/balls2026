@@ -1,15 +1,14 @@
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal
 from textual.screen import Screen
 from textual.widgets import Input, Static
 
 from eve_ascii.ascii_ui import ascii_only, box_line
 from eve_ascii.command_completions import matching_completions
 from eve_ascii.models import GameState
+from eve_ascii.playfield import render_playfield
 from eve_ascii.screens.status_bar import format_status
 from eve_ascii.widgets.command_suggester import GameCommandSuggester
-from eve_ascii.widgets.event_log import EventLog
-from eve_ascii.widgets.star_map import StarMap
 
 
 class MapScreen(Screen):
@@ -34,15 +33,12 @@ class MapScreen(Screen):
         super().__init__(**kwargs)
         self.game_state = state
         self._galaxy_view = False
+        self._scale = 4.0
 
     def compose(self):
         yield Static("", id="title_bar")
+        yield Static("", id="playfield", markup=True)
         yield Static("", id="status_line")
-        with Horizontal(id="main_pane"):
-            yield StarMap(id="star_map")
-            with Vertical(id="log_pane"):
-                yield EventLog(id="event_log")
-        yield Static("", id="footer_bar")
         with Horizontal(id="cmd_row"):
             yield Static("> ", id="cmd_prefix")
             yield Input(
@@ -51,6 +47,7 @@ class MapScreen(Screen):
                 classes="-textual-compact",
             )
         yield Static("", id="cmd_completions")
+        yield Static("", id="footer_bar")
 
     def on_mount(self) -> None:
         inp = self.query_one("#cmd_input", Input)
@@ -72,15 +69,27 @@ class MapScreen(Screen):
             )
         )
 
+    def _playfield_size(self) -> tuple[int, int]:
+        pf = self.query_one("#playfield", Static)
+        w = pf.size.width if pf.size.width else 100
+        h = pf.size.height if pf.size.height else 24
+        return max(60, w), max(14, h)
+
     def refresh_ui(self, *, refresh_command_line: bool = True) -> None:
         st = self.game_state
+        if st.tutorial_force_galaxy:
+            self._galaxy_view = True
+        pw, ph = self._playfield_size()
+        self.query_one("#playfield", Static).update(
+            render_playfield(
+                st,
+                pw,
+                ph,
+                galaxy_view=self._galaxy_view,
+                scale=self._scale,
+            )
+        )
         self.query_one("#status_line", Static).update(format_status(st))
-        self.query_one("#star_map", StarMap).update_map(st, galaxy_view=self._galaxy_view)
-        log = self.query_one("#event_log", EventLog)
-        log.clear()
-        for ev in st.events[-30:]:
-            log.append_line(ascii_only(ev))
-        log.refresh_log()
         if refresh_command_line:
             inp = self.query_one("#cmd_input", Input)
             self._update_completion_hint(inp.value)
@@ -92,13 +101,8 @@ class MapScreen(Screen):
             hint = " | ".join(matches)
         else:
             hint = "(no match)"
-        w = self.TITLE_WIDTH
-        self.query_one("#cmd_completions", Static).update(
-            box_line(
-                w,
-                f" > {typed[:40]}  ||  complete: {hint[: w - 30]}",
-            )
-        )
+        line = f"> {typed[:40]}  ||  complete: {hint[:48]}"
+        self.query_one("#cmd_completions", Static).update(ascii_only(line))
 
     def run_command(self, line: str) -> None:
         runner = getattr(self.app, "run_game_command", None)
@@ -120,22 +124,26 @@ class MapScreen(Screen):
         self.refresh_ui()
 
     def action_pan_left(self) -> None:
-        self.query_one("#star_map", StarMap).pan(-5, 0)
+        self._scale = max(1.0, min(8.0, self._scale + 0.05))
+        self.refresh_ui()
 
     def action_pan_right(self) -> None:
-        self.query_one("#star_map", StarMap).pan(5, 0)
+        self._scale = max(1.0, min(8.0, self._scale - 0.05))
+        self.refresh_ui()
 
     def action_pan_up(self) -> None:
-        self.query_one("#star_map", StarMap).pan(0, -3)
+        pass
 
     def action_pan_down(self) -> None:
-        self.query_one("#star_map", StarMap).pan(0, 3)
+        pass
 
     def action_zoom_in(self) -> None:
-        self.query_one("#star_map", StarMap).zoom(-0.25)
+        self._scale = max(1.0, min(8.0, self._scale - 0.25))
+        self.refresh_ui()
 
     def action_zoom_out(self) -> None:
-        self.query_one("#star_map", StarMap).zoom(0.25)
+        self._scale = max(1.0, min(8.0, self._scale + 0.25))
+        self.refresh_ui()
 
     def action_toggle_galaxy(self) -> None:
         self._galaxy_view = not self._galaxy_view

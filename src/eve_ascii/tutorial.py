@@ -201,4 +201,4 @@ def _tutorial_place_near_station(state: GameState) -> None:
     st = sys.stations[0]
     pos = station_position(sys, st)
     state.player.ship.location.coords = Vec3(pos.x + 95.0, pos.y + 5.0, pos.z)
-    state.log(f"{st.name} on scope — burn in with travel station {st.name}")
+    state.log(f"{st.name} on scope - burn in with travel station {st.name}")

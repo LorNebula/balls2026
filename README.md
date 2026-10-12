@@ -29,7 +29,16 @@ textual run --dev src/eve_ascii/app.py
 - `g` — toggle galaxy / system view
 - `q` — quit
 
-Open-space view: your ship stays left-center; world scrolls around it with ASCII ship shapes and Rich colors. Event log uses the right **1/3** of the main pane.
+## UI (ASCII)
+
+The game UI uses **7-bit ASCII** characters only (`+`, `-`, `|`, letters, digits). ANSI colors (Rich) add contrast; there are no Unicode box-drawing characters.
+
+- **Top and bottom bars** — single-line `| ... |` chrome (title + footer).
+- **Playfield** — map and event log share one `+---|` frame (map ~2/3, log ~1/3).
+- **Status, command input, completions** — plain ASCII lines (no extra `| ... |` bars).
+- **Ship inspect** — modal content wrapped in `+---|`.
+
+Open-space view: your ship stays left-center; world scrolls around it with ASCII ship shapes and colors.
 
 ## Commands (`:` line)
 

@@ -16,6 +16,7 @@ from eve_ascii.models import (
     GameState,
     Ship,
     ShipComponent,
+    ShipStatus,
     TutorialStep,
 )
 from eve_ascii.ship import BASE_SHIELD_GEN, is_powerless, shield_gen_per_sec, weapon_charge_seconds
@@ -247,7 +248,8 @@ def _apply_screen_flash(canvas: SpaceCanvas, state: GameState) -> None:
     if t <= 0:
         return
     peak = 0.32
-    in_hyperspace = state.mode == GameMode.HYPERSPACE
+    ship = state.player.ship
+    in_hyperspace = state.mode == GameMode.HYPERSPACE or ship.status == ShipStatus.JUMPING
     if t >= peak:
         wash = Style(
             color="#ffffff",
@@ -442,6 +444,8 @@ def render_open_space(
 
 
 def render_ship_inspect(state: GameState) -> Text:
+    from eve_ascii.ascii_ui import box_wrap
+
     ship = state.player.ship
     width = 78
     height = 11
@@ -453,18 +457,18 @@ def render_ship_inspect(state: GameState) -> Text:
         HULL_PLAYER,
         components=ship.components,
     )
-    out = Text(" SHIP ", style=Style(color="#e8b84a", bold=True))
-    out.append(f"{ship.name}  fit {len(ship.components)}/{ship.max_slots}\n", style=Style(color="#aaccee"))
-    out.append(canvas.to_text())
-    out.append("\n")
+    inner = Text()
+    inner.append(f"{ship.name}  fit {len(ship.components)}/{ship.max_slots}\n", style=Style(color="#aaccee"))
+    inner.append(canvas.to_text())
+    inner.append("\n")
     pwr_style = Style(color="#ff5566", bold=True) if is_powerless(ship) else Style(color="#88ffaa")
-    out.append(
+    inner.append(
         f" POWER {ship.power:.0f}/{ship.max_power:.0f}   SHIELD {ship.shield:.0f}/{ship.max_shield:.0f}  "
         f"gen {shield_gen_per_sec(ship):.1f}/s\n",
         style=pwr_style,
     )
     if is_powerless(ship):
-        out.append(" REACTOR DESTROYED - SHIP POWERLESS\n", style=Style(color="#ff3344", bold=True))
+        inner.append(" REACTOR DESTROYED - SHIP POWERLESS\n", style=Style(color="#ff3344", bold=True))
     for c in ship.components:
         mark = "X" if c.destroyed else ("!" if c.integrity < 0.5 else " ")
         extra = ""
@@ -477,11 +481,21 @@ def render_ship_inspect(state: GameState) -> Text:
         elif c.kind == "thrusters":
             extra = "  (idle)"
         st = COMP_DEAD if c.destroyed else (COMP_DAMAGED if c.integrity < 0.5 else Style(color="#ddeeff"))
-        out.append(
+        inner.append(
             f" {c.slot_id} {c.kind.upper():<10}  hp {c.health:5.0f}/{c.max_health:.0f}  {mark}{extra}\n",
             style=st,
         )
-    out.append(" Esc close   command: ship\n", style=Style(color="#6688aa"))
+    inner.append(" Esc close   command: ship\n", style=Style(color="#6688aa"))
+
+    frame_style = Style(color="#e8b84a")
+    body_style = Style(color="#c9d6e3")
+    boxed_lines = box_wrap(width, "SHIP", inner.plain.splitlines()).split("\n")
+    out = Text()
+    for line in boxed_lines:
+        if line.startswith("+"):
+            out.append(line + "\n", style=frame_style)
+        else:
+            out.append(line + "\n", style=body_style)
     return out
 
 

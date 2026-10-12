@@ -18,7 +18,7 @@ class ShipScreen(ModalScreen):
         self.game_state = state
 
     def compose(self):
-        yield Static("", id="ship_inspect")
+        yield Static("", id="ship_inspect", markup=True)
 
     def on_mount(self) -> None:
         self.refresh_view()

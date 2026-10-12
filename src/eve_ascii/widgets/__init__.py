@@ -1,4 +1,3 @@
-from eve_ascii.widgets.event_log import EventLog
-from eve_ascii.widgets.star_map import StarMap
+from eve_ascii.widgets.command_suggester import GameCommandSuggester
 
-__all__ = ["EventLog", "StarMap"]
+__all__ = ["GameCommandSuggester"]

@@ -145,7 +145,7 @@ def tick(state: GameState, dt: float) -> None:
         if not weapons_online(ship) or is_powerless(ship):
             ship.weapons_active = False
             if is_powerless(ship):
-                state.log("Weapons offline — no power.")
+                state.log("Weapons offline - no power.")
             else:
                 state.log("Weapons destroyed.")
         elif ship.target_letter and ship.fire_cooldown <= 0:
@@ -223,7 +223,7 @@ def _apply_hit(state: GameState, npc: NpcShip) -> None:
         _spawn_component_explosion(state, npc, comp.kind)
         state.log(f"{npc.letter} component {comp.slot_id} {comp.kind} DESTROYED")
     if is_powerless(npc):
-        _destroy_npc(state, npc, reason=f"{npc.name} reactor destroyed — ship powerless.")
+        _destroy_npc(state, npc, reason=f"{npc.name} reactor destroyed - ship powerless.")
         return
     if not _alive_components(npc):
         _destroy_npc(state, npc, reason=f"{npc.name} destroyed.")
@@ -239,10 +239,15 @@ def _decay_fx(state: GameState, dt: float) -> None:
 
 
 def tick_hyperspace_vfx(state: GameState, dt: float) -> None:
-    if state.mode != GameMode.HYPERSPACE:
+    from eve_ascii.models import ShipStatus
+
+    ship = state.player.ship
+    in_hyperspace = state.mode == GameMode.HYPERSPACE or ship.status == ShipStatus.JUMPING
+    if not in_hyperspace:
         state.hyperspace_particles.clear()
         return
-    rng = random.Random(int(state.tutorial_timer * 10))
+    seed_src = state.star_scroll if state.tutorial_step.value == "done" else state.tutorial_timer
+    rng = random.Random(int(seed_src * 10))
     if rng.random() < 0.4:
         state.hyperspace_particles.append(
             HyperspaceParticle(

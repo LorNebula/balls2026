@@ -113,9 +113,10 @@ def travel_station(state: GameState, station_name: str) -> str | None:
 
 def jump_system(state: GameState, system_name: str) -> str | None:
     from eve_ascii.models import GameMode
+    from eve_ascii.vfx import trigger_flash
 
     ship = state.player.ship
-    if state.mode == GameMode.HYPERSPACE:
+    if state.mode == GameMode.HYPERSPACE and ship.status != ShipStatus.IDLE:
         return "Cannot jump manually during hyperspace transit."
     if ship.status == ShipStatus.DOCKED:
         return "Undock first."
@@ -141,6 +142,9 @@ def jump_system(state: GameState, system_name: str) -> str | None:
     ship.destination = target
     ship.eta_seconds = dist / ship.jump_speed
     ship.status = ShipStatus.JUMPING
+    state.mode = GameMode.HYPERSPACE
+    state.hyperspace_particles.clear()
+    trigger_flash(state)
     state.log(f"Jumping to {dest.name} ({ship.eta_seconds:.1f}s)")
     return None
 
@@ -203,6 +207,8 @@ def undock(state: GameState) -> str | None:
 
 
 def _arrive_at_target(state: GameState, target: TravelTarget, dest: Vec3) -> None:
+    from eve_ascii.models import GameMode
+
     ship = state.player.ship
     if target.kind == "system":
         dest_sys = state.galaxy.get_system(target.system_id)
@@ -214,6 +220,9 @@ def _arrive_at_target(state: GameState, target: TravelTarget, dest: Vec3) -> Non
             )
             state.player.system_id = dest_sys.id
             state.log(f"Arrived in {dest_sys.name}")
+            if state.mode == GameMode.HYPERSPACE:
+                state.mode = GameMode.SPACE
+            state.hyperspace_particles.clear()
     elif target.kind == "planet" and target.planet_id:
         ship.location = ShipLocation(
             system_id=target.system_id,
