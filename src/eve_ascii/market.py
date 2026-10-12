@@ -127,14 +127,17 @@ def render_inventory_view(state: GameState, width: int, height: int) -> Text:
         if st:
             st_name = st.name
 
-    name_w, qty_w, price_w = 28, 6, 10
+    inner_w = max(20, width - 2)
+    slug_w, qty_w, price_w = 16, 5, 9
+    name_w = max(12, inner_w - slug_w - qty_w - price_w - 2)
+    table_w = name_w + slug_w + qty_w + price_w + 1
     header = Text()
     header.append(f" {ascii_only(st_name)} MARKET ", style=Style(color="#c9a86a", bold=True))
     header.append(f"| credits {state.player.credits:.0f} cr\n", style=Style(color="#88ccaa"))
-    rule = "-" * min(width - 2, name_w + qty_w + price_w + 6)
+    rule = "-" * min(inner_w, table_w)
     header.append(rule + "\n", style=Style(color="#556677"))
     header.append(
-        f" {'item name':<{name_w}}{'qty':>{qty_w}}{'price':>{price_w}}\n",
+        f" {'item name':<{name_w}}{'id/slug':<{slug_w}}{'qty':>{qty_w}}{'price':>{price_w}}\n",
         style=Style(color="#aaccee", bold=True),
     )
     header.append(rule + "\n", style=Style(color="#556677"))
@@ -146,14 +149,16 @@ def render_inventory_view(state: GameState, width: int, height: int) -> Text:
         if stack.quantity <= 0:
             continue
         price = local_price(state, stack.item_id)
-        nm = ascii_only(stack.name)[: name_w - 1]
-        header.append(f" {nm:<{name_w - 1}}", style=Style(color="#ddeeff"))
+        nm = ascii_only(stack.name)[:name_w]
+        slug = ascii_only(stack.item_id)[:slug_w]
+        header.append(f" {nm:<{name_w}}", style=Style(color="#ddeeff"))
+        header.append(f"{slug:<{slug_w}}", style=Style(color="#99aabb"))
         header.append(f"{stack.quantity:>{qty_w}}", style=Style(color="#ffee88"))
         header.append(f"{price:>{price_w}.0f}\n", style=Style(color="#88ffaa"))
 
     header.append(rule + "\n", style=Style(color="#556677"))
     header.append(
-        " commands: sell <item> <qty>  |  hangar  |  upgrade reactor|weapons\n",
+        " commands: sell <name|id> <qty>  |  hangar  |  upgrade reactor|weapons\n",
         style=Style(color="#668899"),
     )
     return header
