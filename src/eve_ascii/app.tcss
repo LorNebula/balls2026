@@ -1,0 +1,49 @@
+Screen {
+    background: #0a1628;
+}
+
+Header {
+    background: #132238;
+    color: #e8b84a;
+}
+
+Footer {
+    background: #132238;
+}
+
+#status_line {
+    height: 1;
+    background: #1a3050;
+    color: #c9d6e3;
+    padding: 0 1;
+}
+
+.panel-title {
+    height: 1;
+    color: #e8b84a;
+    background: #132238;
+    padding: 0 1;
+}
+
+Horizontal {
+    height: 1fr;
+}
+
+Vertical {
+    width: 36;
+    height: 1fr;
+}
+
+#cmd_input {
+    dock: bottom;
+    margin: 0 1 1 1;
+    border: tall #e8b84a;
+}
+
+StarMap {
+    border: solid #2a5080;
+}
+
+EventLog {
+    border: solid #2a5080;
+}
