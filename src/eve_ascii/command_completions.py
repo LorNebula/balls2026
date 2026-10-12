@@ -9,6 +9,7 @@ from eve_ascii.models import GameState
 def completion_candidates(state: GameState) -> list[str]:
     cmds = [
         "help",
+        "ship",
         "fire",
         "cease",
         "comms",
@@ -25,8 +26,9 @@ def completion_candidates(state: GameState) -> list[str]:
     for npc in state.npc_ships:
         if npc.alive:
             cmds.append(f"lock {npc.letter}")
-            cmds.append(f"lock {npc.letter} reactor")
-            cmds.append(f"lock {npc.letter} shield")
+            for comp in npc.components:
+                cmds.append(f"lock {npc.letter} {comp.kind}")
+                cmds.append(f"lock {npc.letter} {comp.slot_id}")
     if state.quests_unlocked:
         for q in state.quests:
             cmds.append(f"quest start {q.id}")
