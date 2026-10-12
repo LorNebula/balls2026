@@ -1,6 +1,6 @@
-# EVE ASCII (Travel MVP)
+# EVE ASCII
 
-Terminal EVE-inspired game: command-driven travel, Finnish-inspired galaxy, Python + Textual.
+Terminal EVE-inspired game: tutorial, combat, travel, quests. Finnish-inspired galaxy, Python + Textual.
 
 ## Setup
 
@@ -29,7 +29,7 @@ textual run --dev src/eve_ascii/app.py
 - `g` — toggle galaxy / system view
 - `q` — quit
 
-UI uses only printable ASCII (`+`, `-`, `|`, letters, map symbols). No Unicode box-drawing.
+Open-space view: your ship stays left-center; world scrolls around it with ASCII ship shapes and Rich colors. Event log uses the right **1/3** of the main pane.
 
 ## Commands (`:` line)
 
@@ -38,7 +38,12 @@ UI uses only printable ASCII (`+`, `-`, `|`, letters, map symbols). No Unicode b
 | `travel <x> <y> <z>` | Warp to coords in current system |
 | `travel planet <name>` | Orbit a planet |
 | `travel station <name>` | Warp near a station |
-| `jump <system>` | Jump to linked system |
-| `dock` / `undock` | Dock at nearby station / leave dock |
+| `jump <system>` | Jump to linked system (costs fuel) |
+| `lock <A-Z> [reactor\|shield\|01-04]` | Combat target lock |
+| `fire` / `cease` | Start / stop lasers |
+| `comms` | Show inbox (Commander Crosshair) |
+| `quests` / `quest start <id>` / `quest status` | Quest board |
+
+New games start the **tutorial** (hyperspace → pirate fight → jump → galaxy → quests). During combat try: `lock A`, `fire`.
 
 Game state is in-memory only (no backend).

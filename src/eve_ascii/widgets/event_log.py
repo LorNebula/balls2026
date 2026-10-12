@@ -1,28 +1,27 @@
 from __future__ import annotations
 
-from textual.widgets import Static
+from rich.style import Style
+from rich.text import Text
 
-from eve_ascii.ascii_ui import box_wrap
+from textual.widgets import Static
 
 
 class EventLog(Static):
-    """Plain-text event feed inside an ASCII frame."""
+    """Colored event feed (1/3 of main pane width)."""
 
     DEFAULT_CSS = """
     EventLog {
         height: 1fr;
+        width: 1fr;
         border: none;
-        padding: 0 0;
+        padding: 0 1;
+        background: #0a1628;
     }
     """
 
     def __init__(self, **kwargs) -> None:
-        super().__init__("", **kwargs)
+        super().__init__("", markup=True, **kwargs)
         self._lines: list[str] = []
-        self._width = 34
-
-    def set_width(self, width: int) -> None:
-        self._width = max(20, width)
 
     def clear(self) -> None:
         self._lines = []
@@ -31,8 +30,19 @@ class EventLog(Static):
         self._lines.append(text)
 
     def refresh_log(self) -> None:
-        inner_h = 18
-        visible = self._lines[-inner_h:]
-        while len(visible) < inner_h:
-            visible.insert(0, "")
-        self.update(box_wrap(self._width, "LOG", visible))
+        h = max(12, (self.size.height if self.size.height else 20) - 2)
+        visible = self._lines[-h:]
+        out = Text()
+        out.append(" EVENT LOG\n", style=Style(color="#e8b84a", bold=True))
+        for line in visible:
+            style = Style(color="#c9d6e3")
+            if line.startswith("COMMS"):
+                style = Style(color="#88ccff", bold=True)
+            elif line.startswith("ERR"):
+                style = Style(color="#ff6666", bold=True)
+            elif line.startswith("HOSTILE") or "HIT" in line:
+                style = Style(color="#ffaa44")
+            elif line.startswith("TUTORIAL") or line.startswith("Quest"):
+                style = Style(color="#aaffaa")
+            out.append(line + "\n", style=style)
+        self.update(out)

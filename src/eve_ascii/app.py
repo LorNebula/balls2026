@@ -3,12 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 from textual.app import App
 
+from eve_ascii import combat, tutorial, travel
 from eve_ascii.ascii_ui import ascii_only
 from eve_ascii.commands import execute_command
 from eve_ascii.galaxy import load_galaxy
-from eve_ascii.models import GameState, ShipStatus
+from eve_ascii.models import GameMode, GameState, ShipStatus
 from eve_ascii.screens.map_screen import MapScreen
-from eve_ascii import travel
 
 
 class EveApp(App):
@@ -29,7 +29,11 @@ class EveApp(App):
         self.refresh_sub_title()
 
     def game_tick(self) -> None:
-        travel.tick(self.game_state, 0.2)
+        dt = 0.2
+        tutorial.tick(self.game_state, dt)
+        combat.tick_hyperspace_vfx(self.game_state, dt)
+        combat.tick(self.game_state, dt)
+        travel.tick(self.game_state, dt)
         screen = self.screen
         if isinstance(screen, MapScreen):
             screen.refresh_ui(refresh_command_line=False)
@@ -42,7 +46,9 @@ class EveApp(App):
         extra = ""
         if ship.status in (ShipStatus.WARPING, ShipStatus.JUMPING) and ship.destination:
             extra = f" -> {ascii_only(ship.destination.label)}"
-        self.sub_title = f"{name} | {ship.status.value}{extra}"
+        self.sub_title = (
+            f"{name} | {self.game_state.mode.value} | {ship.status.value}{extra}"
+        )
 
     def run_game_command(self, line: str) -> None:
         err = execute_command(self.game_state, line)
@@ -52,6 +58,7 @@ class EveApp(App):
         if isinstance(screen, MapScreen):
             screen.refresh_ui()
         self.refresh_sub_title()
+
 
 def run_app() -> None:
     galaxy = load_galaxy()

@@ -24,12 +24,18 @@ Horizontal {
     height: 1fr;
 }
 
-Vertical {
-    width: 36;
+#log_pane {
+    width: 1fr;
     height: 1fr;
+    background: #0a1628;
 }
 
-StarMap, EventLog, #event_log {
+StarMap {
+    width: 2fr;
+    background: #050d18;
+}
+
+EventLog {
     border: none;
     padding: 0 0;
 }

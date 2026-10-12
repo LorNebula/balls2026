@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import shlex
 
+from eve_ascii import combat, travel
+from eve_ascii.comms import list_messages
 from eve_ascii.models import GameState
-from eve_ascii import travel
+from eve_ascii import quests
 
 
 def execute_command(state: GameState, line: str) -> str | None:
@@ -47,30 +49,53 @@ def execute_command(state: GameState, line: str) -> str | None:
                 return "Coordinates must be numbers."
             return travel.travel_coords(state, x, y, z)
         return "Usage: travel <x> <y> <z> | travel planet <name> | travel station <name>"
-    if cmd == "help":
+    if cmd == "lock":
+        if not args:
+            return "Usage: lock <A-Z> [reactor|shield|hyperdrive|cargo|01-04]"
+        sub = args[1] if len(args) > 1 else None
+        return combat.lock_target(state, args[0], sub)
+    if cmd == "fire":
+        return combat.start_fire(state)
+    if cmd in ("cease", "stop") and args and args[0].lower() == "fire":
+        return combat.cease_fire(state)
+    if cmd == "cease":
+        return combat.cease_fire(state)
+    if cmd in ("comms", "messages"):
+        for line in list_messages(state):
+            state.log(line)
         return None
-    return f"Unknown command: {cmd}. Try dock, undock, travel, jump."
+    if cmd == "quests":
+        return quests.list_quests(state)
+    if cmd == "quest":
+        if not args:
+            return quests.quest_status(state)
+        if args[0].lower() == "start" and len(args) >= 2:
+            return quests.start_quest(state, " ".join(args[1:]))
+        if args[0].lower() in ("status", "active"):
+            return quests.quest_status(state)
+        return quests.start_quest(state, " ".join(args))
+    if cmd == "help":
+        state.log("travel, jump, lock, fire, cease, comms, quests, quest start <id>")
+        return None
+    return f"Unknown command: {cmd}. Type help."
 
 
 def palette_suggestions(state: GameState) -> list[tuple[str, str]]:
-    """Return (label, command string) for command palette."""
     items: list[tuple[str, str]] = [
-        ("Dock", "dock"),
-        ("Undock", "undock"),
         ("Help", "help"),
+        ("Fire", "fire"),
+        ("Cease fire", "cease"),
+        ("Comms", "comms"),
+        ("Quests", "quests"),
     ]
     ship = state.player.ship
     sys = state.galaxy.get_system(ship.location.system_id)
+    for npc in state.npc_ships:
+        if npc.alive:
+            items.append((f"Lock {npc.letter}", f"lock {npc.letter}"))
     if sys:
-        for p in sys.planets:
-            items.append((f"Orbit {p.name}", f"travel planet {p.name}"))
-        for st in sys.stations:
-            items.append((f"Warp to {st.name}", f"travel station {st.name}"))
         for nid in sys.neighbors:
             other = state.galaxy.get_system(nid)
             if other:
                 items.append((f"Jump to {other.name}", f"jump {other.name}"))
-    for s in state.galaxy.systems.values():
-        if sys and s.id != sys.id:
-            items.append((f"Jump to {s.name}", f"jump {s.name}"))
     return items

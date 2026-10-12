@@ -8,14 +8,28 @@ from eve_ascii.models import GameState
 
 def completion_candidates(state: GameState) -> list[str]:
     cmds = [
-        "dock",
-        "undock",
         "help",
+        "fire",
+        "cease",
+        "comms",
+        "messages",
+        "quests",
+        "quest start ",
+        "quest status",
+        "lock ",
         "travel ",
         "travel planet ",
         "travel station ",
         "jump ",
     ]
+    for npc in state.npc_ships:
+        if npc.alive:
+            cmds.append(f"lock {npc.letter}")
+            cmds.append(f"lock {npc.letter} reactor")
+            cmds.append(f"lock {npc.letter} shield")
+    if state.quests_unlocked:
+        for q in state.quests:
+            cmds.append(f"quest start {q.id}")
     ship = state.player.ship
     sys = state.galaxy.get_system(ship.location.system_id)
     if sys:
@@ -27,10 +41,6 @@ def completion_candidates(state: GameState) -> list[str]:
             other = state.galaxy.get_system(nid)
             if other:
                 cmds.append(f"jump {ascii_only(other.name)}")
-    for s in state.galaxy.systems.values():
-        if sys and s.id == sys.id:
-            continue
-        cmds.append(f"jump {ascii_only(s.name)}")
     return cmds
 
 
@@ -42,7 +52,6 @@ def matching_completions(state: GameState, partial: str, limit: int = 5) -> list
     hits = [c for c in completion_candidates(state) if c.casefold().startswith(key)]
     if hits:
         return hits[:limit]
-    # Match any token prefix (e.g. "planet Kiv" -> travel planet Kivi...)
     hits = [c for c in completion_candidates(state) if key in c.casefold()]
     return hits[:limit]
 

@@ -40,7 +40,7 @@ class MapScreen(Screen):
         yield Static("", id="status_line")
         with Horizontal(id="main_pane"):
             yield StarMap(id="star_map")
-            with Vertical():
+            with Vertical(id="log_pane"):
                 yield EventLog(id="event_log")
         yield Static("", id="footer_bar")
         with Horizontal(id="cmd_row"):
@@ -113,8 +113,8 @@ class MapScreen(Screen):
         self.refresh_ui()
 
     def action_help(self) -> None:
-        self.game_state.log("Commands: travel X Y Z | travel planet NAME | travel station NAME")
-        self.game_state.log("          jump SYSTEM | dock | undock | help")
+        self.game_state.log("travel, jump, lock A [reactor|shield|01-04], fire, cease")
+        self.game_state.log("comms, quests, quest start q_scout, quest status")
         self.refresh_ui()
 
     def action_pan_left(self) -> None:

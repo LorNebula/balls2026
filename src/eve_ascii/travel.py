@@ -112,7 +112,11 @@ def travel_station(state: GameState, station_name: str) -> str | None:
 
 
 def jump_system(state: GameState, system_name: str) -> str | None:
+    from eve_ascii.models import GameMode
+
     ship = state.player.ship
+    if state.mode == GameMode.HYPERSPACE:
+        return "Cannot jump manually during hyperspace transit."
     if ship.status == ShipStatus.DOCKED:
         return "Undock first."
     if ship.status in (ShipStatus.WARPING, ShipStatus.JUMPING):
@@ -125,6 +129,9 @@ def jump_system(state: GameState, system_name: str) -> str | None:
         return f"System not found: {system_name}"
     if dest.id not in sys.neighbors:
         return f"No stargate link to {dest.name}."
+    if ship.fuel < ship.fuel_per_jump:
+        return f"Not enough fuel (need {ship.fuel_per_jump:.0f}, have {ship.fuel:.0f})."
+    ship.fuel -= ship.fuel_per_jump
     dist = sys.position.distance_to(dest.position)
     target = TravelTarget(
         kind="system",
@@ -260,6 +267,7 @@ def tick(state: GameState, dt: float) -> None:
 
 def new_game(galaxy) -> GameState:
     from eve_ascii.models import Galaxy, Player, Ship
+    from eve_ascii.tutorial import init_tutorial
 
     assert isinstance(galaxy, Galaxy)
     start = next(iter(galaxy.systems.values()))
@@ -270,8 +278,11 @@ def new_game(galaxy) -> GameState:
             kind="space",
             coords=Vec3(0.0, 0.0, 0.0),
         ),
+        fuel=100.0,
+        max_fuel=100.0,
+        fuel_per_jump=15.0,
     )
     player = Player(ship=ship, system_id=start.id)
     state = GameState(galaxy=galaxy, player=player)
-    state.log(f"Online in {start.name}")
+    init_tutorial(state)
     return state

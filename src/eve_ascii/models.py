@@ -4,6 +4,9 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Literal
 
+COMPONENT_NAMES = ("reactor", "shield", "hyperdrive", "cargo")
+COMPONENT_IDS = {"01": "reactor", "02": "shield", "03": "hyperdrive", "04": "cargo"}
+
 
 class ShipStatus(str, Enum):
     IDLE = "idle"
@@ -11,6 +14,29 @@ class ShipStatus(str, Enum):
     JUMPING = "jumping"
     DOCKED = "docked"
     ORBITING = "orbiting"
+
+
+class GameMode(str, Enum):
+    HYPERSPACE = "hyperspace"
+    SPACE = "space"
+    COMBAT = "combat"
+
+
+class TutorialStep(str, Enum):
+    HYPERSPACE = "hyperspace"
+    WARNING = "warning"
+    INTERDICT = "interdict"
+    COMBAT = "combat"
+    JUMP_STATION = "jump_station"
+    GALAXY = "galaxy"
+    QUESTS = "quests"
+    DONE = "done"
+
+
+class QuestStatus(str, Enum):
+    AVAILABLE = "available"
+    ACTIVE = "active"
+    DONE = "done"
 
 
 @dataclass
@@ -97,6 +123,10 @@ class TravelTarget:
     label: str = ""
 
 
+def default_components() -> dict[str, float]:
+    return {"reactor": 100.0, "shield": 100.0, "hyperdrive": 100.0, "cargo": 100.0}
+
+
 @dataclass
 class Ship:
     name: str
@@ -106,6 +136,65 @@ class Ship:
     eta_seconds: float = 0.0
     warp_speed: float = 100.0
     jump_speed: float = 1.0
+    fuel: float = 100.0
+    max_fuel: float = 100.0
+    fuel_per_jump: float = 15.0
+    components: dict[str, float] = field(default_factory=default_components)
+    target_letter: str | None = None
+    subtarget: str | None = None
+    weapons_active: bool = False
+    fire_cooldown: float = 0.0
+
+
+@dataclass
+class NpcShip:
+    letter: str
+    name: str
+    position: Vec3
+    hostile: bool = True
+    components: dict[str, float] = field(default_factory=default_components)
+    alive: bool = True
+
+
+@dataclass
+class Projectile:
+    x: float
+    y: float
+    vx: float
+    vy: float
+    target_letter: str
+    ttl: float = 2.0
+    friendly: bool = True
+
+
+@dataclass
+class Explosion:
+    x: float
+    y: float
+    ttl: float = 0.4
+
+
+@dataclass
+class HyperspaceParticle:
+    x: float
+    y: float
+    char: str
+    speed: float
+
+
+@dataclass
+class Message:
+    sender: str
+    body: str
+    tick: float = 0.0
+
+
+@dataclass
+class Quest:
+    id: str
+    title: str
+    summary: str
+    status: QuestStatus = QuestStatus.AVAILABLE
 
 
 @dataclass
@@ -123,6 +212,20 @@ class GameState:
     galaxy: Galaxy
     player: Player
     events: list[str] = field(default_factory=list)
+    mode: GameMode = GameMode.SPACE
+    tutorial_step: TutorialStep = TutorialStep.DONE
+    tutorial_timer: float = 0.0
+    npc_ships: list[NpcShip] = field(default_factory=list)
+    projectiles: list[Projectile] = field(default_factory=list)
+    explosions: list[Explosion] = field(default_factory=list)
+    hyperspace_particles: list[HyperspaceParticle] = field(default_factory=list)
+    inbox: list[Message] = field(default_factory=list)
+    quests: list[Quest] = field(default_factory=list)
+    quests_unlocked: bool = False
+    combat_time: float = 0.0
+    tutorial_force_galaxy: bool = False
+    tutorial_step_elapsed: float = 0.0
+    tutorial_post_combat: bool = False
 
     def log(self, message: str) -> None:
         from eve_ascii.ascii_ui import ascii_only
