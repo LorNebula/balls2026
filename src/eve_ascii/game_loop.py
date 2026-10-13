@@ -89,5 +89,7 @@ class GameLoop:
     def update(self, dt: float) -> None:
         if not self._started:
             self.start()
+        if self.state.game_over:
+            return
         for behaviour in self.behaviours:
             behaviour.update(self.state, dt)

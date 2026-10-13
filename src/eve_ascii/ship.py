@@ -4,11 +4,14 @@ from __future__ import annotations
 
 from eve_ascii.models import (
     COMPONENT_ALIASES,
+    GameMode,
     GameState,
     NpcShip,
     Ship,
     ShipComponent,
 )
+
+BASE_LASER_DAMAGE = 28.0
 
 BASE_WEAPON_CHARGE = 0.35
 BASE_SHIELD_GEN = 12.0
@@ -58,6 +61,10 @@ def power_gen_per_sec(obj: Ship | NpcShip) -> float:
     return BASE_POWER_GEN * reactor_factor(obj)
 
 
+def player_laser_damage(ship: Ship) -> float:
+    return BASE_LASER_DAMAGE + ship.weapon_damage_bonus
+
+
 def weapons_online(obj: Ship | NpcShip) -> bool:
     if is_powerless(obj):
         return False
@@ -86,6 +93,12 @@ def spend_power(obj: Ship | NpcShip, amount: float) -> bool:
     return True
 
 
+def hull_totals(obj: Ship | NpcShip) -> tuple[float, float]:
+    hp = sum(c.health for c in obj.components)
+    mx = sum(c.max_health for c in obj.components)
+    return hp, mx
+
+
 def meter(current: float, maximum: float, width: int = 16) -> str:
     if maximum <= 0:
         return "[" + "-" * width + "]"
@@ -95,7 +108,7 @@ def meter(current: float, maximum: float, width: int = 16) -> str:
     return "[" + "#" * filled + "-" * (width - filled) + "]"
 
 
-def tick_systems(obj: Ship | NpcShip, dt: float) -> None:
+def tick_systems(obj: Ship | NpcShip, dt: float, *, regen_shield: bool = True) -> None:
     obj.max_power = reactor_max_power(obj)
     if obj.max_power <= 0:
         obj.power = 0.0
@@ -104,6 +117,8 @@ def tick_systems(obj: Ship | NpcShip, dt: float) -> None:
         return
     obj.power = min(obj.max_power, obj.power + power_gen_per_sec(obj) * dt)
 
+    if not regen_shield:
+        return
     if kind_integrity(obj.components, "shields") <= 0.0:
         obj.shield = 0.0
         return
@@ -114,7 +129,7 @@ def tick_systems(obj: Ship | NpcShip, dt: float) -> None:
         obj.shield = min(obj.max_shield, obj.shield + shield_gen_per_sec(obj) * dt)
 
 
-def tick_weapon_recharge(obj: Ship, dt: float) -> bool:
+def tick_weapon_recharge(obj: Ship | NpcShip, dt: float) -> bool:
     """Spend power to count down weapon charge. False if starved."""
     if obj.fire_cooldown <= 0:
         return True
@@ -127,7 +142,7 @@ def tick_weapon_recharge(obj: Ship, dt: float) -> bool:
     return True
 
 
-def try_fire_shot(obj: Ship) -> bool:
+def try_fire_shot(obj: Ship | NpcShip) -> bool:
     if not weapons_online(obj):
         return False
     if obj.fire_cooldown > 0:
@@ -136,16 +151,22 @@ def try_fire_shot(obj: Ship) -> bool:
 
 
 def tick_all(state: GameState, dt: float) -> None:
-    tick_systems(state.player.ship, dt)
+    regen_player_shield = state.mode != GameMode.COMBAT
+    tick_systems(state.player.ship, dt, regen_shield=regen_player_shield)
     for npc in state.npc_ships:
         if npc.alive:
             tick_systems(npc, dt)
 
 
+PIRATE_HULL_SCALE = 0.85
+PIRATE_BASE_SHIELD = 90.0
+
+
 def pirate_components() -> list[ShipComponent]:
+    s = PIRATE_HULL_SCALE
     return [
-        ShipComponent("01", "reactor", max_health=75.0, health=75.0),
-        ShipComponent("02", "thrusters", max_health=70.0, health=70.0),
-        ShipComponent("03", "shields", max_health=70.0, health=70.0),
-        ShipComponent("04", "weapons", max_health=65.0, health=65.0),
+        ShipComponent("01", "reactor", max_health=115.0 * s, health=115.0 * s),
+        ShipComponent("02", "thrusters", max_health=105.0 * s, health=105.0 * s),
+        ShipComponent("03", "shields", max_health=105.0 * s, health=105.0 * s),
+        ShipComponent("04", "weapons", max_health=100.0 * s, health=100.0 * s),
     ]

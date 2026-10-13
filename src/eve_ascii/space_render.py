@@ -18,10 +18,19 @@ from eve_ascii.models import (
     Explosion,
     GameMode,
     GameState,
+    NpcShip,
     Ship,
     ShipComponent,
     ShipStatus,
     TutorialStep,
+)
+from eve_ascii.ship import (
+    BASE_SHIELD_GEN,
+    hull_totals,
+    is_powerless,
+    meter,
+    shield_gen_per_sec,
+    weapon_charge_seconds,
 )
 
 SPACE_BG = Style(color="#1a3a5c", bgcolor="#050d18")
@@ -41,6 +50,7 @@ COMP_DAMAGED = Style(color="#ffaa33", bold=True, bgcolor="#332200")
 COMP_DEAD = Style(color="#664444", bgcolor="#221111")
 ID_STYLE = Style(color="#ffffff", bold=True)
 LASER_STYLE = Style(color="#66ff66", bold=True)
+ENEMY_LASER_STYLE = Style(color="#ff4466", bold=True)
 EXPLOSION_STYLE = Style(color="#ffaa00", bold=True)
 EXPLOSION_LARGE = Style(color="#ff6622", bold=True)
 PARTICLE_STYLES = (
@@ -116,6 +126,17 @@ ASTEROID_ART = [
     "/###\\",
 ]
 ASTEROID_STYLE = Style(color="#cc8844", bold=True)
+
+COMBAT_WARN = [
+    " /\\ ",
+    "/ !!\\",
+]
+WARN_STYLE = Style(color="#ff8800", bold=True)
+NRG_BAR_STYLE = Style(color="#44ddff", bold=True)
+NRG_LOW_STYLE = Style(color="#ff5555", bold=True)
+HP_BAR_STYLE = Style(color="#66ff88", bold=True)
+HP_LOW_STYLE = Style(color="#ff5555", bold=True)
+HUD_LABEL_STYLE = Style(color="#aaccee", bold=True)
 
 SUN_ART = [
     "    \\  |  /    ",
@@ -288,7 +309,12 @@ def _show_stations_on_map(state: GameState) -> bool:
         return False
     if state.tutorial_step == TutorialStep.DONE:
         return True
-    return state.tutorial_step == TutorialStep.JUMP
+    return state.tutorial_step in (
+        TutorialStep.JUMP_STATION,
+        TutorialStep.DOCK,
+        TutorialStep.SELL,
+        TutorialStep.UPGRADE,
+    )
 
 
 def _draw_drifting_stars(
@@ -350,6 +376,82 @@ def _draw_station_markers(
             continue
         placed.append((px, py))
         canvas.stamp_art(px, py, STATION_MARKER, STATION_STYLE)
+
+
+def _put_text(canvas: SpaceCanvas, x: int, y: int, text: str, style: Style) -> None:
+    for i, ch in enumerate(text):
+        canvas.put(x + i, y, ch, style)
+
+
+def _put_text_right(canvas: SpaceCanvas, y: int, text: str, style: Style, right_x: int) -> None:
+    x = max(0, right_x - len(text) + 1)
+    _put_text(canvas, x, y, text, style)
+
+
+def _resource_style(frac: float, *, energy: bool) -> Style:
+    if frac < 0.3:
+        return NRG_LOW_STYLE if energy else HP_LOW_STYLE
+    return NRG_BAR_STYLE if energy else HP_BAR_STYLE
+
+
+GAME_OVER_STYLE = Style(color="#ff2222", bold=True, bgcolor="#2a0000")
+GAME_OVER_SUB_STYLE = Style(color="#ffcc88", bold=True, bgcolor="#2a0000")
+GAME_OVER_FRAME = Style(color="#aa4444", bold=True, bgcolor="#1a0000")
+
+def _draw_game_over_overlay(canvas: SpaceCanvas) -> None:
+    lines: list[tuple[str, Style]] = [
+        ("==============================", GAME_OVER_FRAME),
+        ("", GAME_OVER_FRAME),
+        ("GAME OVER", GAME_OVER_STYLE),
+        ("", GAME_OVER_FRAME),
+        ("SHIP DESTROYED", GAME_OVER_SUB_STYLE),
+        ("", GAME_OVER_FRAME),
+        ("type quit", GAME_OVER_SUB_STYLE),
+        ("", GAME_OVER_FRAME),
+        ("==============================", GAME_OVER_FRAME),
+    ]
+    y = max(0, canvas.height // 2 - len(lines) // 2)
+    for text, style in lines:
+        if text:
+            x = max(0, (canvas.width - len(text)) // 2)
+            _put_text(canvas, x, y, text, style)
+        y += 1
+
+
+def _draw_combat_hud(canvas: SpaceCanvas, state: GameState) -> None:
+    w, h = canvas.width, canvas.height
+    cx = w // 2
+    canvas.stamp_art(cx, 1, COMBAT_WARN, WARN_STYLE)
+
+    ship = state.player.ship
+    bar_w = min(12, max(8, w // 8))
+    hp, hp_max = hull_totals(ship)
+    nrg_frac = ship.power / ship.max_power if ship.max_power > 0 else 0.0
+    hp_frac = hp / hp_max if hp_max > 0 else 0.0
+    nrg_line = f"NRG{meter(ship.power, ship.max_power, bar_w)}"
+    hp_line = f"HP {meter(hp, hp_max, bar_w)}"
+    y_nrg = max(0, h - 2)
+    y_hp = max(0, h - 1)
+    _put_text(canvas, 1, y_nrg, nrg_line, _resource_style(nrg_frac, energy=True))
+    _put_text(canvas, 1, y_hp, hp_line, _resource_style(hp_frac, energy=False))
+
+    lock = ship.target_letter
+    if not lock:
+        return
+    target: NpcShip | None = next(
+        (n for n in state.npc_ships if n.alive and n.letter == lock.upper()),
+        None,
+    )
+    if not target:
+        return
+    thp, thp_max = hull_totals(target)
+    tnrg_frac = target.power / target.max_power if target.max_power > 0 else 0.0
+    thp_frac = thp / thp_max if thp_max > 0 else 0.0
+    tr_nrg = f"{target.letter} NRG{meter(target.power, target.max_power, bar_w)}"
+    tr_hp = f"{target.letter} HP {meter(thp, thp_max, bar_w)}"
+    right = w - 2
+    _put_text_right(canvas, y_nrg, tr_nrg, _resource_style(tnrg_frac, energy=True), right)
+    _put_text_right(canvas, y_hp, tr_hp, _resource_style(thp_frac, energy=False), right)
 
 
 def _draw_explosion(canvas: SpaceCanvas, ex: Explosion, px: int, py: int) -> None:
@@ -542,7 +644,13 @@ def render_open_space(
         )
         _apply_screen_flash(canvas, state)
         header = Text(" HYPERSPACE  ", style=Style(color="#bb88ff", bold=True))
-        header.append(f"fuel {ship.fuel:.0f}\n", style=Style(color="#aaccee"))
+        header.append(f"fuel {ship.fuel:.0f} ", style=Style(color="#aaccee"))
+        from eve_ascii.quests import current_objective
+
+        hs_obj = ascii_only(current_objective(state))
+        if hs_obj:
+            header.append(f"| obj: {hs_obj} ", style=Style(color="#aaffcc", bold=True))
+        header.append("\n", style=Style())
         header.append(" hull 01 reactor  02 thrusters  03 shields  04 weapons\n", style=Style(color="#668899"))
         header.append(canvas.to_text())
         return header
@@ -622,8 +730,12 @@ def render_open_space(
 
     for proj in state.projectiles:
         px, py = canvas.world_to_screen(proj.x, proj.y, ship_x, ship_y, scale)
-        canvas.put(px, py, "=", LASER_STYLE)
-        canvas.put(px + 1, py, ">", LASER_STYLE)
+        if proj.friendly:
+            canvas.put(px, py, "=", LASER_STYLE)
+            canvas.put(px + 1, py, ">", LASER_STYLE)
+        else:
+            canvas.put(px - 1, py, "<", ENEMY_LASER_STYLE)
+            canvas.put(px, py, "=", ENEMY_LASER_STYLE)
 
     for ex in state.explosions:
         px, py = canvas.world_to_screen(ex.x, ex.y, ship_x, ship_y, scale)
@@ -671,9 +783,18 @@ def render_open_space(
         style=Style(color="#aaccee"),
     )
     header.append("01-04 components ", style=Style(color="#ffee66"))
+    from eve_ascii.quests import current_objective
+
+    objective = ascii_only(current_objective(state))
+    if objective:
+        header.append(f"| obj: {objective} ", style=Style(color="#aaffcc", bold=True))
     if ship.eta_seconds > 0:
         header.append(f"eta {ship.eta_seconds:.1f}s ", style=Style(color="#88ccff"))
     header.append("\n", style=Style())
+    if state.mode == GameMode.COMBAT:
+        _draw_combat_hud(canvas, state)
+    if state.game_over:
+        _draw_game_over_overlay(canvas)
     _apply_screen_flash(canvas, state)
     header.append(canvas.to_text())
     return header

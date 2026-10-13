@@ -89,6 +89,33 @@ def _alive_count(state: GameState) -> int:
     return sum(1 for a in state.asteroids if a.alive)
 
 
+def fill_tutorial_mining_field(state: GameState) -> None:
+    """Spawn a small cluster near the ship for the post-jump mining beat."""
+    from eve_ascii.travel import current_ship_coords
+
+    system_id = state.player.ship.location.system_id
+    materials = system_materials(state, system_id)
+    mat = materials[0] if materials else None
+    if not mat:
+        from eve_ascii.materials import MATERIALS
+
+        mat = MATERIALS[0]
+    sc = current_ship_coords(state)
+    state.asteroids.clear()
+    offsets = ((110.0, 35.0), (130.0, -25.0), (95.0, 5.0))
+    for i, (dx, dy) in enumerate(offsets, start=1):
+        state.asteroids.append(
+            Asteroid(
+                code=f"R{i}",
+                material_id=mat.id,
+                material_name=mat.name,
+                position=Vec3(sc.x + dx, sc.y + dy, 0.0),
+                yield_left=12,
+                max_yield=12,
+            )
+        )
+
+
 def fill_asteroid_field(state: GameState) -> None:
     if state.tutorial_step != TutorialStep.DONE:
         return
@@ -200,6 +227,8 @@ def _tick_mining(state: GameState, dt: float) -> None:
         return
     ast.yield_left -= 1
     ship.mine_cooldown = MINE_INTERVAL
+    if state.tutorial_step == TutorialStep.MINE:
+        state.tutorial_mined_units += added
     state.log(f"Mined 1x {ast.material_id} -> hold ({ast.yield_left} left on {ast.code})")
     if ast.yield_left <= 0:
         ast.alive = False
@@ -213,7 +242,9 @@ def tick(state: GameState, dt: float) -> None:
     if tutorial_arena(state):
         return
     _tick_mining(state, dt)
-    if state.tutorial_step != TutorialStep.DONE:
+    if state.tutorial_step not in (TutorialStep.DONE, TutorialStep.MINE):
+        return
+    if state.tutorial_step == TutorialStep.MINE:
         return
     if _alive_count(state) >= ASTEROID_CAP:
         state.asteroid_respawn_timer = 0.0
