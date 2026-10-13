@@ -33,6 +33,7 @@ class MapScreen(Screen):
         super().__init__(**kwargs)
         self.game_state = state
         self._galaxy_view = False
+        self._galaxy_zoom = 1.0
         self._scale = 4.0
 
     def compose(self):
@@ -65,7 +66,7 @@ class MapScreen(Screen):
         self.query_one("#footer_bar", Static).update(
             box_line(
                 w,
-                " Esc map keys  g toggle view  : focus cmd  Tab/Right accept  ? help  q quit ",
+                " Esc map keys  g toggle view  +/- zoom  system exits market  ? help  q quit ",
             )
         )
 
@@ -87,6 +88,7 @@ class MapScreen(Screen):
                 ph,
                 galaxy_view=self._galaxy_view,
                 scale=self._scale,
+                galaxy_zoom=self._galaxy_zoom,
             )
         )
         self.query_one("#status_line", Static).update(format_status(st))
@@ -105,6 +107,10 @@ class MapScreen(Screen):
         self.query_one("#cmd_completions", Static).update(ascii_only(line))
 
     def run_command(self, line: str) -> None:
+        command = line.strip().split(maxsplit=1)[0].casefold() if line.strip() else ""
+        if command in ("system", "close", "exit", "map"):
+            self._galaxy_view = False
+            self._refresh_chrome()
         runner = getattr(self.app, "run_game_command", None)
         if callable(runner):
             runner(line)
@@ -138,15 +144,25 @@ class MapScreen(Screen):
         pass
 
     def action_zoom_in(self) -> None:
+        if self._galaxy_view or self.game_state.tutorial_force_galaxy:
+            self._galaxy_zoom = min(8.0, self._galaxy_zoom * 1.5)
+            self.refresh_ui()
+            return
         self._scale = max(1.0, min(8.0, self._scale - 0.25))
         self.refresh_ui()
 
     def action_zoom_out(self) -> None:
+        if self._galaxy_view or self.game_state.tutorial_force_galaxy:
+            self._galaxy_zoom = max(0.05, self._galaxy_zoom / 1.5)
+            self.refresh_ui()
+            return
         self._scale = max(1.0, min(8.0, self._scale + 0.25))
         self.refresh_ui()
 
     def action_toggle_galaxy(self) -> None:
         self._galaxy_view = not self._galaxy_view
+        if not self._galaxy_view and self.game_state.player.ship.status.value == "docked":
+            self.game_state.station_view = "system"
         mode = "galaxy" if self._galaxy_view else "system"
         self.game_state.log(f"Map view: {mode}")
         self._refresh_chrome()

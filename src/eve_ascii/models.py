@@ -68,6 +68,9 @@ class Planet:
     name: str
     orbit_radius: float
     angle: float = 0.0
+    size: str = "medium"
+    planet_type: str = "terra"
+    moon: Moon | None = None
 
     def position(self) -> Vec3:
         import math
@@ -85,12 +88,45 @@ class Station:
     name: str
     planet_id: str | None
     offset: Vec3 = field(default_factory=lambda: Vec3(50.0, 0.0, 0.0))
+    inventory: dict[str, int] = field(default_factory=dict)
+    prices: dict[str, float] = field(default_factory=dict)
 
     def position(self, planets: dict[str, Planet]) -> Vec3:
         if self.planet_id and self.planet_id in planets:
             base = planets[self.planet_id].position()
             return Vec3(base.x + self.offset.x, base.y + self.offset.y, base.z + self.offset.z)
         return Vec3(self.offset.x, self.offset.y, self.offset.z)
+
+
+@dataclass
+class Moon:
+    id: str
+    name: str
+    size: str = "small"
+
+
+@dataclass
+class Nebula:
+    id: str
+    name: str
+    position: Vec3
+    system_ids: list[str] = field(default_factory=list)
+
+
+@dataclass
+class BlackHole:
+    name: str
+    position: Vec3 = field(default_factory=lambda: Vec3(0.0, 0.0, 0.0))
+
+
+@dataclass
+class Asteroid:
+    id: str
+    name: str
+    position: Vec3
+    loot_item_id: str = "ore"
+    loot_name: str = "Ore"
+    loot_quantity: int = 1
 
 
 @dataclass
@@ -101,12 +137,15 @@ class StarSystem:
     neighbors: list[str] = field(default_factory=list)
     planets: list[Planet] = field(default_factory=list)
     stations: list[Station] = field(default_factory=list)
+    asteroids: list[Asteroid] = field(default_factory=list)
 
 
 @dataclass
 class Galaxy:
     seed: int
     systems: dict[str, StarSystem]
+    black_hole: BlackHole | None = None
+    nebulae: list[Nebula] = field(default_factory=list)
 
     def get_system(self, system_id: str) -> StarSystem | None:
         return self.systems.get(system_id)
@@ -173,7 +212,7 @@ class Ship:
     jump_speed: float = 1.0
     fuel: float = 100.0
     max_fuel: float = 100.0
-    fuel_per_jump: float = 15.0
+    fuel_per_jump: float = 1.0
     max_slots: int = 4
     components: list[ShipComponent] = field(default_factory=starter_components)
     power: float = 100.0
@@ -200,6 +239,11 @@ class NpcShip:
     shield: float = 40.0
     max_shield: float = 40.0
     alive: bool = True
+    asteroid: bool = False
+    asteroid_id: str | None = None
+    loot_item_id: str | None = None
+    loot_name: str | None = None
+    loot_quantity: int = 0
 
 
 @dataclass
@@ -282,6 +326,7 @@ class GameState:
     tutorial_step: TutorialStep = TutorialStep.DONE
     tutorial_timer: float = 0.0
     npc_ships: list[NpcShip] = field(default_factory=list)
+    depleted_asteroids: set[str] = field(default_factory=set)
     projectiles: list[Projectile] = field(default_factory=list)
     explosions: list[Explosion] = field(default_factory=list)
     hyperspace_particles: list[HyperspaceParticle] = field(default_factory=list)

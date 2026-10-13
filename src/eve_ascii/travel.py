@@ -220,17 +220,30 @@ def _arrive_at_target(state: GameState, target: TravelTarget, dest: Vec3) -> Non
             )
             state.player.system_id = dest_sys.id
             state.log(f"Arrived in {dest_sys.name}")
-            if state.mode == GameMode.HYPERSPACE:
-                state.mode = GameMode.SPACE
+            from eve_ascii.combat import enter_system
+
+            enter_system(state, dest_sys)
+            for nebula in state.galaxy.nebulae:
+                if dest_sys.id in nebula.system_ids:
+                    state.log(f"Nebula {nebula.name} envelops this system.")
             state.hyperspace_particles.clear()
     elif target.kind == "planet" and target.planet_id:
+        system = state.galaxy.get_system(target.system_id)
+        planet = next(
+            (item for item in system.planets if item.id == target.planet_id),
+            None,
+        ) if system else None
         ship.location = ShipLocation(
             system_id=target.system_id,
             kind="orbit",
             coords=dest,
             planet_id=target.planet_id,
         )
-        state.log(f"In orbit: {target.label}")
+        details = ""
+        if planet:
+            moon = f", moon {planet.moon.name} ({planet.moon.size})" if planet.moon else ""
+            details = f" [{planet.size} {planet.planet_type}{moon}]"
+        state.log(f"In orbit: {target.label}{details}")
     elif target.kind == "station" and target.station_id:
         ship.location = ShipLocation(
             system_id=target.system_id,
@@ -291,7 +304,7 @@ def new_game(galaxy) -> GameState:
         ),
         fuel=100.0,
         max_fuel=100.0,
-        fuel_per_jump=15.0,
+        fuel_per_jump=1.0,
     )
     from eve_ascii.market import starter_cargo
 

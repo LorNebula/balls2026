@@ -69,14 +69,17 @@ def _map_pane_title(state: GameState, *, galaxy_view: bool) -> str:
     ship = state.player.ship
     if galaxy_view or state.tutorial_force_galaxy:
         return "GALAXY MAP"
-    if ship.status == ShipStatus.DOCKED:
+    if ship.status == ShipStatus.DOCKED and state.station_view != "system":
         if state.station_view == "inventory":
             return "MARKET / INV"
         return "DOCK / HANGAR"
     if state.mode == GameMode.HYPERSPACE or ship.status == ShipStatus.JUMPING:
         return "HYPERSPACE"
     sys = state.galaxy.get_system(ship.location.system_id)
-    return ascii_only(sys.name) if sys else "SYSTEM"
+    if not sys:
+        return "SYSTEM"
+    in_nebula = any(sys.id in nebula.system_ids for nebula in state.galaxy.nebulae)
+    return f"{ascii_only(sys.name)} / NEBULA" if in_nebula else ascii_only(sys.name)
 
 
 def render_map_pane(
@@ -86,14 +89,15 @@ def render_map_pane(
     *,
     galaxy_view: bool,
     scale: float,
+    galaxy_zoom: float = 1.0,
 ) -> Text:
     if state.tutorial_force_galaxy:
         galaxy_view = True
     w, h = max(20, width - 2), max(8, height - 2)
     ship = state.player.ship
     if galaxy_view:
-        return render_galaxy_map(state, w, h)
-    if ship.status == ShipStatus.DOCKED:
+        return render_galaxy_map(state, w, h, galaxy_zoom)
+    if ship.status == ShipStatus.DOCKED and state.station_view != "system":
         if state.station_view == "inventory":
             return render_inventory_view(state, w, h)
         return render_docked_view(state, w, h)
@@ -129,6 +133,7 @@ def render_playfield(
     *,
     galaxy_view: bool,
     scale: float,
+    galaxy_zoom: float = 1.0,
 ) -> Text:
     total_w = max(60, total_w)
     total_h = max(14, total_h)
@@ -136,7 +141,14 @@ def render_playfield(
     map_w = total_w - log_w
     inner_h = total_h - 2
 
-    map_body = render_map_pane(state, map_w, inner_h, galaxy_view=galaxy_view, scale=scale)
+    map_body = render_map_pane(
+        state,
+        map_w,
+        inner_h,
+        galaxy_view=galaxy_view,
+        scale=scale,
+        galaxy_zoom=galaxy_zoom,
+    )
     log_body = render_log_pane(state, log_w, inner_h)
 
     map_lines = map_body.split("\n")

@@ -24,7 +24,10 @@ def completion_candidates(state: GameState) -> list[str]:
         "jump ",
         "dock",
         "inventory",
+        "system",
+        "close",
         "hangar",
+        "buy ",
         "sell ",
         "upgrade reactor",
         "upgrade weapons",
@@ -41,6 +44,14 @@ def completion_candidates(state: GameState) -> list[str]:
     ship = state.player.ship
     sys = state.galaxy.get_system(ship.location.system_id)
     if ship.status.value == "docked":
+        station = next(
+            (item for item in sys.stations if item.id == ship.location.station_id),
+            None,
+        ) if sys else None
+        if station:
+            for item_id, quantity in station.inventory.items():
+                if quantity > 0:
+                    cmds.append(f"buy {item_id} ")
         for stack in state.player.cargo:
             if stack.quantity > 0:
                 cmds.append(f"sell {stack.item_id} ")

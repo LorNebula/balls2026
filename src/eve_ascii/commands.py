@@ -30,6 +30,16 @@ def execute_command(state: GameState, line: str) -> str | None:
         return travel.undock(state)
     if cmd in ("inventory", "inv", "market"):
         return market.show_inventory(state)
+    if cmd in ("system", "map", "close", "exit"):
+        return market.show_system_view(state)
+    if cmd == "buy":
+        if len(args) < 2:
+            return "Usage: buy <item|reactor|weapons> <quantity>"
+        try:
+            quantity = int(args[-1])
+        except ValueError:
+            return "Quantity must be an integer."
+        return market.buy_item(state, " ".join(args[:-1]), quantity)
     if cmd == "hangar":
         return market.show_hangar(state)
     if cmd == "sell":
@@ -96,7 +106,8 @@ def execute_command(state: GameState, line: str) -> str | None:
         return quests.start_quest(state, " ".join(args))
     if cmd == "help":
         state.log(
-            "travel, jump, dock, inventory, sell <item> <qty>, upgrade reactor|weapons, "
+            "travel, jump, dock, market, system (close market), buy <item> <qty>, sell <item> <qty>, "
+            "upgrade reactor|weapons, "
             "lock, fire, cease, ship, comms, quests"
         )
         return None
@@ -124,6 +135,7 @@ def palette_suggestions(state: GameState) -> list[tuple[str, str]]:
                 items.append((f"Jump to {other.name}", f"jump {other.name}"))
     if ship.status.value == "docked":
         items.append(("Inventory", "inventory"))
+        items.append(("System view", "system"))
         for stack in state.player.cargo:
             if stack.quantity > 0:
                 items.append(

@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import random
+import textwrap
 from dataclasses import dataclass
 
 from rich.style import Style
 from rich.text import Text
 
+from eve_ascii.ascii_ui import ascii_only
 from eve_ascii.galaxy import planet_position, station_position
 from eve_ascii.models import (
     BackgroundStar,
@@ -499,34 +501,80 @@ def render_ship_inspect(state: GameState) -> Text:
     return out
 
 
-def render_galaxy_map(state: GameState, width: int, height: int) -> Text:
-    canvas = SpaceCanvas(width, height, width // 2, height // 2)
-    rng = random.Random(state.galaxy.seed)
-    for _ in range(width // 3):
-        canvas.put(rng.randint(0, width - 1), rng.randint(0, height - 1), ".", STAR_STYLE)
-    cur = state.galaxy.get_system(state.player.ship.location.system_id)
+def render_galaxy_map(state: GameState, width: int, height: int, zoom: float = 1.0) -> Text:
+    width = max(1, width)
+    height = max(5, height)
     if not state.galaxy.systems:
         return Text("Empty galaxy.", style=Style(color="#aaccee"))
 
-    xs = [s.position.x for s in state.galaxy.systems.values()]
-    ys = [s.position.y for s in state.galaxy.systems.values()]
-    min_x, max_x = min(xs), max(xs)
-    min_y, max_y = min(ys), max(ys)
-    span_x = max(max_x - min_x, 1.0)
-    span_y = max(max_y - min_y, 1.0)
-    pad = 3
+    current = state.galaxy.get_system(state.player.ship.location.system_id)
+    center = current.position if current else next(iter(state.galaxy.systems.values())).position
+    current_name = ascii_only(current.name) if current else "unknown"
+    hole_name = ascii_only(state.galaxy.black_hole.name) if state.galaxy.black_hole else "none"
+    linked = [
+        state.galaxy.get_system(system_id)
+        for system_id in (current.neighbors if current else [])
+    ]
+    linked = [system for system in linked if system]
+    link_names = ", ".join(ascii_only(system.name) for system in linked) or "none"
+    link_lines = textwrap.wrap(f"LINKS: {link_names}", width=max(1, width), break_long_words=True)
+    deltas = [(system.position.x - center.x, system.position.y - center.y) for system in linked]
+    map_height = max(1, height - 2 - len(link_lines))
+    available_x = max(1, width // 2 - 2)
+    available_y = max(1, map_height // 2 - 1)
+    reach_x = max((abs(dx) for dx, _ in deltas), default=1.0)
+    reach_y = max((abs(dy) for _, dy in deltas), default=1.0)
+    base_scale = min(available_x / reach_x, available_y / reach_y)
+    scale = max(0.01, base_scale * max(0.05, zoom))
+    canvas = SpaceCanvas(width, map_height, width // 2, map_height // 2)
+    rng = random.Random(state.galaxy.seed)
+    for _ in range(width // 3):
+        canvas.put(rng.randint(0, width - 1), rng.randint(0, map_height - 1), ".", STAR_STYLE)
 
-    for s in state.galaxy.systems.values():
-        gx = pad + int((s.position.x - min_x) / span_x * (width - 2 * pad - 1))
-        gy = pad + int((s.position.y - min_y) / span_y * (height - 2 * pad - 1))
-        if cur and s.id == cur.id:
+    screen_positions = {
+        system.id: (
+            canvas.anchor_x + round((system.position.x - center.x) * scale),
+            canvas.anchor_y + round((system.position.y - center.y) * scale),
+        )
+        for system in state.galaxy.systems.values()
+    }
+    if current:
+        x0, y0 = screen_positions[current.id]
+        for system in linked:
+            x1, y1 = screen_positions[system.id]
+            steps = max(abs(x1 - x0), abs(y1 - y0))
+            for step in range(1, steps):
+                ratio = step / steps
+                canvas.put(
+                    round(x0 + (x1 - x0) * ratio),
+                    round(y0 + (y1 - y0) * ratio),
+                    ".",
+                    Style(color="#6688aa"),
+                )
+
+    for system in state.galaxy.systems.values():
+        gx, gy = screen_positions[system.id]
+        if current and system.id == current.id:
             canvas.put(gx, gy, "@", Style(color="#00e5ff", bold=True))
-        elif s.neighbors:
-            canvas.put(gx, gy, "+", Style(color="#88aaff"))
+        elif current and system.id in current.neighbors:
+            canvas.put(gx, gy, "+", Style(color="#88ffaa", bold=True))
+        elif any(system.id in nebula.system_ids for nebula in state.galaxy.nebulae):
+            canvas.put(gx, gy, "N", Style(color="#cc88ff", bold=True))
+        elif system.neighbors:
+            canvas.put(gx, gy, "*", Style(color="#88aaff"))
         else:
-            canvas.put(gx, gy, "*", Style(color="#ffcc66"))
+            canvas.put(gx, gy, ".", Style(color="#667788"))
+
+    if state.galaxy.black_hole:
+        hole = state.galaxy.black_hole.position
+        gx = canvas.anchor_x + round((hole.x - center.x) * scale)
+        gy = canvas.anchor_y + round((hole.y - center.y) * scale)
+        canvas.put(gx, gy, "O", Style(color="#ff6677", bold=True))
 
     header = Text(" GALAXY MAP ", style=Style(color="#e8b84a", bold=True))
-    header.append("[g] system view\n", style=Style(color="#6688aa"))
+    header.append(f"{current_name}  zoom {zoom:.2f}x\n", style=Style(color="#aaccee"))
+    header.append(f"@=here +=linked *=other O={hole_name} N=nebula\n", style=Style(color="#668899"))
+    for line in link_lines:
+        header.append(line + "\n", style=Style(color="#88ffaa", bold=True))
     header.append(canvas.to_text())
     return header
