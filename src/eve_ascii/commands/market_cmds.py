@@ -133,6 +133,22 @@ class SellCommand(Command):
         return items
 
 
+class RepairCommand(Command):
+    def matches(self, parts: list[str]) -> bool:
+        return bool(parts) and parts[0].lower() == "repair"
+
+    def execute(self, state: GameState, parts: list[str]) -> str | None:
+        return market.repair_ship(state)
+
+    def completions(self, state: GameState) -> list[str]:
+        return ["repair"]
+
+    def palette_items(self, state: GameState) -> list[tuple[str, str]]:
+        if state.player.ship.status.value == "docked":
+            return [("Repair hull", "repair")]
+        return []
+
+
 class UpgradeCommand(Command):
     def matches(self, parts: list[str]) -> bool:
         return bool(parts) and parts[0].lower() == "upgrade"

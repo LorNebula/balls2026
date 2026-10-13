@@ -9,8 +9,8 @@ from rich.text import Text
 
 from eve_ascii.ascii_ui import ascii_only
 from eve_ascii.materials import MATERIALS, base_prices_map
-from eve_ascii.models import CargoStack, GameState, ShipStatus
-from eve_ascii.ship import find_component
+from eve_ascii.models import CargoStack, GameState, ShipStatus, TutorialStep
+from eve_ascii.ship import find_component, kind_integrity
 
 TUTORIAL_CARGO_ID = "flagged_cargo"
 TUTORIAL_CARGO_NAME = "Flagged Military Cargo"
@@ -44,6 +44,8 @@ UPGRADE_COST: dict[str, float] = {
     "weapons": 2500.0,
 }
 UPGRADE_HP_BONUS = 30.0
+WEAPON_UPGRADE_DAMAGE = 10.0
+REPAIR_CREDITS_PER_HP = 4.0
 MARKET_RESTOCK_INTERVAL = 60.0
 
 
@@ -175,6 +177,8 @@ def sell_item(state: GameState, item_ref: str, quantity: int | str) -> str | Non
     if station:
         station.inventory[stack.item_id] = station.inventory.get(stack.item_id, 0) + quantity
     state.log(f"Sold {quantity}x {stack.name} for {total:.0f} cr ({unit:.0f}/ea).")
+    if state.tutorial_step == TutorialStep.SELL and stack.item_id == TUTORIAL_CARGO_ID:
+        state.tutorial_sell_done = True
     state.station_view = "market"
     return None
 
@@ -248,12 +252,46 @@ def upgrade_component(state: GameState, kind: str) -> str | None:
     state.player.credits -= cost
     if station and stock_id in station.inventory:
         station.inventory[stock_id] -= 1
-    comp.max_health += UPGRADE_HP_BONUS
-    comp.health = comp.max_health
-    state.log(f"Upgraded {comp.kind}: +{UPGRADE_HP_BONUS:.0f} max hp ({cost:.0f} cr).")
+    ship = state.player.ship
+    if key == "weapons":
+        ship.weapon_damage_bonus += WEAPON_UPGRADE_DAMAGE
+        state.log(
+            f"Upgraded weapons: +{WEAPON_UPGRADE_DAMAGE:.0f} laser damage ({cost:.0f} cr)."
+        )
+    else:
+        comp.max_health += UPGRADE_HP_BONUS
+        comp.health = comp.max_health
+        state.log(f"Upgraded {comp.kind}: +{UPGRADE_HP_BONUS:.0f} max hp ({cost:.0f} cr).")
     if key == "reactor":
-        state.player.ship.max_power += 15.0
-        state.player.ship.power = min(state.player.ship.max_power, state.player.ship.power + 15.0)
+        ship.max_power += 15.0
+        ship.power = min(ship.max_power, ship.power + 15.0)
+    if state.tutorial_step == TutorialStep.UPGRADE:
+        if key == "reactor":
+            state.tutorial_upgraded_reactor = True
+        elif key == "weapons":
+            state.tutorial_upgraded_weapons = True
+    return None
+
+
+def repair_ship(state: GameState) -> str | None:
+    if state.player.ship.status != ShipStatus.DOCKED:
+        return "Must be docked to repair."
+    if not _current_station(state):
+        return "No repair bay at this station."
+    ship = state.player.ship
+    missing = sum(max(0.0, c.max_health - c.health) for c in ship.components)
+    if missing <= 0:
+        return "Hull components already at full integrity."
+    cost = round(missing * REPAIR_CREDITS_PER_HP, 0)
+    if state.player.credits < cost:
+        return f"Need {cost:.0f} cr to repair ({missing:.0f} hp missing)."
+    state.player.credits -= cost
+    for comp in ship.components:
+        comp.health = comp.max_health
+    if kind_integrity(ship.components, "shields") > 0:
+        ship.shield = ship.max_shield
+    state.log(f"Repaired {missing:.0f} hull hp for {cost:.0f} cr. Shields topped off.")
+    state.station_view = "hangar"
     return None
 
 
@@ -317,7 +355,10 @@ def render_market_view(state: GameState, width: int, height: int) -> Text:
         inner_width,
         row_limit,
     )
-    out.append(" buy <item> <qty> | sell <item> <qty|all> | system\n", style=Style(color="#668899"))
+    out.append(
+        " buy <item> <qty> | sell <item> <qty|all> | repair | system\n",
+        style=Style(color="#668899"),
+    )
     return out
 
 

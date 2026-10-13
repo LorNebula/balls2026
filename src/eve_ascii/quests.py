@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from eve_ascii.models import GameState, Quest, QuestStatus
+from eve_ascii.models import GameState, Quest, QuestStatus, TutorialStep
 
 
 def seed_quests() -> list[Quest]:
@@ -23,6 +23,20 @@ def seed_quests() -> list[Quest]:
             summary="Win one combat encounter without retreating.",
         ),
     ]
+
+
+def current_objective(state: GameState) -> str:
+    if state.tutorial_step != TutorialStep.DONE:
+        from eve_ascii.tutorial import tutorial_objective
+
+        return tutorial_objective(state)
+    active = [q for q in state.quests if q.status == QuestStatus.ACTIVE]
+    if not active:
+        return ""
+    if len(active) == 1:
+        q = active[0]
+        return f"{q.title}: {q.summary}"
+    return " | ".join(f"{q.title}" for q in active[:3])
 
 
 def unlock_quests(state: GameState) -> None:

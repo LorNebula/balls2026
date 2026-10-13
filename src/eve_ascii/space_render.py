@@ -251,7 +251,12 @@ def _show_stations_on_map(state: GameState) -> bool:
         return False
     if state.tutorial_step == TutorialStep.DONE:
         return True
-    return state.tutorial_step == TutorialStep.JUMP
+    return state.tutorial_step in (
+        TutorialStep.JUMP_STATION,
+        TutorialStep.DOCK,
+        TutorialStep.SELL,
+        TutorialStep.UPGRADE,
+    )
 
 
 def _draw_drifting_stars(
@@ -329,6 +334,30 @@ def _resource_style(frac: float, *, energy: bool) -> Style:
     if frac < 0.3:
         return NRG_LOW_STYLE if energy else HP_LOW_STYLE
     return NRG_BAR_STYLE if energy else HP_BAR_STYLE
+
+
+GAME_OVER_STYLE = Style(color="#ff2222", bold=True, bgcolor="#2a0000")
+GAME_OVER_SUB_STYLE = Style(color="#ffcc88", bold=True, bgcolor="#2a0000")
+GAME_OVER_FRAME = Style(color="#aa4444", bold=True, bgcolor="#1a0000")
+
+def _draw_game_over_overlay(canvas: SpaceCanvas) -> None:
+    lines: list[tuple[str, Style]] = [
+        ("==============================", GAME_OVER_FRAME),
+        ("", GAME_OVER_FRAME),
+        ("GAME OVER", GAME_OVER_STYLE),
+        ("", GAME_OVER_FRAME),
+        ("SHIP DESTROYED", GAME_OVER_SUB_STYLE),
+        ("", GAME_OVER_FRAME),
+        ("type quit", GAME_OVER_SUB_STYLE),
+        ("", GAME_OVER_FRAME),
+        ("==============================", GAME_OVER_FRAME),
+    ]
+    y = max(0, canvas.height // 2 - len(lines) // 2)
+    for text, style in lines:
+        if text:
+            x = max(0, (canvas.width - len(text)) // 2)
+            _put_text(canvas, x, y, text, style)
+        y += 1
 
 
 def _draw_combat_hud(canvas: SpaceCanvas, state: GameState) -> None:
@@ -443,7 +472,13 @@ def render_open_space(
         )
         _apply_screen_flash(canvas, state)
         header = Text(" HYPERSPACE  ", style=Style(color="#bb88ff", bold=True))
-        header.append(f"fuel {ship.fuel:.0f}\n", style=Style(color="#aaccee"))
+        header.append(f"fuel {ship.fuel:.0f} ", style=Style(color="#aaccee"))
+        from eve_ascii.quests import current_objective
+
+        hs_obj = ascii_only(current_objective(state))
+        if hs_obj:
+            header.append(f"| obj: {hs_obj} ", style=Style(color="#aaffcc", bold=True))
+        header.append("\n", style=Style())
         header.append(" hull 01 reactor  02 thrusters  03 shields  04 weapons\n", style=Style(color="#668899"))
         header.append(canvas.to_text())
         return header
@@ -527,11 +562,18 @@ def render_open_space(
         style=Style(color="#aaccee"),
     )
     header.append("01-04 components ", style=Style(color="#ffee66"))
+    from eve_ascii.quests import current_objective
+
+    objective = ascii_only(current_objective(state))
+    if objective:
+        header.append(f"| obj: {objective} ", style=Style(color="#aaffcc", bold=True))
     if ship.eta_seconds > 0:
         header.append(f"eta {ship.eta_seconds:.1f}s ", style=Style(color="#88ccff"))
     header.append("\n", style=Style())
     if state.mode == GameMode.COMBAT:
         _draw_combat_hud(canvas, state)
+    if state.game_over:
+        _draw_game_over_overlay(canvas)
     _apply_screen_flash(canvas, state)
     header.append(canvas.to_text())
     return header

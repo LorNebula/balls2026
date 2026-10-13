@@ -109,8 +109,10 @@ def render_map_pane(
         return render_docked_view(state, w, h)
     in_hyperspace = state.mode == GameMode.HYPERSPACE or ship.status == ShipStatus.JUMPING
     if in_hyperspace:
-        return render_open_space(state, w, h, scale, hyperspace=True)
-    return render_open_space(state, w, h, scale, hyperspace=False)
+        body = render_open_space(state, w, h, scale, hyperspace=True)
+    else:
+        body = render_open_space(state, w, h, scale, hyperspace=False)
+    return body
 
 
 def _as_text(line: Text | None) -> Text:

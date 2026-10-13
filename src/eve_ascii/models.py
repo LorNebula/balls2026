@@ -35,7 +35,11 @@ class TutorialStep(str, Enum):
     WARNING = "warning"
     INTERDICT = "interdict"
     COMBAT = "combat"
-    JUMP = "jump"
+    JUMP_STATION = "jump_station"
+    MINE = "mine"
+    DOCK = "dock"
+    SELL = "sell"
+    UPGRADE = "upgrade"
     GALAXY = "galaxy"
     QUESTS = "quests"
     DONE = "done"
@@ -224,6 +228,7 @@ class Ship:
     fire_cooldown: float = 0.0
     mine_cooldown: float = 0.0
     power_starve_logged: bool = False
+    weapon_damage_bonus: float = 0.0
 
 
 @dataclass
@@ -365,6 +370,10 @@ class GameState:
     tutorial_step_elapsed: float = 0.0
     tutorial_post_combat: bool = False
     tutorial_jump_from_system: str | None = None
+    tutorial_mined_units: int = 0
+    tutorial_sell_done: bool = False
+    tutorial_upgraded_reactor: bool = False
+    tutorial_upgraded_weapons: bool = False
     screen_flash: float = 0.0
     station_view: str = "hangar"
     market_restock_timer: float = 0.0
@@ -374,6 +383,7 @@ class GameState:
     galaxy_zoom: float = 1.0
     star_scroll: float = 0.0
     background_stars: list[BackgroundStar] = field(default_factory=list)
+    game_over: bool = False
 
     def log(self, message: str) -> None:
         from eve_ascii.ascii_ui import ascii_only

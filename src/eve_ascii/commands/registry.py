@@ -15,6 +15,7 @@ from eve_ascii.commands.market_cmds import (
     MarketCommand,
     SellCommand,
     SystemViewCommand,
+    RepairCommand,
     UpgradeCommand,
 )
 from eve_ascii.commands.misc_cmds import (
@@ -43,6 +44,7 @@ COMMANDS: list[Command] = [
     BuyCommand(),
     HangarCommand(),
     SellCommand(),
+    RepairCommand(),
     UpgradeCommand(),
     JumpCommand(),
     TravelCommand(),
@@ -67,6 +69,10 @@ def execute_command(state: GameState, line: str) -> str | None:
         return str(e)
     if not parts:
         return None
+    if state.game_over:
+        allowed = {"quit", "exit", "help"}
+        if parts[0].lower() not in allowed:
+            return "Game over. Type quit to exit."
     for command in COMMANDS:
         if command.matches(parts):
             return command.execute(state, parts)
