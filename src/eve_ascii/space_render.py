@@ -13,6 +13,7 @@ from rich.text import Text
 from eve_ascii.ascii_ui import ascii_only
 from eve_ascii.galaxy import planet_position, station_position
 from eve_ascii.models import (
+    Asteroid,
     BackgroundStar,
     Explosion,
     GameMode,
@@ -358,6 +359,54 @@ def _draw_explosion(canvas: SpaceCanvas, ex: Explosion, px: int, py: int) -> Non
         canvas.stamp_art(px, py, EXPLOSION_SMALL, EXPLOSION_STYLE)
 
 
+def asteroid_art_for_yield(asteroid: Asteroid) -> list[str]:
+    if asteroid.max_yield <= 0:
+        return ["*"]
+    remaining = max(0.0, min(1.0, asteroid.yield_left / asteroid.max_yield))
+    if remaining > 0.66:
+        return ASTEROID_ART
+    if remaining > 0.33:
+        return ["[o]"]
+    return ["."]
+
+
+def _draw_mining_beam(
+    canvas: SpaceCanvas,
+    ship: Ship,
+    target_x: int,
+    target_y: int,
+) -> None:
+    delta_x = target_x - canvas.anchor_x
+    delta_y = target_y - canvas.anchor_y
+    art = player_ship_art(ship)
+    if abs(delta_x) >= abs(delta_y):
+        start_x = canvas.anchor_x + (1 if delta_x >= 0 else -1) * (max(map(len, art)) // 2 - 1)
+        start_y = canvas.anchor_y
+    else:
+        start_x = canvas.anchor_x
+        start_y = canvas.anchor_y + (1 if delta_y >= 0 else -1) * (len(art) // 2)
+
+    line_delta_x = target_x - start_x
+    line_delta_y = target_y - start_y
+    steps = max(abs(line_delta_x), abs(line_delta_y))
+    if steps <= 1:
+        return
+    if abs(line_delta_x) > abs(line_delta_y) * 2:
+        beam_char = "="
+    elif abs(line_delta_y) > abs(line_delta_x) * 2:
+        beam_char = "|"
+    else:
+        beam_char = "\\" if line_delta_x * line_delta_y > 0 else "/"
+    for step in range(1, steps):
+        ratio = step / steps
+        canvas.put(
+            round(start_x + line_delta_x * ratio),
+            round(start_y + line_delta_y * ratio),
+            beam_char,
+            LASER_STYLE,
+        )
+
+
 def _draw_offscreen_indicators(
     canvas: SpaceCanvas,
     objects: list[tuple[str, float, float]],
@@ -501,6 +550,7 @@ def render_open_space(
     _draw_drifting_stars(canvas, state, inner_h)
 
     sys = state.galaxy.get_system(ship.location.system_id)
+    mining_target = None
     if sys and not tutorial_arena(state):
         sx, sy = canvas.world_to_screen(0, 0, ship_x, ship_y, scale)
         canvas.stamp_art(sx, sy, SUN_ART, SUN_STYLE)
@@ -523,7 +573,15 @@ def render_open_space(
                 )
                 highlight = lock_ast.upper() == ast.code.upper()
                 style = Style(color="#ffcc66", bold=True) if highlight else ASTEROID_STYLE
-                canvas.stamp_art(ax, ay, ASTEROID_ART, style, id_letter=ast.code)
+                canvas.stamp_art(
+                    ax,
+                    ay,
+                    asteroid_art_for_yield(ast),
+                    style,
+                    id_letter=ast.code,
+                )
+                if state.mining_active and highlight:
+                    mining_target = ast
 
         offscreen_objects: list[tuple[str, float, float]] = [("Sun", 0.0, 0.0)]
         offscreen_objects.extend(
@@ -575,6 +633,23 @@ def render_open_space(
         dp = ship.destination.coords
         px, py = canvas.world_to_screen(dp.x, dp.y, ship_x, ship_y, scale)
         canvas.put(px, py, "X", Style(color="#ff66aa", bold=True))
+
+    if mining_target:
+        target_x, target_y = canvas.world_to_screen(
+            mining_target.position.x,
+            mining_target.position.y,
+            ship_x,
+            ship_y,
+            scale,
+        )
+        _draw_mining_beam(canvas, ship, target_x, target_y)
+        canvas.stamp_art(
+            target_x,
+            target_y,
+            asteroid_art_for_yield(mining_target),
+            Style(color="#ffcc66", bold=True),
+            id_letter=mining_target.code,
+        )
 
     canvas.stamp_art(
         canvas.anchor_x,

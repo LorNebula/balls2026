@@ -202,14 +202,12 @@ def build_galaxy(seed: int, num_systems: int = 72) -> Galaxy:
                 "reactor_upgrade": 1,
                 "weapons_upgrade": 1,
             })
-            hangar_inventory = {}
-            if rng.random() < 0.45:
-                available_hulls = [ship_type.id for ship_type in SHIP_TYPES if ship_type.id != "venture"]
-                rng.shuffle(available_hulls)
-                hangar_inventory = {
-                    hull_id: 1
-                    for hull_id in available_hulls[:rng.randint(1, min(3, len(available_hulls)))]
-                }
+            available_hulls = [ship_type.id for ship_type in SHIP_TYPES if ship_type.id != "venture"]
+            rng.shuffle(available_hulls)
+            hangar_inventory = {
+                hull_id: 1
+                for hull_id in available_hulls[:rng.randint(1, min(3, len(available_hulls)))]
+            }
             stations.append(
                 Station(
                     id=f"{sid}_st0",

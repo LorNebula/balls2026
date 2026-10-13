@@ -60,15 +60,31 @@ def _set_warp(state: GameState, target: TravelTarget, dest: Vec3) -> str | None:
     return None
 
 
-def travel_coords(state: GameState, x: float, y: float, z: float) -> str | None:
+def travel_coords(state: GameState, x: float, y: float) -> str | None:
     ship = state.player.ship
     target = TravelTarget(
         kind="coords",
         system_id=ship.location.system_id,
-        coords=Vec3(x, y, z),
-        label=f"({x:.0f}, {y:.0f}, {z:.0f})",
+        coords=Vec3(x, y, 0.0),
+        label=f"({x:.0f}, {y:.0f})",
     )
-    return _set_warp(state, target, Vec3(x, y, z))
+    return _set_warp(state, target, Vec3(x, y, 0.0))
+
+
+def travel_direction(state: GameState, direction: str, units: float) -> str | None:
+    if units <= 0:
+        return "Travel distance must be greater than zero."
+    start = current_ship_coords(state)
+    offsets = {
+        "up": (0.0, -units),
+        "right": (units, 0.0),
+        "down": (0.0, units),
+        "left": (-units, 0.0),
+    }
+    if direction not in offsets:
+        return "Direction must be up, right, down, or left."
+    dx, dy = offsets[direction]
+    return travel_coords(state, start.x + dx, start.y + dy)
 
 
 def travel_planet(state: GameState, planet_name: str) -> str | None:
