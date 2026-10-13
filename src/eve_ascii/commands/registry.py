@@ -10,10 +10,13 @@ from eve_ascii.commands.mining_cmds import MineCommand, RadarCommand
 from eve_ascii.commands.map_cmds import GalaxyViewCommand, ZoomCommand
 from eve_ascii.commands.market_cmds import (
     BuyCommand,
+    BuyShipCommand,
     HangarCommand,
     InventoryCommand,
     MarketCommand,
     SellCommand,
+    SellShipCommand,
+    SwitchShipCommand,
     SystemViewCommand,
     UpgradeCommand,
 )
@@ -37,6 +40,9 @@ COMMANDS: list[Command] = [
     UndockCommand(),
     InventoryCommand(),
     MarketCommand(),
+    BuyShipCommand(),
+    SellShipCommand(),
+    SwitchShipCommand(),
     SystemViewCommand(),
     GalaxyViewCommand(),
     ZoomCommand(),

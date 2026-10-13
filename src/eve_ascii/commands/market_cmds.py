@@ -3,6 +3,7 @@ from __future__ import annotations
 from eve_ascii.commands.base import Command
 from eve_ascii import market
 from eve_ascii.models import GameState
+from eve_ascii.shipyard import SHIP_TYPES
 
 
 class InventoryCommand(Command):
@@ -33,6 +34,83 @@ class MarketCommand(Command):
         if state.player.ship.status.value == "docked":
             return [("Market", "market")]
         return []
+
+
+class BuyShipCommand(Command):
+    def matches(self, parts: list[str]) -> bool:
+        return len(parts) >= 2 and parts[0].lower() == "buy" and parts[1].lower() == "ship"
+
+    def execute(self, state: GameState, parts: list[str]) -> str | None:
+        if len(parts) < 3:
+            return "Usage: buy ship <hull>"
+        return market.buy_ship(state, " ".join(parts[2:]))
+
+    def completions(self, state: GameState) -> list[str]:
+        commands = ["buy ship "]
+        if state.player.ship.status.value == "docked":
+            system = state.galaxy.get_system(state.player.ship.location.system_id)
+            station = next(
+                (item for item in system.stations if item.id == state.player.ship.location.station_id),
+                None,
+            ) if system else None
+            if station:
+                commands.extend(
+                    f"buy ship {hull_id}"
+                    for hull_id, quantity in station.hangar_inventory.items()
+                    if quantity > 0
+                )
+        return commands
+
+    def palette_items(self, state: GameState) -> list[tuple[str, str]]:
+        if state.player.ship.status.value != "docked":
+            return []
+        system = state.galaxy.get_system(state.player.ship.location.system_id)
+        station = next(
+            (item for item in system.stations if item.id == state.player.ship.location.station_id),
+            None,
+        ) if system else None
+        if not station:
+            return []
+        return [
+            (f"Buy {hull.name}", f"buy ship {hull.id}")
+            for hull in SHIP_TYPES
+            if station.hangar_inventory.get(hull.id, 0) > 0
+        ]
+
+
+class SellShipCommand(Command):
+    def matches(self, parts: list[str]) -> bool:
+        return len(parts) >= 2 and parts[0].lower() == "sell" and parts[1].lower() == "ship"
+
+    def execute(self, state: GameState, parts: list[str]) -> str | None:
+        if len(parts) < 3:
+            return "Usage: sell ship <id>"
+        return market.sell_ship(state, " ".join(parts[2:]))
+
+    def completions(self, state: GameState) -> list[str]:
+        return ["sell ship "] + [f"sell ship {ship.ship_id}" for ship in state.player.fleet]
+
+
+class SwitchShipCommand(Command):
+    def matches(self, parts: list[str]) -> bool:
+        return len(parts) >= 2 and parts[0].lower() in ("switch", "change") and parts[1].lower() == "ship"
+
+    def execute(self, state: GameState, parts: list[str]) -> str | None:
+        if len(parts) < 3:
+            return "Usage: switch ship <id>"
+        return market.switch_ship(state, " ".join(parts[2:]))
+
+    def completions(self, state: GameState) -> list[str]:
+        return ["switch ship "] + [f"switch ship {ship.ship_id}" for ship in state.player.fleet]
+
+    def palette_items(self, state: GameState) -> list[tuple[str, str]]:
+        if state.player.ship.status.value != "docked":
+            return []
+        return [
+            (f"Switch to {ship.name} ({ship.ship_id})", f"switch ship {ship.ship_id}")
+            for ship in state.player.fleet
+            if ship is not state.player.ship
+        ]
 
 
 class SystemViewCommand(Command):
@@ -91,6 +169,11 @@ class HangarCommand(Command):
 
     def completions(self, state: GameState) -> list[str]:
         return ["hangar"]
+
+    def palette_items(self, state: GameState) -> list[tuple[str, str]]:
+        if state.player.ship.status.value == "docked":
+            return [("Open hangar", "hangar")]
+        return []
 
 
 class SellCommand(Command):

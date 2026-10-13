@@ -9,8 +9,9 @@ from rich.text import Text
 
 from eve_ascii.ascii_ui import ascii_only
 from eve_ascii.materials import MATERIALS, base_prices_map
-from eve_ascii.models import CargoStack, GameState, ShipStatus
+from eve_ascii.models import CargoStack, GameState, ShipLocation, ShipStatus
 from eve_ascii.ship import find_component
+from eve_ascii.shipyard import SHIP_TYPES, SHIP_TYPES_BY_ID, build_ship
 
 TUTORIAL_CARGO_ID = "flagged_cargo"
 TUTORIAL_CARGO_NAME = "Flagged Military Cargo"
@@ -117,14 +118,141 @@ def show_inventory(state: GameState) -> str | None:
 def show_hangar(state: GameState) -> str | None:
     if state.player.ship.status != ShipStatus.DOCKED:
         return "Not docked."
+    station = _current_station(state)
+    if not station or not station.hangar_inventory:
+        return "This station has no hangar."
+    state.map_view = "system"
     state.station_view = "hangar"
-    state.log("Hangar view.")
+    state.log("Station hangar opened.")
     return None
 
 
 def show_system_view(state: GameState) -> str | None:
     state.station_view = "system"
     state.log("System view.")
+    return None
+
+
+def _require_hangar(state: GameState):
+    if state.player.ship.status != ShipStatus.DOCKED:
+        return None, "Must be docked at a hangar."
+    station = _current_station(state)
+    if not station or not station.hangar_inventory:
+        return None, "This station has no hangar."
+    return station, None
+
+
+def buy_ship(state: GameState, hull_ref: str) -> str | None:
+    station, error = _require_hangar(state)
+    if error:
+        return error
+    key = hull_ref.casefold().strip()
+    ship_type = next(
+        (
+            hull
+            for hull in SHIP_TYPES
+            if hull.id == key or hull.name.casefold() == key
+        ),
+        None,
+    )
+    if not ship_type or ship_type.id == "venture":
+        return f"Unknown purchasable ship: {hull_ref}."
+    if station.hangar_inventory.get(ship_type.id, 0) <= 0:
+        return f"{ship_type.name} is not in this hangar's stock."
+    if state.player.credits < ship_type.price:
+        return f"Need {ship_type.price} cr (have {state.player.credits:.0f})."
+    serial = state.player.next_ship_serial
+    ship_id = f"{ship_type.id}-{serial}"
+    location = ShipLocation(
+        system_id=state.player.ship.location.system_id,
+        kind="docked",
+        coords=state.player.ship.location.coords,
+        station_id=state.player.ship.location.station_id,
+    )
+    new_ship = build_ship(ship_type.id, location, ship_id)
+    state.player.next_ship_serial += 1
+    state.player.fleet.append(new_ship)
+    state.player.credits -= ship_type.price
+    station.hangar_inventory[ship_type.id] -= 1
+    state.station_view = "hangar"
+    state.log(f"Purchased {ship_type.name} ({ship_id}) for {ship_type.price} cr.")
+    return None
+
+
+def switch_ship(state: GameState, ship_ref: str) -> str | None:
+    station, error = _require_hangar(state)
+    if error:
+        return error
+    key = ship_ref.casefold().strip()
+    new_ship = next(
+        (
+            ship
+            for ship in state.player.fleet
+            if ship.ship_id.casefold() == key or ship.name.casefold() == key
+        ),
+        None,
+    )
+    if not new_ship:
+        return f"Ship not found in fleet: {ship_ref}."
+    if new_ship is state.player.ship:
+        return f"{new_ship.name} is already active."
+    current = state.player.ship
+    current_system_id = current.location.system_id
+    current_station_id = current.location.station_id
+    current_coords = current.location.coords
+    current.status = ShipStatus.DOCKED
+    new_ship.location = ShipLocation(
+        system_id=current_system_id,
+        kind="docked",
+        coords=current_coords,
+        station_id=current_station_id,
+    )
+    new_ship.status = ShipStatus.DOCKED
+    state.player.ship = new_ship
+    state.player.system_id = current_system_id
+    state.station_view = "hangar"
+    state.log(f"Switched to {new_ship.name} ({new_ship.ship_id}).")
+    return None
+
+
+def sell_ship(state: GameState, ship_ref: str) -> str | None:
+    station, error = _require_hangar(state)
+    if error:
+        return error
+    key = ship_ref.casefold().strip()
+    ship = next(
+        (
+            owned
+            for owned in state.player.fleet
+            if owned.ship_id.casefold() == key or owned.name.casefold() == key
+        ),
+        None,
+    )
+    if not ship:
+        return f"Ship not found in fleet: {ship_ref}."
+    if len(state.player.fleet) <= 1:
+        return "You cannot sell your last ship."
+    if ship.cargo:
+        return "Empty this ship's cargo before selling it."
+    refund = round(ship.purchase_price * 0.6)
+    current_system_id = state.player.ship.location.system_id
+    current_station_id = state.player.ship.location.station_id
+    current_coords = state.player.ship.location.coords
+    state.player.fleet.remove(ship)
+    if ship is state.player.ship:
+        state.player.ship = state.player.fleet[0]
+        state.player.ship.location = ShipLocation(
+            system_id=current_system_id,
+            kind="docked",
+            coords=current_coords,
+            station_id=current_station_id,
+        )
+        state.player.ship.status = ShipStatus.DOCKED
+        state.player.system_id = current_system_id
+    state.player.credits += refund
+    station.hangar_inventory[ship.hull_id] = station.hangar_inventory.get(ship.hull_id, 0) + 1
+    state.station_view = "hangar"
+    state.log(f"Sold {ship.name} ({ship.ship_id}) for {refund} cr.")
     return None
 
 
@@ -328,6 +456,56 @@ def render_cargo_view(state: GameState, width: int, height: int) -> Text:
     out.append(f"| {sum(stack.quantity for stack in state.player.cargo)} / {state.player.max_cargo} units\n")
     cargo = {stack.item_id: stack.quantity for stack in state.player.cargo if stack.quantity > 0}
     _append_table_section(out, "CARGO", sorted(cargo), cargo, state, inner_width, row_limit)
+    return out
+
+
+def render_hangar_view(state: GameState, width: int, height: int) -> Text:
+    station = _current_station(state)
+    if not station or not station.hangar_inventory:
+        return Text("No hangar available.", style=Style(color="#ff6666"))
+    inner_width = max(20, width - 2)
+    title = ascii_only(station.name)
+    out = Text(f" {title} HANGAR ", style=Style(color="#c9a86a", bold=True))
+    out.append(f"| credits {state.player.credits:.0f} cr\n", style=Style(color="#88ccaa"))
+    out.append(
+        f" {'SHIP':<16}{'CARGO':>7}{'HULL HP':>10}{'SLOTS':>7}{'PRICE':>10}{'STOCK':>8}\n",
+        style=Style(color="#aaccee", bold=True),
+    )
+    available = [
+        SHIP_TYPES_BY_ID[hull_id]
+        for hull_id, quantity in sorted(station.hangar_inventory.items())
+        if quantity > 0 and hull_id in SHIP_TYPES_BY_ID
+    ]
+    row_limit = max(1, (height - 5) // 2)
+    if not available:
+        out.append(" (no ships in stock)\n", style=Style(color="#778899"))
+    for ship_type in available[:row_limit]:
+        name = ascii_only(ship_type.name)[:16]
+        row = (
+            f" {name:<16}{ship_type.cargo_capacity:>7}"
+            f"{ship_type.component_health * 4:>10.0f}{ship_type.component_slots:>7}"
+            f"{ship_type.price:>10}"
+            f"{station.hangar_inventory[ship_type.id]:>8}"
+        )
+        out.append(row[:inner_width] + "\n", style=Style(color="#ddeeff"))
+
+    out.append(" FLEET\n", style=Style(color="#e8b84a", bold=True))
+    for ship in state.player.fleet[:row_limit]:
+        current = "*" if ship is state.player.ship else " "
+        cargo_quantity = sum(stack.quantity for stack in ship.cargo)
+        max_health = sum(component.max_health for component in ship.components)
+        health = sum(component.health for component in ship.components)
+        row = (
+            f"{current} {ascii_only(ship.ship_id):<14}{ascii_only(ship.name):<14} "
+            f"cargo {cargo_quantity:>3}/{ship.cargo_capacity:<3} hull {health:.0f}/{max_health:.0f}"
+        )
+        out.append(row[:inner_width] + "\n", style=Style(color="#88ffaa" if current == "*" else "#ddeeff"))
+    if len(state.player.fleet) > row_limit:
+        out.append(f" ... {len(state.player.fleet) - row_limit} more ships\n", style=Style(color="#778899"))
+    out.append(
+        " buy ship <hull> | switch ship <id> | sell ship <id> | hangar\n",
+        style=Style(color="#668899"),
+    )
     return out
 
 

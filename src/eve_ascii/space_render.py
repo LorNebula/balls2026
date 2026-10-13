@@ -50,14 +50,6 @@ HYPERLANE_ACTIVE = Style(color="#6688aa")
 HYPERLANE_INACTIVE = Style(color="#50677f")
 
 # 01=reactor 02=thrusters 03=shields 04=weapons (embedded in art)
-PLAYER_SHIP = [
-    "        ______        ",
-    "       /  01  \\       ",
-    "  >====|02||03|====>  ",
-    "       \\  04  /       ",
-    "        ------        ",
-]
-
 ENEMY_SHIP = [
     "        ______        ",
     "       /  01  \\       ",
@@ -209,11 +201,25 @@ def _draw_player(canvas: SpaceCanvas, ship: Ship) -> None:
     canvas.stamp_art(
         canvas.anchor_x,
         canvas.anchor_y,
-        PLAYER_SHIP,
+        player_ship_art(ship),
         HULL_PLAYER,
         components=ship.components,
         subtarget=ship.subtarget,
     )
+
+
+def player_ship_art(ship: Ship) -> list[str]:
+    size = max(1, min(6, ship.visual_size))
+    flank = 3 + size * 2
+    body = ">" + "=" * flank + "|02||03|" + "=" * flank + ">"
+    width = len(body)
+    return [
+        ("/" + "_" * (width - 2) + "\\").center(width),
+        ("/ " + " " * (size * 2) + "01" + " " * (size * 2) + " \\").center(width),
+        body,
+        ("\\ " + " " * (size * 2) + "04" + " " * (size * 2) + " /").center(width),
+        ("\\" + "_" * (width - 2) + "/").center(width),
+    ]
 def tick_star_scroll(state: GameState, dt: float) -> None:
     state.star_scroll += dt
 
@@ -322,7 +328,7 @@ def render_docked_view(state: GameState, width: int, height: int) -> Text:
     canvas.stamp_art(
         anchor_x,
         anchor_y + 3,
-        PLAYER_SHIP,
+        player_ship_art(ship),
         Style(color="#66bbdd", bold=True),
         components=ship.components,
     )
@@ -363,7 +369,7 @@ def render_open_space(
         canvas.stamp_art(
             canvas.anchor_x,
             canvas.anchor_y,
-            PLAYER_SHIP,
+            player_ship_art(ship),
             HULL_PLAYER,
             components=ship.components,
             subtarget=ship.subtarget,
@@ -435,7 +441,7 @@ def render_open_space(
     canvas.stamp_art(
         canvas.anchor_x,
         canvas.anchor_y,
-        PLAYER_SHIP,
+        player_ship_art(ship),
         HULL_PLAYER,
         components=ship.components,
         subtarget=ship.subtarget,

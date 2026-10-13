@@ -51,6 +51,10 @@ Open-space view: your ship stays left-center; world scrolls around it with ASCII
 | `cargo` / `inventory` | Open your cargo hold anywhere |
 | `buy <item> <quantity>` | Buy stocked cargo, or `buy reactor 1` / `buy weapons 1` to upgrade |
 | `sell <item> <quantity\|all>` | Sell cargo at a docked station |
+| `hangar` | Open ship services at a station with a hangar |
+| `buy ship <hull>` | Buy an in-stock hull at a hangar |
+| `switch ship <id>` | Change active ship; each ship keeps its own cargo hold |
+| `sell ship <id>` | Sell a ship after emptying its cargo; your last ship is protected |
 | `lock <A-Z> [reactor\|shield\|01-04]` | Combat target lock |
 | `fire` / `cease` | Start / stop lasers |
 | `comms` | Show inbox (Commander Crosshair) |

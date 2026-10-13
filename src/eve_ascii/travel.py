@@ -299,6 +299,7 @@ def new_game(galaxy, *, with_tutorial: bool = True) -> GameState:
     from eve_ascii.models import Galaxy, Player, Ship
     from eve_ascii.space_render import init_background_stars
     from eve_ascii.tutorial import init_tutorial, skip_tutorial
+    from eve_ascii.market import starter_cargo
 
     assert isinstance(galaxy, Galaxy)
     start = next(iter(galaxy.systems.values()))
@@ -312,10 +313,10 @@ def new_game(galaxy, *, with_tutorial: bool = True) -> GameState:
         fuel=100.0,
         max_fuel=100.0,
         fuel_per_jump=1.0,
+        cargo=starter_cargo(),
     )
-    from eve_ascii.market import starter_cargo
 
-    player = Player(ship=ship, system_id=start.id, cargo=starter_cargo())
+    player = Player(ship=ship, system_id=start.id)
     state = GameState(galaxy=galaxy, player=player)
     init_background_stars(state)
     from eve_ascii.event_handlers import bootstrap_events
