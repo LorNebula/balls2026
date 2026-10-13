@@ -366,6 +366,9 @@ class GameState:
     tutorial_jump_from_system: str | None = None
     screen_flash: float = 0.0
     station_view: str = "hangar"
+    map_view: Literal["system", "galaxy"] = "system"
+    system_zoom: float = 4.0
+    galaxy_zoom: float = 1.0
     star_scroll: float = 0.0
     background_stars: list[BackgroundStar] = field(default_factory=list)
 

@@ -26,10 +26,14 @@ class SystemViewCommand(Command):
         return bool(parts) and parts[0].lower() in ("system", "map", "close", "exit")
 
     def execute(self, state: GameState, parts: list[str]) -> str | None:
+        state.map_view = "system"
         return market.show_system_view(state)
 
     def completions(self, state: GameState) -> list[str]:
         return ["system", "close"]
+
+    def palette_items(self, state: GameState) -> list[tuple[str, str]]:
+        return [("System view", "system")]
 
 
 class BuyCommand(Command):

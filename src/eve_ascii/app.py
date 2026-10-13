@@ -5,7 +5,7 @@ from textual.app import App
 
 from eve_ascii.ascii_ui import ascii_only
 from eve_ascii.commands import execute_command
-from eve_ascii.events import OPEN_SHIP_UI
+from eve_ascii.events import OPEN_SHIP_UI, QUIT_APP
 from eve_ascii.game_loop import GameLoop
 from eve_ascii.galaxy import load_galaxy
 from eve_ascii.models import GameState, ShipStatus
@@ -18,9 +18,7 @@ class EveApp(App):
     TITLE = "EVE ASCII"
     CSS_PATH = Path(__file__).with_name("app.tcss")
     ENABLE_COMMAND_PALETTE = False
-    BINDINGS = [
-        ("q", "quit", "Quit"),
-    ]
+    BINDINGS = []
 
     def __init__(self, game_state: GameState, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -29,6 +27,7 @@ class EveApp(App):
 
     def on_mount(self) -> None:
         self.game_state.bus.on(OPEN_SHIP_UI, self._open_ship_screen)
+        self.game_state.bus.on(QUIT_APP, self._quit_from_command)
         self.game_loop.start()
         self.push_screen(MapScreen(self.game_state))
         self.set_interval(0.2, self.game_tick)
@@ -37,6 +36,9 @@ class EveApp(App):
     def _open_ship_screen(self, **_payload) -> None:
         if not isinstance(self.screen, ShipScreen):
             self.push_screen(ShipScreen(self.game_state))
+
+    def _quit_from_command(self, **_payload) -> None:
+        self.exit()
 
     def game_tick(self) -> None:
         dt = 0.2

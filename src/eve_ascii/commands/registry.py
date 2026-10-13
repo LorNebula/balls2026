@@ -7,6 +7,7 @@ import shlex
 from eve_ascii.commands.base import Command
 from eve_ascii.commands.combat_cmds import CeaseCommand, FireCommand, LockCommand
 from eve_ascii.commands.mining_cmds import MineCommand, RadarCommand
+from eve_ascii.commands.map_cmds import GalaxyViewCommand, ZoomCommand
 from eve_ascii.commands.market_cmds import (
     BuyCommand,
     HangarCommand,
@@ -18,6 +19,7 @@ from eve_ascii.commands.market_cmds import (
 from eve_ascii.commands.misc_cmds import (
     CommsCommand,
     HelpCommand,
+    QuitCommand,
     QuestCommand,
     QuestsCommand,
     ShipCommand,
@@ -28,11 +30,14 @@ from eve_ascii.models import GameState
 # Order matters: more specific matchers before generic ones (e.g. cease fire before cease-only).
 COMMANDS: list[Command] = [
     HelpCommand(),
+    QuitCommand(),
     ShipCommand(),
     DockCommand(),
     UndockCommand(),
     InventoryCommand(),
     SystemViewCommand(),
+    GalaxyViewCommand(),
+    ZoomCommand(),
     BuyCommand(),
     HangarCommand(),
     SellCommand(),

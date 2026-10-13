@@ -23,13 +23,7 @@ textual run --dev src/eve_ascii/app.py
 
 - `:` — focus command line (always visible at bottom)
 - `Tab` / `Right` — accept inline completion ghost text
-- `Esc` — focus map (so `g`, `h/j/k/l` work)
-- `?` — list commands in the log
-- `h` / `j` / `k` / `l` — pan map
-- `+` / `-` — zoom map; galaxy view centers on your system and lists its linked systems
-- `g` — toggle galaxy / system view
-- `system` / `close` — exit the market and show the current system
-- `q` — quit
+- Enter commands at the prompt: `galaxy`, `system`, `zoom in`, `zoom out`, `help`, `quit`
 
 ## UI (ASCII)
 
@@ -50,6 +44,9 @@ Open-space view: your ship stays left-center; world scrolls around it with ASCII
 | `travel planet <name>` | Orbit a planet |
 | `travel station <name>` | Warp near a station |
 | `jump <system>` | Jump to a linked system (costs 1 fuel) |
+| `galaxy` / `system` | Switch between galaxy and current-system views |
+| `zoom in` / `zoom out` | Zoom the active map view |
+| `quit` | Exit the game |
 | `market` / `inventory` | Open the docked station market |
 | `buy <item> <quantity>` | Buy stocked cargo, or `buy reactor 1` / `buy weapons 1` to upgrade |
 | `sell <item> <quantity>` | Sell cargo at a docked station |
