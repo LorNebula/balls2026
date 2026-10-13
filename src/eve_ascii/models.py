@@ -91,6 +91,7 @@ class Station:
     offset: Vec3 = field(default_factory=lambda: Vec3(50.0, 0.0, 0.0))
     inventory: dict[str, int] = field(default_factory=dict)
     prices: dict[str, float] = field(default_factory=dict)
+    hangar_inventory: dict[str, int] = field(default_factory=dict)
 
     def position(self, planets: dict[str, Planet]) -> Vec3:
         if self.planet_id and self.planet_id in planets:
@@ -208,6 +209,12 @@ def starter_components() -> list[ShipComponent]:
 class Ship:
     name: str
     location: ShipLocation
+    hull_id: str = "venture"
+    ship_id: str = "venture-1"
+    purchase_price: float = 0.0
+    cargo_capacity: int = 100
+    cargo: list[CargoStack] = field(default_factory=list)
+    visual_size: int = 1
     status: ShipStatus = ShipStatus.IDLE
     destination: TravelTarget | None = None
     eta_seconds: float = 0.0
@@ -329,8 +336,24 @@ class Player:
     ship: Ship
     system_id: str
     credits: float = 0.0
-    max_cargo: int = 100
-    cargo: list[CargoStack] = field(default_factory=list)
+    fleet: list[Ship] = field(default_factory=list)
+    next_ship_serial: int = 2
+
+    def __post_init__(self) -> None:
+        if not any(ship is self.ship for ship in self.fleet):
+            self.fleet.append(self.ship)
+
+    @property
+    def max_cargo(self) -> int:
+        return self.ship.cargo_capacity
+
+    @property
+    def cargo(self) -> list[CargoStack]:
+        return self.ship.cargo
+
+    @cargo.setter
+    def cargo(self, cargo: list[CargoStack]) -> None:
+        self.ship.cargo = cargo
 
     @property
     def location(self) -> ShipLocation:

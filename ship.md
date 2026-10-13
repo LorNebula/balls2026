@@ -13,5 +13,5 @@ The ship has a power bar which increases over time depending on the reactor. Pow
 
 Every component (except the reactor) uses a set amount of power. Shields, turret recharge and turret firing. If there is not enough power they cannot function.
 
-
-
+# Update 1
+Some space stations have hangars now. After docking, you can open the hangar tab and buy a new ship. New ships have more health, cargo space and look visually bigger. You can buy, sell and change ships at the hangar. You cannot sell your last ship remaining. Each ship has their own cargo and cargo space.

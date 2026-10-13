@@ -8,7 +8,7 @@ from rich.style import Style
 from rich.text import Text
 
 from eve_ascii.ascii_ui import ascii_only, pad_line, split_pane_bottom, split_pane_top
-from eve_ascii.market import render_cargo_view, render_market_view
+from eve_ascii.market import render_cargo_view, render_hangar_view, render_market_view
 from eve_ascii.models import GameMode, GameState, ShipStatus
 from eve_ascii.space_render import (
     render_docked_view,
@@ -72,6 +72,8 @@ def _map_pane_title(state: GameState, *, galaxy_view: bool) -> str:
     if ship.status == ShipStatus.DOCKED and state.station_view != "system":
         if state.station_view == "market":
             return "STATION MARKET"
+        if state.station_view == "hangar":
+            return "STATION HANGAR"
         if state.station_view == "cargo":
             return "CARGO HOLD"
         return "DOCK / HANGAR"
@@ -106,6 +108,8 @@ def render_map_pane(
     if ship.status == ShipStatus.DOCKED and state.station_view != "system":
         if state.station_view == "market":
             return render_market_view(state, w, h)
+        if state.station_view == "hangar":
+            return render_hangar_view(state, w, h)
         return render_docked_view(state, w, h)
     in_hyperspace = state.mode == GameMode.HYPERSPACE or ship.status == ShipStatus.JUMPING
     if in_hyperspace:

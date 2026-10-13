@@ -9,6 +9,7 @@ from pathlib import Path
 
 from eve_ascii.models import BlackHole, Galaxy, Moon, Nebula, Planet, StarSystem, Station, SystemAsteroid, Vec3
 from eve_ascii.names import planet_name, station_name, system_name, water_name
+from eve_ascii.shipyard import SHIP_TYPES
 
 
 def _system_layout(
@@ -201,6 +202,12 @@ def build_galaxy(seed: int, num_systems: int = 72) -> Galaxy:
                 "reactor_upgrade": 1,
                 "weapons_upgrade": 1,
             })
+            available_hulls = [ship_type.id for ship_type in SHIP_TYPES if ship_type.id != "venture"]
+            rng.shuffle(available_hulls)
+            hangar_inventory = {
+                hull_id: 1
+                for hull_id in available_hulls[:rng.randint(1, min(3, len(available_hulls)))]
+            }
             stations.append(
                 Station(
                     id=f"{sid}_st0",
@@ -208,6 +215,7 @@ def build_galaxy(seed: int, num_systems: int = 72) -> Galaxy:
                     planet_id=planet.id,
                     offset=Vec3(rng.uniform(30, 80), rng.uniform(-20, 20), 0.0),
                     inventory=inventory,
+                    hangar_inventory=hangar_inventory,
                     prices={
                         item_id: round(price * rng.uniform(0.9, 1.1), 0)
                         for item_id, price in BASE_PRICES.items()
@@ -304,6 +312,7 @@ def galaxy_to_dict(galaxy: Galaxy) -> dict:
                         },
                         "inventory": st.inventory,
                         "prices": st.prices,
+                        "hangar_inventory": st.hangar_inventory,
                     }
                     for st in s.stations
                 ],
@@ -390,6 +399,7 @@ def dict_to_galaxy(data: dict) -> Galaxy:
                 ),
                 inventory=dict(st.get("inventory", {})),
                 prices=dict(st.get("prices", {})),
+                hangar_inventory=dict(st.get("hangar_inventory", {})),
             )
             for st in raw["stations"]
         ]

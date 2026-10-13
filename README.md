@@ -40,7 +40,8 @@ Open-space view: your ship stays left-center; world scrolls around it with ASCII
 
 | Command | Effect |
 |---------|--------|
-| `travel <x> <y> <z>` | Warp to coords in current system |
+| `travel <x> <y>` | Warp to 2D coordinates in the current system |
+| `travel up\|right\|down\|left <units>` | Move a relative distance in that direction |
 | `travel planet <name>` | Orbit a planet |
 | `travel station <name>` | Warp near a station |
 | `jump <system>` | Jump to a linked system (costs 1 fuel) |
@@ -51,6 +52,10 @@ Open-space view: your ship stays left-center; world scrolls around it with ASCII
 | `cargo` / `inventory` | Open your cargo hold anywhere |
 | `buy <item> <quantity>` | Buy stocked cargo, or `buy reactor 1` / `buy weapons 1` to upgrade |
 | `sell <item> <quantity\|all>` | Sell cargo at a docked station |
+| `hangar` | Open ship services at a station with a hangar |
+| `buy ship <hull>` | Buy an in-stock hull at a hangar |
+| `switch ship <id>` | Change active ship; each ship keeps its own cargo hold |
+| `sell ship <id>` | Sell a ship after emptying its cargo; your last ship is protected |
 | `lock <A-Z> [reactor\|shield\|01-04]` | Combat target lock |
 | `fire` / `cease` | Start / stop lasers |
 | `comms` | Show inbox (Commander Crosshair) |
@@ -58,6 +63,6 @@ Open-space view: your ship stays left-center; world scrolls around it with ASCII
 
 New games start the **tutorial** (hyperspace → pirate fight → jump → galaxy → quests). During combat try: `lock A`, `fire`.
 
-The default galaxy has 72 systems arranged in a central ring and spiral arms, with each arm connecting only to the ring. Station markets stock a rotating selection of pirate salvage and asteroid minerals; prices respond to supply. Use `skip` to bypass the opening tutorial. Asteroid fields appear in some systems without stations. Lock an asteroid and fire to mine ore; mined asteroids stay depleted for the current game session. Galaxy generation is deterministic for a seed; regenerate with `python scripts/generate_galaxy.py --seed <seed>`.
+The default galaxy has 72 systems arranged in a central ring and spiral arms, with each arm connecting only to the ring. Every generated station has a hangar with a small ship selection. Station markets stock a rotating selection of pirate salvage and asteroid minerals; prices respond to supply. Use `skip` to bypass the opening tutorial. Asteroid fields appear in some systems without stations. Lock an asteroid and fire to mine ore; mined asteroids stay depleted for the current game session. Galaxy generation is deterministic for a seed; regenerate with `python scripts/generate_galaxy.py --seed <seed>`.
 
 Game state is in-memory only (no backend).

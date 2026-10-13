@@ -72,7 +72,7 @@ class TravelCommand(Command):
     def execute(self, state: GameState, parts: list[str]) -> str | None:
         args = parts[1:]
         if not args:
-            return "Usage: travel <x> <y> <z> | travel planet <name> | travel station <name>"
+            return "Usage: travel <x> <y> | travel up|right|down|left <units> | travel planet|station <name>"
         if args[0].lower() == "planet":
             if len(args) < 2:
                 return "Usage: travel planet <name>"
@@ -81,16 +81,33 @@ class TravelCommand(Command):
             if len(args) < 2:
                 return "Usage: travel station <name>"
             return travel.travel_station(state, " ".join(args[1:]))
-        if len(args) >= 3:
+        direction = args[0].lower()
+        if direction in ("up", "right", "down", "left"):
+            if len(args) != 2:
+                return "Usage: travel up|right|down|left <units>"
             try:
-                x, y, z = float(args[0]), float(args[1]), float(args[2])
+                units = float(args[1])
+            except ValueError:
+                return "Travel distance must be a number."
+            return travel.travel_direction(state, direction, units)
+        if len(args) == 2:
+            try:
+                x, y = float(args[0]), float(args[1])
             except ValueError:
                 return "Coordinates must be numbers."
-            return travel.travel_coords(state, x, y, z)
-        return "Usage: travel <x> <y> <z> | travel planet <name> | travel station <name>"
+            return travel.travel_coords(state, x, y)
+        return "Usage: travel <x> <y> | travel up|right|down|left <units> | travel planet|station <name>"
 
     def completions(self, state: GameState) -> list[str]:
-        cmds = ["travel ", "travel planet ", "travel station "]
+        cmds = [
+            "travel ",
+            "travel up ",
+            "travel right ",
+            "travel down ",
+            "travel left ",
+            "travel planet ",
+            "travel station ",
+        ]
         ship = state.player.ship
         sys = state.galaxy.get_system(ship.location.system_id)
         if sys:
