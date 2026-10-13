@@ -15,7 +15,7 @@ SOUND_FILES: dict[str, str] = {
     "hit": "hit",
     "jump": "jump",
     "laserShoot": "laserShoot",
-    "miningLoop": "miningLoop",
+    "miningLoop": "miningLoopFINAL",
     "pickup": "pickup",
     "sell": "sell",
     "warp": "warp",
