@@ -77,6 +77,75 @@ def global_price(state: GameState, item_id: str) -> float:
     return round(sum(_station_price(station, item_id) for station in stations) / len(stations), 0)
 
 
+def price_map_for_galaxy(state: GameState) -> dict[str, dict[str, float]]:
+    """System name -> item_id -> unit price at that system's first station."""
+    out: dict[str, dict[str, float]] = {}
+    for system in state.galaxy.systems.values():
+        if not system.stations:
+            continue
+        station = system.stations[0]
+        prices: dict[str, float] = {}
+        item_ids = set(station.prices) | set(station.inventory) | set(BASE_PRICES)
+        for item_id in item_ids:
+            if item_id.endswith("_upgrade"):
+                continue
+            prices[item_id] = _station_price(station, item_id)
+        out[system.name] = prices
+    return out
+
+
+def _mark_tutorial_sell(state: GameState, item_id: str) -> None:
+    if state.tutorial_step == TutorialStep.SELL and item_id == TUTORIAL_CARGO_ID:
+        state.tutorial_sell_done = True
+
+
+def complete_station_sale(
+    state: GameState,
+    station,
+    item_id: str,
+    item_name: str,
+    quantity: int,
+) -> float:
+    """Credit player for a sale without touching cargo (courier delivery)."""
+    unit = _station_price(station, item_id)
+    total = unit * quantity
+    state.player.credits += total
+    station.inventory[item_id] = station.inventory.get(item_id, 0) + quantity
+    _mark_tutorial_sell(state, item_id)
+    state.log(f"Courier sold {quantity}x {item_name} for {total:.0f} cr ({unit:.0f}/ea).")
+    return total
+
+
+def sell_at_station(
+    state: GameState,
+    station,
+    item_id: str,
+    quantity: int,
+) -> str | None:
+    """Remove cargo from hold and sell at the given station."""
+    stack = find_cargo(state.player, item_id)
+    if not stack:
+        return f"No cargo matching '{item_id}'."
+    if quantity <= 0:
+        return "Quantity must be positive."
+    if quantity > stack.quantity:
+        return f"Only {stack.quantity} units available."
+    unit = _station_price(station, stack.item_id)
+    total = unit * quantity
+    stack.quantity -= quantity
+    if stack.quantity <= 0:
+        state.player.cargo = [c for c in state.player.cargo if c.quantity > 0]
+    state.player.credits += total
+    station.inventory[stack.item_id] = station.inventory.get(stack.item_id, 0) + quantity
+    state.log(f"Sold {quantity}x {stack.name} for {total:.0f} cr ({unit:.0f}/ea).")
+    _mark_tutorial_sell(state, stack.item_id)
+    return None
+
+
+def primary_station(system):
+    return system.stations[0] if system and system.stations else None
+
+
 def _current_station(state: GameState):
     system = state.galaxy.get_system(state.player.ship.location.system_id)
     if not system or not state.player.ship.location.station_id:
@@ -291,26 +360,13 @@ def sell_item(state: GameState, item_ref: str, quantity: int | str) -> str | Non
         if quantity.casefold() != "all":
             return "Quantity must be a positive integer or all."
         quantity = stack.quantity
-    if quantity <= 0:
-        return "Quantity must be positive."
-    if quantity > stack.quantity:
-        return f"Only {stack.quantity} units available."
-    unit = local_price(state, stack.item_id)
-    if unit is None:
-        return "Must be docked at a station market to sell."
-    total = unit * quantity
-    stack.quantity -= quantity
-    if stack.quantity <= 0:
-        state.player.cargo = [c for c in state.player.cargo if c.quantity > 0]
-    state.player.credits += total
     station = _current_station(state)
-    if station:
-        station.inventory[stack.item_id] = station.inventory.get(stack.item_id, 0) + quantity
-    state.log(f"Sold {quantity}x {stack.name} for {total:.0f} cr ({unit:.0f}/ea).")
-    if state.tutorial_step == TutorialStep.SELL and stack.item_id == TUTORIAL_CARGO_ID:
-        state.tutorial_sell_done = True
-    state.station_view = "market"
-    return None
+    if not station:
+        return "Must be docked at a station market to sell."
+    err = sell_at_station(state, station, stack.item_id, quantity)
+    if err is None:
+        state.station_view = "market"
+    return err
 
 
 def buy_item(state: GameState, item_ref: str, quantity: int) -> str | None:

@@ -29,6 +29,7 @@ from eve_ascii.commands.misc_cmds import (
     QuestsCommand,
     SkipTutorialCommand,
 )
+from eve_ascii.commands.script_cmds import ScriptCommand
 from eve_ascii.commands.travel_cmds import DockCommand, JumpCommand, TravelCommand, UndockCommand
 from eve_ascii.models import GameState
 
@@ -52,6 +53,7 @@ COMMANDS: list[Command] = [
     SellCommand(),
     RepairCommand(),
     UpgradeCommand(),
+    ScriptCommand(),
     JumpCommand(),
     TravelCommand(),
     LockCommand(),

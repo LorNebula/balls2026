@@ -35,7 +35,7 @@ class MapScreen(Screen):
         with Horizontal(id="cmd_row"):
             yield Static("> ", id="cmd_prefix")
             yield Input(
-                placeholder="travel station ... | jump ... | dock",
+                placeholder=": focus | help | galaxy | script | travel | jump | dock",
                 id="cmd_input",
                 classes="-textual-compact",
             )
@@ -61,7 +61,7 @@ class MapScreen(Screen):
         self.query_one("#footer_bar", Static).update(
             box_line(
                 w,
-                " : command  galaxy/system  zoom in/out  quit ",
+                " : cmd line  up/down history  galaxy|system  zoom  script  help  quit ",
             )
         )
 

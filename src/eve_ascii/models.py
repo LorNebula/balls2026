@@ -332,6 +332,17 @@ class CargoStack:
 
 
 @dataclass
+class PendingShipment:
+    item_id: str
+    item_name: str
+    quantity: int
+    dest_system_id: str
+    dest_station_id: str
+    eta_seconds: float
+    fee_paid: float
+
+
+@dataclass
 class Player:
     ship: Ship
     system_id: str
@@ -407,6 +418,10 @@ class GameState:
     star_scroll: float = 0.0
     background_stars: list[BackgroundStar] = field(default_factory=list)
     game_over: bool = False
+    trade_script_source: str = ""
+    trade_script_enabled: bool = False
+    trade_script_timer: float = 0.0
+    pending_shipments: list[PendingShipment] = field(default_factory=list)
 
     def log(self, message: str) -> None:
         from eve_ascii.ascii_ui import ascii_only

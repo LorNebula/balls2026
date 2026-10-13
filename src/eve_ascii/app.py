@@ -5,11 +5,12 @@ from textual.app import App
 
 from eve_ascii.ascii_ui import ascii_only
 from eve_ascii.commands import execute_command
-from eve_ascii.events import QUIT_APP
+from eve_ascii.events import OPEN_SCRIPT_EDITOR, QUIT_APP
 from eve_ascii.game_loop import GameLoop
 from eve_ascii.galaxy import load_galaxy
 from eve_ascii.models import GameState, ShipStatus
 from eve_ascii.screens.map_screen import MapScreen
+from eve_ascii.screens.script_edit_screen import ScriptEditScreen
 from eve_ascii import travel
 
 
@@ -26,6 +27,7 @@ class EveApp(App):
 
     def on_mount(self) -> None:
         self.game_state.bus.on(QUIT_APP, self._quit_from_command)
+        self.game_state.bus.on(OPEN_SCRIPT_EDITOR, self._open_script_editor)
         self.game_loop.start()
         self.push_screen(MapScreen(self.game_state))
         self.set_interval(0.2, self.game_tick)
@@ -33,6 +35,9 @@ class EveApp(App):
 
     def _quit_from_command(self, **_payload) -> None:
         self.exit()
+
+    def _open_script_editor(self, **_payload) -> None:
+        self.push_screen(ScriptEditScreen(self.game_state))
 
     def game_tick(self) -> None:
         dt = 0.2
