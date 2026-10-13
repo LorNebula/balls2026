@@ -191,8 +191,14 @@ class SpaceCanvas:
     def to_text(self) -> Text:
         out = Text()
         for y, row in enumerate(self.cells):
-            for cell in row:
-                out.append(cell.ch, style=cell.style)
+            start = 0
+            while start < len(row):
+                style = row[start].style
+                end = start + 1
+                while end < len(row) and row[end].style is style:
+                    end += 1
+                out.append("".join(cell.ch for cell in row[start:end]), style=style)
+                start = end
             if y < self.height - 1:
                 out.append("\n")
         return out
@@ -236,7 +242,7 @@ def _show_stations_on_map(state: GameState) -> bool:
         return False
     if state.tutorial_step == TutorialStep.DONE:
         return True
-    return state.tutorial_step in (TutorialStep.JUMP_STATION, TutorialStep.DOCK)
+    return state.tutorial_step == TutorialStep.JUMP
 
 
 def _draw_drifting_stars(

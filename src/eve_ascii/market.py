@@ -123,10 +123,6 @@ def sell_item(state: GameState, item_ref: str, quantity: int) -> str | None:
     if station:
         station.inventory[stack.item_id] = station.inventory.get(stack.item_id, 0) + quantity
     state.log(f"Sold {quantity}x {stack.name} for {total:.0f} cr ({unit:.0f}/ea).")
-    if stack.item_id == TUTORIAL_CARGO_ID and not any(
-        c.item_id == TUTORIAL_CARGO_ID and c.quantity > 0 for c in state.player.cargo
-    ):
-        state.tutorial_sell_done = True
     state.station_view = "inventory"
     return None
 
@@ -202,11 +198,8 @@ def upgrade_component(state: GameState, kind: str) -> str | None:
     comp.health = comp.max_health
     state.log(f"Upgraded {comp.kind}: +{UPGRADE_HP_BONUS:.0f} max hp ({cost:.0f} cr).")
     if key == "reactor":
-        state.tutorial_upgraded_reactor = True
         state.player.ship.max_power += 15.0
         state.player.ship.power = min(state.player.ship.max_power, state.player.ship.power + 15.0)
-    elif key == "weapons":
-        state.tutorial_upgraded_weapons = True
     return None
 
 

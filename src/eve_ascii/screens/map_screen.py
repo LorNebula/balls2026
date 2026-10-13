@@ -111,6 +111,11 @@ class MapScreen(Screen):
         if command in ("system", "close", "exit", "map"):
             self._galaxy_view = False
             self._refresh_chrome()
+        elif command in ("jump", "gate"):
+            self._galaxy_view = False
+            if self.game_state.player.ship.status.value == "docked":
+                self.game_state.station_view = "system"
+            self._refresh_chrome()
         runner = getattr(self.app, "run_game_command", None)
         if callable(runner):
             runner(line)
