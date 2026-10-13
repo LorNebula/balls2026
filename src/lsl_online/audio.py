@@ -163,6 +163,6 @@ def tick_mining_loop(state: GameState) -> None:
         stop_all_loops()
         return
     if state.mining_active:
-        play_loop("miningLoopFINAL")
+        play_loop("miningLoop")
     else:
-        stop_loop("miningLoopFINAL")
+        stop_loop("miningLoop")
