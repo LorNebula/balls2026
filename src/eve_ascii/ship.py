@@ -86,6 +86,12 @@ def spend_power(obj: Ship | NpcShip, amount: float) -> bool:
     return True
 
 
+def hull_totals(obj: Ship | NpcShip) -> tuple[float, float]:
+    hp = sum(c.health for c in obj.components)
+    mx = sum(c.max_health for c in obj.components)
+    return hp, mx
+
+
 def meter(current: float, maximum: float, width: int = 16) -> str:
     if maximum <= 0:
         return "[" + "-" * width + "]"
@@ -114,7 +120,7 @@ def tick_systems(obj: Ship | NpcShip, dt: float) -> None:
         obj.shield = min(obj.max_shield, obj.shield + shield_gen_per_sec(obj) * dt)
 
 
-def tick_weapon_recharge(obj: Ship, dt: float) -> bool:
+def tick_weapon_recharge(obj: Ship | NpcShip, dt: float) -> bool:
     """Spend power to count down weapon charge. False if starved."""
     if obj.fire_cooldown <= 0:
         return True
@@ -127,7 +133,7 @@ def tick_weapon_recharge(obj: Ship, dt: float) -> bool:
     return True
 
 
-def try_fire_shot(obj: Ship) -> bool:
+def try_fire_shot(obj: Ship | NpcShip) -> bool:
     if not weapons_online(obj):
         return False
     if obj.fire_cooldown > 0:
@@ -144,8 +150,8 @@ def tick_all(state: GameState, dt: float) -> None:
 
 def pirate_components() -> list[ShipComponent]:
     return [
-        ShipComponent("01", "reactor", max_health=75.0, health=75.0),
-        ShipComponent("02", "thrusters", max_health=70.0, health=70.0),
-        ShipComponent("03", "shields", max_health=70.0, health=70.0),
-        ShipComponent("04", "weapons", max_health=65.0, health=65.0),
+        ShipComponent("01", "reactor", max_health=115.0, health=115.0),
+        ShipComponent("02", "thrusters", max_health=105.0, health=105.0),
+        ShipComponent("03", "shields", max_health=105.0, health=105.0),
+        ShipComponent("04", "weapons", max_health=100.0, health=100.0),
     ]

@@ -260,6 +260,7 @@ class NpcShip:
     loot_item_id: str | None = None
     loot_name: str | None = None
     loot_quantity: int = 0
+    fire_cooldown: float = 0.0
 
 
 @dataclass

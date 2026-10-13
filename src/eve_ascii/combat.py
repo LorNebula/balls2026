@@ -12,6 +12,7 @@ from eve_ascii.models import (
     HyperspaceParticle,
     NpcShip,
     Projectile,
+    Ship,
     ShipComponent,
     Vec3,
 )
@@ -33,6 +34,11 @@ COMP_BLAST_OFFSET = {
     "weapons": (0.0, 18.0),
 }
 
+PLAYER_PROJ_TARGET = "@"
+PLAYER_HIT_RADIUS = 35.0
+PIRATE_LASER_DAMAGE = 24.0
+PIRATE_SHIELD_DAMAGE = 16.0
+
 
 
 def spawn_pirates(state: GameState, count: int = 1) -> None:
@@ -45,11 +51,14 @@ def spawn_pirates(state: GameState, count: int = 1) -> None:
                 name=f"Pirate-{letters[i]}",
                 position=Vec3(200.0 + i * 140, -8.0 + i * 40, 0.0),
                 components=pirate_components(),
-                shield=55.0,
-                max_shield=55.0,
+                power=100.0,
+                max_power=100.0,
+                shield=90.0,
+                max_shield=90.0,
+                fire_cooldown=0.8,
             )
         )
-    state.log("HOSTILE CONTACT: pirate on scope. lock / fire")
+    state.log("HOSTILE CONTACT: pirates engaging. lock / fire")
 
 
 def enter_system(state: GameState, system) -> None:
@@ -149,6 +158,23 @@ def _spawn_laser(state: GameState, tx: float, ty: float, target: str) -> None:
     )
 
 
+def _spawn_enemy_laser(state: GameState, npc: NpcShip, tx: float, ty: float) -> None:
+    sx, sy = npc.position.x, npc.position.y
+    dx, dy = tx - sx, ty - sy
+    dist = math.hypot(dx, dy) or 1.0
+    speed = 360.0
+    state.projectiles.append(
+        Projectile(
+            x=sx - 15,
+            y=sy,
+            vx=dx / dist * speed,
+            vy=dy / dist * speed,
+            target_letter=PLAYER_PROJ_TARGET,
+            friendly=False,
+        )
+    )
+
+
 def _spawn_component_explosion(state: GameState, npc: NpcShip, kind: str) -> None:
     ox, oy = COMP_BLAST_OFFSET.get(kind, (0.0, 0.0))
     state.explosions.append(
@@ -176,7 +202,12 @@ def tick(state: GameState, dt: float) -> None:
         return
     state.combat_time += dt
     ship = state.player.ship
-    ship.fire_cooldown = max(0.0, ship.fire_cooldown - dt)
+
+    if ship.fire_cooldown > 0:
+        if not tick_weapon_recharge(ship, dt) and ship.weapons_active:
+            if not ship.power_starve_logged:
+                ship.power_starve_logged = True
+                state.log("Weapon recharge stalled - low power.")
 
     if ship.weapons_active:
         if not weapons_online(ship) or is_powerless(ship):
@@ -185,12 +216,18 @@ def tick(state: GameState, dt: float) -> None:
                 state.log("Weapons offline - no power.")
             else:
                 state.log("Weapons destroyed.")
-        elif ship.target_letter and ship.fire_cooldown <= 0:
+        elif ship.fire_cooldown <= 0 and ship.target_letter:
             npc = _npc_by_letter(state, ship.target_letter)
-            if npc:
+            if npc and try_fire_shot(ship):
                 ship.fire_cooldown = weapon_charge_seconds(ship)
+                ship.power_starve_logged = False
                 _spawn_laser(state, npc.position.x, npc.position.y, npc.letter)
+            elif npc and ship.power + 1e-9 < 4.0:
+                if not ship.power_starve_logged:
+                    ship.power_starve_logged = True
+                    state.log("Cannot fire - not enough power.")
 
+    _tick_hostile_fire(state, dt)
     _tick_projectiles(state, dt)
     if state.npc_ships and all_hostiles_dead(state):
         state.mode = GameMode.SPACE
@@ -201,11 +238,11 @@ def _alive_components(npc: NpcShip) -> list:
     return [c for c in npc.components if not c.destroyed]
 
 
-def _pick_hit_component(npc: NpcShip, ref: str):
-    comp = find_component(npc.components, ref)
+def _pick_hit_component(vessel: Ship | NpcShip, ref: str):
+    comp = find_component(vessel.components, ref)
     if comp and not comp.destroyed:
         return comp
-    alive = _alive_components(npc)
+    alive = [c for c in vessel.components if not c.destroyed]
     if not alive:
         return None
     order = ("reactor", "weapons", "thrusters", "shields")
@@ -236,21 +273,68 @@ def _destroy_npc(state: GameState, npc: NpcShip, *, reason: str) -> None:
         state.log(f"Mined {npc.loot_quantity}x {item_name}.")
 
 
+def _tick_hostile_fire(state: GameState, dt: float) -> None:
+    px, py = current_ship_xy(state)
+    for npc in state.npc_ships:
+        if not npc.alive or not npc.hostile or npc.asteroid:
+            continue
+        if npc.fire_cooldown > 0:
+            tick_weapon_recharge(npc, dt)
+            continue
+        if not weapons_online(npc) or is_powerless(npc):
+            continue
+        if try_fire_shot(npc):
+            npc.fire_cooldown = weapon_charge_seconds(npc) * 0.9
+            _spawn_enemy_laser(state, npc, px, py)
+
+
 def _tick_projectiles(state: GameState, dt: float) -> None:
     remaining: list[Projectile] = []
+    px, py = current_ship_xy(state)
     for p in state.projectiles:
         p.ttl -= dt
         if p.ttl <= 0:
             continue
         p.x += p.vx * dt
         p.y += p.vy * dt
-        npc = _npc_by_letter(state, p.target_letter)
-        if npc and npc.alive:
-            if math.hypot(p.x - npc.position.x, p.y - npc.position.y) < 35:
-                _apply_hit(state, npc)
+        if p.friendly:
+            npc = _npc_by_letter(state, p.target_letter)
+            if npc and npc.alive:
+                if math.hypot(p.x - npc.position.x, p.y - npc.position.y) < PLAYER_HIT_RADIUS:
+                    _apply_hit(state, npc)
+                    continue
+        elif p.target_letter == PLAYER_PROJ_TARGET:
+            if math.hypot(p.x - px, p.y - py) < PLAYER_HIT_RADIUS:
+                _apply_hit_player(state)
                 continue
         remaining.append(p)
     state.projectiles = remaining
+
+
+def _apply_hit_player(state: GameState) -> None:
+    ship = state.player.ship
+    if is_powerless(ship):
+        return
+    sx, sy = current_ship_xy(state)
+    state.explosions.append(Explosion(x=sx, y=sy, ttl=0.45, large=False))
+    if ship.shield > 0:
+        ship.shield = max(0.0, ship.shield - PIRATE_SHIELD_DAMAGE)
+        state.log(f"HOSTILE HIT shield ({ship.shield:.0f} left)")
+        return
+    comp = _pick_hit_component(ship, "weapons")
+    if not comp:
+        state.log("HOSTILE HIT - hull breach!")
+        return
+    before = comp.health
+    comp.health = max(0.0, comp.health - PIRATE_LASER_DAMAGE)
+    state.log(f"HOSTILE HIT {comp.slot_id} {comp.kind} ({comp.health:.0f} hp)")
+    if before > 0 and comp.health <= 0:
+        ox, oy = COMP_BLAST_OFFSET.get(comp.kind, (0.0, 0.0))
+        state.explosions.append(Explosion(x=sx + ox, y=sy + oy, ttl=0.75, large=True))
+        state.log(f"Your {comp.kind} DESTROYED")
+    if is_powerless(ship):
+        state.log("REACTOR OFFLINE - ship powerless!")
+        ship.weapons_active = False
 
 
 def _apply_hit(state: GameState, npc: NpcShip) -> None:
