@@ -16,6 +16,23 @@ from eve_ascii.space_render import (
     render_open_space,
 )
 
+COMBAT_BORDER_ORANGE = Style(color="#ff8800", bold=True)
+COMBAT_BORDER_RED = Style(color="#ff3333", bold=True)
+DEFAULT_BORDER = Style(color="#8899aa")
+DEFAULT_TITLE = Style(color="#e8b84a", bold=True)
+COMBAT_BORDER_FLASH_PERIOD = 0.55
+
+
+def _combat_border_active(state: GameState) -> bool:
+    return state.mode == GameMode.COMBAT and any(
+        npc.alive for npc in state.npc_ships
+    )
+
+
+def _combat_border_style(state: GameState) -> Style:
+    phase = int(state.combat_time / COMBAT_BORDER_FLASH_PERIOD) % 2
+    return COMBAT_BORDER_RED if phase else COMBAT_BORDER_ORANGE
+
 
 def _log_style(line: str) -> Style:
     if line.startswith("COMMS"):
@@ -67,7 +84,7 @@ def render_log_pane(state: GameState, width: int, height: int) -> Text:
 
 def _map_pane_title(state: GameState, *, galaxy_view: bool) -> str:
     ship = state.player.ship
-    if galaxy_view or state.tutorial_force_galaxy:
+    if galaxy_view:
         return "GALAXY MAP"
     if ship.status == ShipStatus.DOCKED and state.station_view != "system":
         if state.station_view == "market":
@@ -97,8 +114,6 @@ def render_map_pane(
     scale: float,
     galaxy_zoom: float = 1.0,
 ) -> Text:
-    if state.tutorial_force_galaxy:
-        galaxy_view = True
     w, h = max(20, width - 2), max(8, height - 2)
     ship = state.player.ship
     if galaxy_view:
@@ -168,10 +183,12 @@ def render_playfield(
 
     left_title = _map_pane_title(state, galaxy_view=galaxy_view)
     out = Text()
-    title_style = Style(color="#e8b84a", bold=True)
+    in_combat = _combat_border_active(state)
+    border_style = _combat_border_style(state) if in_combat else DEFAULT_BORDER
+    title_style = border_style if in_combat else DEFAULT_TITLE
     out.append(split_pane_top(map_w, log_w, left_title, "EVENT LOG") + "\n", style=title_style)
 
-    frame_style = Style(color="#8899aa")
+    frame_style = border_style
     for i in range(inner_h):
         ml = _as_text(map_lines[i] if i < len(map_lines) else None)
         ll = _as_text(log_lines[i] if i < len(log_lines) else None)

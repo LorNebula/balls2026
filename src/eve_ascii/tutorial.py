@@ -205,14 +205,14 @@ def tick(state: GameState, dt: float) -> None:
     elif step == TutorialStep.UPGRADE:
         if state.tutorial_upgraded_reactor and state.tutorial_upgraded_weapons:
             _set_step(state, TutorialStep.GALAXY)
-            state.tutorial_force_galaxy = True
+            state.tutorial_force_galaxy = False
             push_message(
                 state,
                 "CMDR Crosshair",
-                "Solid execution, pilot. Galaxy chart is on screen. "
-                "Commands: system (local map), galaxy (star chart), zoom in|out.",
+                "Solid execution, pilot. Type galaxy for the star chart, "
+                "system for local map, zoom in|out to adjust view.",
             )
-            state.log("Galaxy map shown. Type system to return to local view.")
+            state.log("Next: type galaxy to open the star chart, then system to return.")
 
     elif step == TutorialStep.GALAXY and state.tutorial_step_elapsed >= PAUSE_GALAXY:
         _set_step(state, TutorialStep.QUESTS)
@@ -279,7 +279,7 @@ def tutorial_objective(state: GameState) -> str:
     if step == TutorialStep.UPGRADE:
         return "upgrade reactor and weapons"
     if step == TutorialStep.GALAXY:
-        return "Review galaxy map (system / galaxy / zoom)"
+        return "Type galaxy to open star chart (system to return)"
     if step == TutorialStep.QUESTS:
         return "Type: quests"
     return ""

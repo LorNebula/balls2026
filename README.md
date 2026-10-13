@@ -45,7 +45,7 @@ Open-space view: your ship stays left-center; world scrolls around it with ASCII
 |---------|--------|
 | `travel <x> <y>` | Warp to 2D coordinates in the current system |
 | `travel up\|right\|down\|left <units>` | Move a relative distance in that direction |
-| `travel planet <name>` | Orbit a planet |
+| `travel planet <name>` | (Deprecated — planets removed from map) |
 | `travel station <name>` | Warp near a station |
 | `jump <system>` | Jump to a linked system (costs 1 fuel) |
 | `galaxy` / `system` | Switch between galaxy and current-system views |
@@ -53,7 +53,9 @@ Open-space view: your ship stays left-center; world scrolls around it with ASCII
 | `quit` | Exit the game |
 | `market` | Open the docked station market and your cargo tables |
 | `cargo` / `inventory` | Open your cargo hold anywhere |
-| `buy <item> <quantity>` | Buy stocked cargo, or `buy reactor 1` / `buy weapons 1` to upgrade |
+| `buy <item> <quantity\|all>` | Buy stocked cargo, or `buy reactor 1` / `buy weapons 1` to upgrade |
+| `path <system>` / `path clear` | Plot jump route; `jump` with no args follows next hop |
+| `mark <system> <char> <color>` | User marker on galaxy map (colors: red, green, blue, …) |
 | `sell <item> <quantity\|all>` | Sell cargo at a docked station |
 | `hangar` | Open ship services at a station with a hangar |
 | `buy ship <hull>` | Buy an in-stock hull at a hangar |

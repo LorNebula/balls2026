@@ -10,6 +10,29 @@ def completion_candidates(state: GameState) -> list[str]:
     return _completion_candidates(state)
 
 
+def _sort_jump_completions(state: GameState, hits: list[str]) -> list[str]:
+    if not hits or not hits[0].casefold().startswith("jump "):
+        return hits
+    sys = state.galaxy.get_system(state.player.ship.location.system_id)
+    neighbor_ids = set(sys.neighbors) if sys else set()
+    neighbor_hits: list[str] = []
+    other_hits: list[str] = []
+    for hit in hits:
+        name_part = hit[5:].strip().casefold()
+        matched = False
+        for system in state.galaxy.systems.values():
+            if system.id in neighbor_ids and (
+                system.name.casefold() == name_part
+                or system.name.casefold().startswith(name_part)
+            ):
+                neighbor_hits.append(hit)
+                matched = True
+                break
+        if not matched:
+            other_hits.append(hit)
+    return neighbor_hits + other_hits
+
+
 def matching_completions(state: GameState, partial: str, limit: int = 5) -> list[str]:
     text = partial.strip()
     if not text:
@@ -17,8 +40,10 @@ def matching_completions(state: GameState, partial: str, limit: int = 5) -> list
     key = text.casefold()
     hits = [c for c in completion_candidates(state) if c.casefold().startswith(key)]
     if hits:
+        hits = _sort_jump_completions(state, hits)
         return hits[:limit]
     hits = [c for c in completion_candidates(state) if key in c.casefold()]
+    hits = _sort_jump_completions(state, hits)
     return hits[:limit]
 
 

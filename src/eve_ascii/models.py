@@ -92,6 +92,10 @@ class Station:
     inventory: dict[str, int] = field(default_factory=dict)
     prices: dict[str, float] = field(default_factory=dict)
     hangar_inventory: dict[str, int] = field(default_factory=dict)
+    credits: float = 12_000.0
+    credits_max: float = 20_000.0
+    income_per_tick: float = 350.0
+    price_modifiers: dict[str, float] = field(default_factory=dict)
 
     def position(self, planets: dict[str, Planet]) -> Vec3:
         if self.planet_id and self.planet_id in planets:
@@ -325,10 +329,19 @@ class Quest:
 
 
 @dataclass
+class RadarContact:
+    label: str
+    x: float
+    y: float
+    kind: str
+
+
+@dataclass
 class CargoStack:
     item_id: str
     name: str
     quantity: int
+    avg_unit_cost: float = 0.0
 
 
 @dataclass
@@ -415,6 +428,10 @@ class GameState:
     map_view: Literal["system", "galaxy"] = "system"
     system_zoom: float = 4.0
     galaxy_zoom: float = 1.0
+    nav_path: list[str] = field(default_factory=list)
+    nav_path_goal: str | None = None
+    user_markers: dict[str, tuple[str, str]] = field(default_factory=dict)
+    radar_contacts: list[RadarContact] = field(default_factory=list)
     star_scroll: float = 0.0
     background_stars: list[BackgroundStar] = field(default_factory=list)
     game_over: bool = False

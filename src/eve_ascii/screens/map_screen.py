@@ -73,8 +73,6 @@ class MapScreen(Screen):
 
     def refresh_ui(self, *, refresh_command_line: bool = True) -> None:
         st = self.game_state
-        if st.tutorial_force_galaxy:
-            st.map_view = "galaxy"
         if st.map_view.upper() != self._chrome_view:
             self._refresh_chrome()
         pw, ph = self._playfield_size()

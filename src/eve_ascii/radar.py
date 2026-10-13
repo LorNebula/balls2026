@@ -1,52 +1,89 @@
-"""System radar scan to event log."""
+"""System radar: contacts on map, minimal event log."""
 
 from __future__ import annotations
 
 from eve_ascii.ascii_ui import ascii_only
-from eve_ascii.galaxy import planet_position, station_position
-from eve_ascii.models import GameState
+from eve_ascii.galaxy import station_position
+from eve_ascii.models import GameState, RadarContact
 from eve_ascii.travel import current_ship_coords
 
 
-def scan_system(state: GameState) -> None:
+def _in_nebula(state: GameState, system_id: str) -> bool:
+    return any(system_id in nebula.system_ids for nebula in state.galaxy.nebulae)
+
+
+def _radar_interval(state: GameState) -> float:
+    sys_id = state.player.ship.location.system_id
+    return 20.0 if _in_nebula(state, sys_id) else 10.0
+
+
+def _display_label(state: GameState, label: str) -> str:
+    if _in_nebula(state, state.player.ship.location.system_id):
+        return "???"
+    return ascii_only(label)
+
+
+def refresh_radar_contacts(state: GameState) -> None:
     ship = state.player.ship
     sys = state.galaxy.get_system(ship.location.system_id)
     if not sys:
-        state.log("RADAR: no system data.")
+        state.radar_contacts = []
         return
     coords = current_ship_coords(state)
-    state.log(f"RADAR sweep {ascii_only(sys.name)} | you @ ({coords.x:.0f}, {coords.y:.0f})")
-    for p in sys.planets:
-        pos = planet_position(p)
-        state.log(f"RADAR planet {ascii_only(p.name)} id={p.id} @ ({pos.x:.0f}, {pos.y:.0f})")
+    contacts: list[RadarContact] = []
+    contacts.append(
+        RadarContact(
+            label=_display_label(state, "Sun"),
+            x=0.0,
+            y=0.0,
+            kind="sun",
+        )
+    )
     for st in sys.stations:
         pos = station_position(sys, st)
-        state.log(f"RADAR station {ascii_only(st.name)} id={st.id} @ ({pos.x:.0f}, {pos.y:.0f})")
+        contacts.append(
+            RadarContact(
+                label=_display_label(state, f"St {st.name}"),
+                x=pos.x,
+                y=pos.y,
+                kind="station",
+            )
+        )
     for ast in state.asteroids:
         if not ast.alive:
             continue
-        state.log(
-            f"RADAR {ast.code} {ast.material_id} @ ({ast.position.x:.0f}, {ast.position.y:.0f}) "
-            f"yld {ast.yield_left}"
+        contacts.append(
+            RadarContact(
+                label=_display_label(state, f"{ast.code}"),
+                x=ast.position.x,
+                y=ast.position.y,
+                kind="asteroid",
+            )
         )
     for npc in state.npc_ships:
         if not npc.alive:
             continue
-        state.log(
-            f"RADAR ship {npc.letter} {ascii_only(npc.name)} @ "
-            f"({npc.position.x:.0f}, {npc.position.y:.0f})"
+        contacts.append(
+            RadarContact(
+                label=_display_label(state, f"Ship {npc.letter}"),
+                x=npc.position.x,
+                y=npc.position.y,
+                kind="ship",
+            )
         )
-    if not sys.planets and not sys.stations and not any(a.alive for a in state.asteroids):
-        state.log("RADAR: no contacts besides stellar body.")
+    state.radar_contacts = contacts
+    _ = coords
 
 
 def set_radar(state: GameState, active: bool) -> str | None:
     state.radar_active = active
     if active:
         state.radar_timer = 0.0
-        scan_system(state)
-        state.log("RADAR: ON (10s refresh)")
+        refresh_radar_contacts(state)
+        interval = _radar_interval(state)
+        state.log(f"RADAR: ON ({interval:.0f}s refresh, contacts on map)")
     else:
+        state.radar_contacts.clear()
         state.log("RADAR: OFF")
     return None
 
@@ -59,6 +96,6 @@ def tick_radar(state: GameState, dt: float) -> None:
     if not state.radar_active:
         return
     state.radar_timer += dt
-    if state.radar_timer >= 10.0:
+    if state.radar_timer >= _radar_interval(state):
         state.radar_timer = 0.0
-        scan_system(state)
+        refresh_radar_contacts(state)

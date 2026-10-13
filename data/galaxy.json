@@ -163,14 +163,14 @@
             "plagioclase": 55,
             "scordite": 9,
             "bistot": 2,
-            "pirate_scrap": 5,
+            "pirate_salvage": 5,
             "reactor_upgrade": 1,
             "weapons_upgrade": 1
           },
           "prices": {
             "flagged_cargo": 1307.0,
             "scrap": 44.0,
-            "pirate_scrap": 111.0,
+            "pirate_salvage": 111.0,
             "ore": 80.0,
             "ice": 58.0,
             "reactor_upgrade": 2477.0,
@@ -293,7 +293,7 @@
             "crokite": 4,
             "scrap": 9,
             "bistot": 3,
-            "pirate_scrap": 3,
+            "pirate_salvage": 3,
             "hedbergite": 51,
             "arkonor": 12,
             "reactor_upgrade": 1,
@@ -302,7 +302,7 @@
           "prices": {
             "flagged_cargo": 1293.0,
             "scrap": 41.0,
-            "pirate_scrap": 117.0,
+            "pirate_salvage": 117.0,
             "ore": 85.0,
             "ice": 55.0,
             "reactor_upgrade": 2708.0,
@@ -393,7 +393,7 @@
           "prices": {
             "flagged_cargo": 1280.0,
             "scrap": 44.0,
-            "pirate_scrap": 107.0,
+            "pirate_salvage": 107.0,
             "ore": 73.0,
             "ice": 55.0,
             "reactor_upgrade": 2744.0,
@@ -461,7 +461,7 @@
             "z": 0.0
           },
           "inventory": {
-            "pirate_scrap": 4,
+            "pirate_salvage": 4,
             "scrap": 78,
             "jaspet": 9,
             "omber": 8,
@@ -475,7 +475,7 @@
           "prices": {
             "flagged_cargo": 1280.0,
             "scrap": 42.0,
-            "pirate_scrap": 120.0,
+            "pirate_salvage": 120.0,
             "ore": 77.0,
             "ice": 62.0,
             "reactor_upgrade": 2548.0,
@@ -563,7 +563,7 @@
           "inventory": {
             "ore": 9,
             "arkonor": 58,
-            "pirate_scrap": 12,
+            "pirate_salvage": 12,
             "jaspet": 10,
             "hedbergite": 4,
             "omber": 9,
@@ -573,7 +573,7 @@
           "prices": {
             "flagged_cargo": 1269.0,
             "scrap": 46.0,
-            "pirate_scrap": 104.0,
+            "pirate_salvage": 104.0,
             "ore": 87.0,
             "ice": 65.0,
             "reactor_upgrade": 2627.0,
@@ -665,7 +665,7 @@
           "prices": {
             "flagged_cargo": 1271.0,
             "scrap": 49.0,
-            "pirate_scrap": 119.0,
+            "pirate_salvage": 119.0,
             "ore": 85.0,
             "ice": 65.0,
             "reactor_upgrade": 2424.0,
@@ -769,7 +769,7 @@
           "prices": {
             "flagged_cargo": 1261.0,
             "scrap": 43.0,
-            "pirate_scrap": 115.0,
+            "pirate_salvage": 115.0,
             "ore": 86.0,
             "ice": 61.0,
             "reactor_upgrade": 2614.0,
@@ -895,7 +895,7 @@
           "prices": {
             "flagged_cargo": 1170.0,
             "scrap": 41.0,
-            "pirate_scrap": 106.0,
+            "pirate_salvage": 106.0,
             "ore": 84.0,
             "ice": 66.0,
             "reactor_upgrade": 2384.0,
@@ -998,7 +998,7 @@
           "prices": {
             "flagged_cargo": 1106.0,
             "scrap": 48.0,
-            "pirate_scrap": 115.0,
+            "pirate_salvage": 115.0,
             "ore": 79.0,
             "ice": 64.0,
             "reactor_upgrade": 2659.0,
@@ -1090,7 +1090,7 @@
           "prices": {
             "flagged_cargo": 1281.0,
             "scrap": 48.0,
-            "pirate_scrap": 113.0,
+            "pirate_salvage": 113.0,
             "ore": 75.0,
             "ice": 59.0,
             "reactor_upgrade": 2312.0,
@@ -1253,7 +1253,7 @@
           "prices": {
             "flagged_cargo": 1132.0,
             "scrap": 42.0,
-            "pirate_scrap": 119.0,
+            "pirate_salvage": 119.0,
             "ore": 75.0,
             "ice": 64.0,
             "reactor_upgrade": 2293.0,
@@ -1342,7 +1342,7 @@
           "prices": {
             "flagged_cargo": 1205.0,
             "scrap": 48.0,
-            "pirate_scrap": 107.0,
+            "pirate_salvage": 107.0,
             "ore": 83.0,
             "ice": 59.0,
             "reactor_upgrade": 2466.0,
@@ -1463,7 +1463,7 @@
           "prices": {
             "flagged_cargo": 1169.0,
             "scrap": 42.0,
-            "pirate_scrap": 117.0,
+            "pirate_salvage": 117.0,
             "ore": 88.0,
             "ice": 56.0,
             "reactor_upgrade": 2341.0,
@@ -1598,7 +1598,7 @@
             "bistot": 8,
             "veldspar": 4,
             "crokite": 10,
-            "pirate_scrap": 3,
+            "pirate_salvage": 3,
             "ore": 4,
             "omber": 84,
             "reactor_upgrade": 1,
@@ -1607,7 +1607,7 @@
           "prices": {
             "flagged_cargo": 1318.0,
             "scrap": 48.0,
-            "pirate_scrap": 114.0,
+            "pirate_salvage": 114.0,
             "ore": 83.0,
             "ice": 64.0,
             "reactor_upgrade": 2406.0,
@@ -1814,7 +1814,7 @@
           "prices": {
             "flagged_cargo": 1207.0,
             "scrap": 47.0,
-            "pirate_scrap": 118.0,
+            "pirate_salvage": 118.0,
             "ore": 73.0,
             "ice": 62.0,
             "reactor_upgrade": 2680.0,
@@ -1913,7 +1913,7 @@
           "prices": {
             "flagged_cargo": 1274.0,
             "scrap": 43.0,
-            "pirate_scrap": 118.0,
+            "pirate_salvage": 118.0,
             "ore": 81.0,
             "ice": 64.0,
             "reactor_upgrade": 2508.0,
@@ -1991,7 +1991,7 @@
           "prices": {
             "flagged_cargo": 1252.0,
             "scrap": 43.0,
-            "pirate_scrap": 103.0,
+            "pirate_salvage": 103.0,
             "ore": 83.0,
             "ice": 55.0,
             "reactor_upgrade": 2267.0,
@@ -2132,7 +2132,7 @@
           },
           "inventory": {
             "jaspet": 9,
-            "pirate_scrap": 98,
+            "pirate_salvage": 98,
             "crokite": 12,
             "veldspar": 12,
             "mercoxit": 3,
@@ -2142,7 +2142,7 @@
           "prices": {
             "flagged_cargo": 1213.0,
             "scrap": 42.0,
-            "pirate_scrap": 103.0,
+            "pirate_salvage": 103.0,
             "ore": 83.0,
             "ice": 62.0,
             "reactor_upgrade": 2537.0,
@@ -2207,7 +2207,7 @@
           },
           "inventory": {
             "bistot": 12,
-            "pirate_scrap": 4,
+            "pirate_salvage": 4,
             "scordite": 2,
             "omber": 2,
             "hemorphite": 9,
@@ -2218,7 +2218,7 @@
           "prices": {
             "flagged_cargo": 1145.0,
             "scrap": 46.0,
-            "pirate_scrap": 111.0,
+            "pirate_salvage": 111.0,
             "ore": 85.0,
             "ice": 64.0,
             "reactor_upgrade": 2356.0,
@@ -2313,7 +2313,7 @@
           "prices": {
             "flagged_cargo": 1159.0,
             "scrap": 45.0,
-            "pirate_scrap": 101.0,
+            "pirate_salvage": 101.0,
             "ore": 79.0,
             "ice": 55.0,
             "reactor_upgrade": 2654.0,
@@ -2524,7 +2524,7 @@
           "prices": {
             "flagged_cargo": 1219.0,
             "scrap": 41.0,
-            "pirate_scrap": 111.0,
+            "pirate_salvage": 111.0,
             "ore": 83.0,
             "ice": 54.0,
             "reactor_upgrade": 2385.0,
@@ -2677,14 +2677,14 @@
             "scordite": 4,
             "omber": 11,
             "arkonor": 11,
-            "pirate_scrap": 9,
+            "pirate_salvage": 9,
             "reactor_upgrade": 1,
             "weapons_upgrade": 1
           },
           "prices": {
             "flagged_cargo": 1122.0,
             "scrap": 42.0,
-            "pirate_scrap": 116.0,
+            "pirate_salvage": 116.0,
             "ore": 73.0,
             "ice": 57.0,
             "reactor_upgrade": 2739.0,
@@ -2846,7 +2846,7 @@
             "veldspar": 9,
             "omber": 5,
             "dark_ochre": 10,
-            "pirate_scrap": 5,
+            "pirate_salvage": 5,
             "kernite": 69,
             "reactor_upgrade": 1,
             "weapons_upgrade": 1
@@ -2854,7 +2854,7 @@
           "prices": {
             "flagged_cargo": 1220.0,
             "scrap": 42.0,
-            "pirate_scrap": 121.0,
+            "pirate_salvage": 121.0,
             "ore": 73.0,
             "ice": 60.0,
             "reactor_upgrade": 2298.0,
@@ -3074,7 +3074,7 @@
           "prices": {
             "flagged_cargo": 1231.0,
             "scrap": 45.0,
-            "pirate_scrap": 115.0,
+            "pirate_salvage": 115.0,
             "ore": 87.0,
             "ice": 62.0,
             "reactor_upgrade": 2598.0,
@@ -3142,7 +3142,7 @@
             "z": 0.0
           },
           "inventory": {
-            "pirate_scrap": 12,
+            "pirate_salvage": 12,
             "pyroxeres": 5,
             "scordite": 70,
             "veldspar": 3,
@@ -3155,7 +3155,7 @@
           "prices": {
             "flagged_cargo": 1213.0,
             "scrap": 43.0,
-            "pirate_scrap": 105.0,
+            "pirate_salvage": 105.0,
             "ore": 73.0,
             "ice": 61.0,
             "reactor_upgrade": 2441.0,
@@ -3229,7 +3229,7 @@
             "plagioclase": 5,
             "flagged_cargo": 2,
             "hedbergite": 4,
-            "pirate_scrap": 10,
+            "pirate_salvage": 10,
             "mercoxit": 4,
             "reactor_upgrade": 1,
             "weapons_upgrade": 1
@@ -3237,7 +3237,7 @@
           "prices": {
             "flagged_cargo": 1146.0,
             "scrap": 46.0,
-            "pirate_scrap": 120.0,
+            "pirate_salvage": 120.0,
             "ore": 78.0,
             "ice": 55.0,
             "reactor_upgrade": 2413.0,
@@ -3382,7 +3382,7 @@
             "scrap": 9,
             "bistot": 9,
             "mercoxit": 12,
-            "pirate_scrap": 2,
+            "pirate_salvage": 2,
             "veldspar": 82,
             "reactor_upgrade": 1,
             "weapons_upgrade": 1
@@ -3390,7 +3390,7 @@
           "prices": {
             "flagged_cargo": 1230.0,
             "scrap": 42.0,
-            "pirate_scrap": 109.0,
+            "pirate_salvage": 109.0,
             "ore": 79.0,
             "ice": 60.0,
             "reactor_upgrade": 2720.0,
@@ -3482,7 +3482,7 @@
           },
           "inventory": {
             "dark_ochre": 11,
-            "pirate_scrap": 7,
+            "pirate_salvage": 7,
             "gneiss": 5,
             "scrap": 9,
             "plagioclase": 5,
@@ -3494,7 +3494,7 @@
           "prices": {
             "flagged_cargo": 1165.0,
             "scrap": 43.0,
-            "pirate_scrap": 120.0,
+            "pirate_salvage": 120.0,
             "ore": 87.0,
             "ice": 62.0,
             "reactor_upgrade": 2515.0,
@@ -3611,7 +3611,7 @@
           "prices": {
             "flagged_cargo": 1256.0,
             "scrap": 45.0,
-            "pirate_scrap": 100.0,
+            "pirate_salvage": 100.0,
             "ore": 83.0,
             "ice": 65.0,
             "reactor_upgrade": 2634.0,
@@ -3734,14 +3734,14 @@
             "hemorphite": 2,
             "jaspet": 10,
             "ice": 10,
-            "pirate_scrap": 52,
+            "pirate_salvage": 52,
             "reactor_upgrade": 1,
             "weapons_upgrade": 1
           },
           "prices": {
             "flagged_cargo": 1141.0,
             "scrap": 47.0,
-            "pirate_scrap": 115.0,
+            "pirate_salvage": 115.0,
             "ore": 79.0,
             "ice": 60.0,
             "reactor_upgrade": 2268.0,
@@ -3892,7 +3892,7 @@
           "prices": {
             "flagged_cargo": 1173.0,
             "scrap": 48.0,
-            "pirate_scrap": 110.0,
+            "pirate_salvage": 110.0,
             "ore": 86.0,
             "ice": 57.0,
             "reactor_upgrade": 2655.0,
@@ -4010,7 +4010,7 @@
           "prices": {
             "flagged_cargo": 1237.0,
             "scrap": 49.0,
-            "pirate_scrap": 101.0,
+            "pirate_salvage": 101.0,
             "ore": 82.0,
             "ice": 64.0,
             "reactor_upgrade": 2300.0,
@@ -4091,7 +4091,7 @@
           "prices": {
             "flagged_cargo": 1304.0,
             "scrap": 49.0,
-            "pirate_scrap": 100.0,
+            "pirate_salvage": 100.0,
             "ore": 87.0,
             "ice": 62.0,
             "reactor_upgrade": 2558.0,
@@ -4229,7 +4229,7 @@
           "prices": {
             "flagged_cargo": 1233.0,
             "scrap": 45.0,
-            "pirate_scrap": 108.0,
+            "pirate_salvage": 108.0,
             "ore": 85.0,
             "ice": 57.0,
             "reactor_upgrade": 2584.0,
@@ -4331,7 +4331,7 @@
           "prices": {
             "flagged_cargo": 1225.0,
             "scrap": 44.0,
-            "pirate_scrap": 109.0,
+            "pirate_salvage": 109.0,
             "ore": 77.0,
             "ice": 63.0,
             "reactor_upgrade": 2546.0,
@@ -4538,7 +4538,7 @@
           "prices": {
             "flagged_cargo": 1189.0,
             "scrap": 43.0,
-            "pirate_scrap": 101.0,
+            "pirate_salvage": 101.0,
             "ore": 83.0,
             "ice": 59.0,
             "reactor_upgrade": 2494.0,
@@ -4641,7 +4641,7 @@
           "prices": {
             "flagged_cargo": 1109.0,
             "scrap": 46.0,
-            "pirate_scrap": 121.0,
+            "pirate_salvage": 121.0,
             "ore": 87.0,
             "ice": 63.0,
             "reactor_upgrade": 2345.0,
@@ -4920,7 +4920,7 @@
           "inventory": {
             "veldspar": 8,
             "hedbergite": 5,
-            "pirate_scrap": 6,
+            "pirate_salvage": 6,
             "gneiss": 2,
             "bistot": 6,
             "jaspet": 59,
@@ -4930,7 +4930,7 @@
           "prices": {
             "flagged_cargo": 1218.0,
             "scrap": 48.0,
-            "pirate_scrap": 119.0,
+            "pirate_salvage": 119.0,
             "ore": 72.0,
             "ice": 55.0,
             "reactor_upgrade": 2647.0,
@@ -4996,7 +4996,7 @@
           "inventory": {
             "scordite": 12,
             "hedbergite": 10,
-            "pirate_scrap": 10,
+            "pirate_salvage": 10,
             "plagioclase": 5,
             "veldspar": 4,
             "pyroxeres": 56,
@@ -5008,7 +5008,7 @@
           "prices": {
             "flagged_cargo": 1085.0,
             "scrap": 47.0,
-            "pirate_scrap": 119.0,
+            "pirate_salvage": 119.0,
             "ore": 79.0,
             "ice": 62.0,
             "reactor_upgrade": 2271.0,
@@ -5128,7 +5128,7 @@
           "prices": {
             "flagged_cargo": 1128.0,
             "scrap": 41.0,
-            "pirate_scrap": 102.0,
+            "pirate_salvage": 102.0,
             "ore": 83.0,
             "ice": 56.0,
             "reactor_upgrade": 2503.0,
@@ -5205,7 +5205,7 @@
           "prices": {
             "flagged_cargo": 1308.0,
             "scrap": 42.0,
-            "pirate_scrap": 117.0,
+            "pirate_salvage": 117.0,
             "ore": 73.0,
             "ice": 61.0,
             "reactor_upgrade": 2528.0,
@@ -5291,7 +5291,7 @@
           "prices": {
             "flagged_cargo": 1101.0,
             "scrap": 42.0,
-            "pirate_scrap": 114.0,
+            "pirate_salvage": 114.0,
             "ore": 83.0,
             "ice": 63.0,
             "reactor_upgrade": 2561.0,
@@ -5357,7 +5357,7 @@
             "z": 0.0
           },
           "inventory": {
-            "pirate_scrap": 4,
+            "pirate_salvage": 4,
             "scrap": 8,
             "kernite": 12,
             "pyroxeres": 70,
@@ -5371,7 +5371,7 @@
           "prices": {
             "flagged_cargo": 1246.0,
             "scrap": 44.0,
-            "pirate_scrap": 118.0,
+            "pirate_salvage": 118.0,
             "ore": 85.0,
             "ice": 62.0,
             "reactor_upgrade": 2301.0,
@@ -5505,7 +5505,7 @@
           "prices": {
             "flagged_cargo": 1204.0,
             "scrap": 42.0,
-            "pirate_scrap": 109.0,
+            "pirate_salvage": 109.0,
             "ore": 81.0,
             "ice": 63.0,
             "reactor_upgrade": 2459.0,
@@ -5693,14 +5693,14 @@
             "kernite": 6,
             "ice": 73,
             "scordite": 2,
-            "pirate_scrap": 6,
+            "pirate_salvage": 6,
             "reactor_upgrade": 1,
             "weapons_upgrade": 1
           },
           "prices": {
             "flagged_cargo": 1090.0,
             "scrap": 41.0,
-            "pirate_scrap": 115.0,
+            "pirate_salvage": 115.0,
             "ore": 73.0,
             "ice": 60.0,
             "reactor_upgrade": 2545.0,
@@ -5806,7 +5806,7 @@
           "prices": {
             "flagged_cargo": 1175.0,
             "scrap": 44.0,
-            "pirate_scrap": 121.0,
+            "pirate_salvage": 121.0,
             "ore": 88.0,
             "ice": 65.0,
             "reactor_upgrade": 2477.0,
@@ -5976,7 +5976,7 @@
           "prices": {
             "flagged_cargo": 1188.0,
             "scrap": 43.0,
-            "pirate_scrap": 102.0,
+            "pirate_salvage": 102.0,
             "ore": 86.0,
             "ice": 57.0,
             "reactor_upgrade": 2688.0,
@@ -6106,7 +6106,7 @@
           "prices": {
             "flagged_cargo": 1282.0,
             "scrap": 43.0,
-            "pirate_scrap": 106.0,
+            "pirate_salvage": 106.0,
             "ore": 78.0,
             "ice": 61.0,
             "reactor_upgrade": 2288.0,
@@ -6210,14 +6210,14 @@
             "scordite": 8,
             "ice": 92,
             "flagged_cargo": 5,
-            "pirate_scrap": 5,
+            "pirate_salvage": 5,
             "reactor_upgrade": 1,
             "weapons_upgrade": 1
           },
           "prices": {
             "flagged_cargo": 1086.0,
             "scrap": 44.0,
-            "pirate_scrap": 113.0,
+            "pirate_salvage": 113.0,
             "ore": 79.0,
             "ice": 55.0,
             "reactor_upgrade": 2335.0,
@@ -6300,7 +6300,7 @@
             "hemorphite": 6,
             "kernite": 6,
             "mercoxit": 4,
-            "pirate_scrap": 92,
+            "pirate_salvage": 92,
             "bistot": 11,
             "hedbergite": 11,
             "reactor_upgrade": 1,
@@ -6309,7 +6309,7 @@
           "prices": {
             "flagged_cargo": 1306.0,
             "scrap": 41.0,
-            "pirate_scrap": 101.0,
+            "pirate_salvage": 101.0,
             "ore": 88.0,
             "ice": 63.0,
             "reactor_upgrade": 2552.0,
@@ -6488,7 +6488,7 @@
           "prices": {
             "flagged_cargo": 1194.0,
             "scrap": 45.0,
-            "pirate_scrap": 105.0,
+            "pirate_salvage": 105.0,
             "ore": 86.0,
             "ice": 64.0,
             "reactor_upgrade": 2651.0,
@@ -6655,7 +6655,7 @@
           "prices": {
             "flagged_cargo": 1222.0,
             "scrap": 49.0,
-            "pirate_scrap": 121.0,
+            "pirate_salvage": 121.0,
             "ore": 77.0,
             "ice": 59.0,
             "reactor_upgrade": 2424.0,
@@ -6793,7 +6793,7 @@
           "prices": {
             "flagged_cargo": 1246.0,
             "scrap": 43.0,
-            "pirate_scrap": 101.0,
+            "pirate_salvage": 101.0,
             "ore": 77.0,
             "ice": 58.0,
             "reactor_upgrade": 2391.0,
@@ -6930,7 +6930,7 @@
             "hemorphite": 5,
             "arkonor": 12,
             "kernite": 57,
-            "pirate_scrap": 11,
+            "pirate_salvage": 11,
             "hedbergite": 3,
             "plagioclase": 11,
             "bistot": 11,
@@ -6940,7 +6940,7 @@
           "prices": {
             "flagged_cargo": 1166.0,
             "scrap": 45.0,
-            "pirate_scrap": 107.0,
+            "pirate_salvage": 107.0,
             "ore": 82.0,
             "ice": 66.0,
             "reactor_upgrade": 2521.0,
@@ -7032,7 +7032,7 @@
           "prices": {
             "flagged_cargo": 1138.0,
             "scrap": 46.0,
-            "pirate_scrap": 101.0,
+            "pirate_salvage": 101.0,
             "ore": 79.0,
             "ice": 59.0,
             "reactor_upgrade": 2634.0,
@@ -7129,7 +7129,7 @@
           "prices": {
             "flagged_cargo": 1096.0,
             "scrap": 44.0,
-            "pirate_scrap": 110.0,
+            "pirate_salvage": 110.0,
             "ore": 81.0,
             "ice": 55.0,
             "reactor_upgrade": 2329.0,
@@ -7271,7 +7271,7 @@
           "prices": {
             "flagged_cargo": 1138.0,
             "scrap": 48.0,
-            "pirate_scrap": 120.0,
+            "pirate_salvage": 120.0,
             "ore": 77.0,
             "ice": 55.0,
             "reactor_upgrade": 2470.0,
@@ -7380,7 +7380,7 @@
           "prices": {
             "flagged_cargo": 1224.0,
             "scrap": 49.0,
-            "pirate_scrap": 120.0,
+            "pirate_salvage": 120.0,
             "ore": 80.0,
             "ice": 60.0,
             "reactor_upgrade": 2627.0,
@@ -7470,7 +7470,7 @@
           "prices": {
             "flagged_cargo": 1169.0,
             "scrap": 45.0,
-            "pirate_scrap": 116.0,
+            "pirate_salvage": 116.0,
             "ore": 80.0,
             "ice": 59.0,
             "reactor_upgrade": 2458.0,
@@ -7564,7 +7564,7 @@
           "prices": {
             "flagged_cargo": 1082.0,
             "scrap": 47.0,
-            "pirate_scrap": 115.0,
+            "pirate_salvage": 115.0,
             "ore": 82.0,
             "ice": 59.0,
             "reactor_upgrade": 2631.0,
@@ -7832,7 +7832,7 @@
           "prices": {
             "flagged_cargo": 1118.0,
             "scrap": 42.0,
-            "pirate_scrap": 104.0,
+            "pirate_salvage": 104.0,
             "ore": 76.0,
             "ice": 54.0,
             "reactor_upgrade": 2609.0,
@@ -7923,7 +7923,7 @@
           "prices": {
             "flagged_cargo": 1183.0,
             "scrap": 45.0,
-            "pirate_scrap": 101.0,
+            "pirate_salvage": 101.0,
             "ore": 80.0,
             "ice": 62.0,
             "reactor_upgrade": 2562.0,
@@ -8009,7 +8009,7 @@
             "z": 0.0
           },
           "inventory": {
-            "pirate_scrap": 8,
+            "pirate_salvage": 8,
             "mercoxit": 9,
             "dark_ochre": 6,
             "veldspar": 2,
@@ -8023,7 +8023,7 @@
           "prices": {
             "flagged_cargo": 1240.0,
             "scrap": 46.0,
-            "pirate_scrap": 106.0,
+            "pirate_salvage": 106.0,
             "ore": 81.0,
             "ice": 60.0,
             "reactor_upgrade": 2344.0,
@@ -8153,7 +8153,7 @@
           "prices": {
             "flagged_cargo": 1106.0,
             "scrap": 42.0,
-            "pirate_scrap": 119.0,
+            "pirate_salvage": 119.0,
             "ore": 79.0,
             "ice": 56.0,
             "reactor_upgrade": 2332.0,
@@ -8271,7 +8271,7 @@
           "inventory": {
             "mercoxit": 8,
             "scrap": 7,
-            "pirate_scrap": 4,
+            "pirate_salvage": 4,
             "bistot": 60,
             "ice": 7,
             "gneiss": 3,
@@ -8282,7 +8282,7 @@
           "prices": {
             "flagged_cargo": 1216.0,
             "scrap": 47.0,
-            "pirate_scrap": 109.0,
+            "pirate_salvage": 109.0,
             "ore": 76.0,
             "ice": 58.0,
             "reactor_upgrade": 2283.0,
@@ -8386,7 +8386,7 @@
           "prices": {
             "flagged_cargo": 1191.0,
             "scrap": 44.0,
-            "pirate_scrap": 119.0,
+            "pirate_salvage": 119.0,
             "ore": 85.0,
             "ice": 57.0,
             "reactor_upgrade": 2428.0,
@@ -8570,7 +8570,7 @@
           "prices": {
             "flagged_cargo": 1305.0,
             "scrap": 41.0,
-            "pirate_scrap": 118.0,
+            "pirate_salvage": 118.0,
             "ore": 82.0,
             "ice": 56.0,
             "reactor_upgrade": 2277.0,
@@ -8645,7 +8645,7 @@
             "gneiss": 9,
             "hemorphite": 10,
             "ore": 6,
-            "pirate_scrap": 98,
+            "pirate_salvage": 98,
             "jaspet": 12,
             "reactor_upgrade": 1,
             "weapons_upgrade": 1
@@ -8653,7 +8653,7 @@
           "prices": {
             "flagged_cargo": 1090.0,
             "scrap": 48.0,
-            "pirate_scrap": 112.0,
+            "pirate_salvage": 112.0,
             "ore": 86.0,
             "ice": 57.0,
             "reactor_upgrade": 2520.0,
@@ -8726,7 +8726,7 @@
           "prices": {
             "flagged_cargo": 1182.0,
             "scrap": 48.0,
-            "pirate_scrap": 107.0,
+            "pirate_salvage": 107.0,
             "ore": 75.0,
             "ice": 55.0,
             "reactor_upgrade": 2490.0,
@@ -8806,7 +8806,7 @@
           "prices": {
             "flagged_cargo": 1182.0,
             "scrap": 48.0,
-            "pirate_scrap": 114.0,
+            "pirate_salvage": 114.0,
             "ore": 73.0,
             "ice": 60.0,
             "reactor_upgrade": 2696.0,
@@ -8925,7 +8925,7 @@
           "prices": {
             "flagged_cargo": 1195.0,
             "scrap": 48.0,
-            "pirate_scrap": 101.0,
+            "pirate_salvage": 101.0,
             "ore": 76.0,
             "ice": 63.0,
             "reactor_upgrade": 2592.0,
@@ -9021,7 +9021,7 @@
           "prices": {
             "flagged_cargo": 1286.0,
             "scrap": 42.0,
-            "pirate_scrap": 108.0,
+            "pirate_salvage": 108.0,
             "ore": 88.0,
             "ice": 60.0,
             "reactor_upgrade": 2353.0,
@@ -9119,7 +9119,7 @@
           "prices": {
             "flagged_cargo": 1294.0,
             "scrap": 45.0,
-            "pirate_scrap": 116.0,
+            "pirate_salvage": 116.0,
             "ore": 81.0,
             "ice": 56.0,
             "reactor_upgrade": 2594.0,
@@ -9254,7 +9254,7 @@
           "prices": {
             "flagged_cargo": 1159.0,
             "scrap": 45.0,
-            "pirate_scrap": 119.0,
+            "pirate_salvage": 119.0,
             "ore": 81.0,
             "ice": 55.0,
             "reactor_upgrade": 2309.0,
@@ -9388,7 +9388,7 @@
           "prices": {
             "flagged_cargo": 1247.0,
             "scrap": 44.0,
-            "pirate_scrap": 116.0,
+            "pirate_salvage": 116.0,
             "ore": 81.0,
             "ice": 54.0,
             "reactor_upgrade": 2720.0,
@@ -9481,7 +9481,7 @@
           "prices": {
             "flagged_cargo": 1217.0,
             "scrap": 45.0,
-            "pirate_scrap": 113.0,
+            "pirate_salvage": 113.0,
             "ore": 81.0,
             "ice": 56.0,
             "reactor_upgrade": 2320.0,
@@ -9772,7 +9772,7 @@
           "prices": {
             "flagged_cargo": 1193.0,
             "scrap": 45.0,
-            "pirate_scrap": 101.0,
+            "pirate_salvage": 101.0,
             "ore": 82.0,
             "ice": 65.0,
             "reactor_upgrade": 2638.0,
@@ -9876,7 +9876,7 @@
           "prices": {
             "flagged_cargo": 1270.0,
             "scrap": 44.0,
-            "pirate_scrap": 103.0,
+            "pirate_salvage": 103.0,
             "ore": 75.0,
             "ice": 58.0,
             "reactor_upgrade": 2397.0,
@@ -10003,7 +10003,7 @@
             "jaspet": 12,
             "crokite": 55,
             "dark_ochre": 12,
-            "pirate_scrap": 9,
+            "pirate_salvage": 9,
             "plagioclase": 6,
             "reactor_upgrade": 1,
             "weapons_upgrade": 1
@@ -10011,7 +10011,7 @@
           "prices": {
             "flagged_cargo": 1310.0,
             "scrap": 49.0,
-            "pirate_scrap": 105.0,
+            "pirate_salvage": 105.0,
             "ore": 86.0,
             "ice": 59.0,
             "reactor_upgrade": 2476.0,
@@ -10112,7 +10112,7 @@
           "prices": {
             "flagged_cargo": 1318.0,
             "scrap": 42.0,
-            "pirate_scrap": 116.0,
+            "pirate_salvage": 116.0,
             "ore": 84.0,
             "ice": 55.0,
             "reactor_upgrade": 2326.0,
@@ -10216,7 +10216,7 @@
           "prices": {
             "flagged_cargo": 1130.0,
             "scrap": 45.0,
-            "pirate_scrap": 117.0,
+            "pirate_salvage": 117.0,
             "ore": 77.0,
             "ice": 65.0,
             "reactor_upgrade": 2570.0,
@@ -10322,7 +10322,7 @@
           "prices": {
             "flagged_cargo": 1244.0,
             "scrap": 46.0,
-            "pirate_scrap": 115.0,
+            "pirate_salvage": 115.0,
             "ore": 77.0,
             "ice": 61.0,
             "reactor_upgrade": 2483.0,
@@ -10406,7 +10406,7 @@
           "prices": {
             "flagged_cargo": 1211.0,
             "scrap": 44.0,
-            "pirate_scrap": 103.0,
+            "pirate_salvage": 103.0,
             "ore": 80.0,
             "ice": 56.0,
             "reactor_upgrade": 2377.0,
@@ -10525,7 +10525,7 @@
           "prices": {
             "flagged_cargo": 1174.0,
             "scrap": 42.0,
-            "pirate_scrap": 106.0,
+            "pirate_salvage": 106.0,
             "ore": 76.0,
             "ice": 57.0,
             "reactor_upgrade": 2613.0,
@@ -10661,7 +10661,7 @@
           "prices": {
             "flagged_cargo": 1253.0,
             "scrap": 48.0,
-            "pirate_scrap": 107.0,
+            "pirate_salvage": 107.0,
             "ore": 78.0,
             "ice": 60.0,
             "reactor_upgrade": 2277.0,
@@ -10755,7 +10755,7 @@
           "prices": {
             "flagged_cargo": 1108.0,
             "scrap": 46.0,
-            "pirate_scrap": 116.0,
+            "pirate_salvage": 116.0,
             "ore": 81.0,
             "ice": 62.0,
             "reactor_upgrade": 2516.0,
@@ -10870,7 +10870,7 @@
           "prices": {
             "flagged_cargo": 1173.0,
             "scrap": 49.0,
-            "pirate_scrap": 121.0,
+            "pirate_salvage": 121.0,
             "ore": 84.0,
             "ice": 59.0,
             "reactor_upgrade": 2422.0,
@@ -10951,7 +10951,7 @@
           },
           "inventory": {
             "scrap": 7,
-            "pirate_scrap": 6,
+            "pirate_salvage": 6,
             "jaspet": 6,
             "crokite": 11,
             "ice": 68,
@@ -10963,7 +10963,7 @@
           "prices": {
             "flagged_cargo": 1226.0,
             "scrap": 45.0,
-            "pirate_scrap": 120.0,
+            "pirate_salvage": 120.0,
             "ore": 87.0,
             "ice": 54.0,
             "reactor_upgrade": 2401.0,
@@ -11053,7 +11053,7 @@
             "hedbergite": 8,
             "kernite": 2,
             "omber": 8,
-            "pirate_scrap": 12,
+            "pirate_salvage": 12,
             "hemorphite": 10,
             "reactor_upgrade": 1,
             "weapons_upgrade": 1
@@ -11061,7 +11061,7 @@
           "prices": {
             "flagged_cargo": 1087.0,
             "scrap": 41.0,
-            "pirate_scrap": 103.0,
+            "pirate_salvage": 103.0,
             "ore": 85.0,
             "ice": 59.0,
             "reactor_upgrade": 2735.0,
@@ -11164,7 +11164,7 @@
           "prices": {
             "flagged_cargo": 1278.0,
             "scrap": 41.0,
-            "pirate_scrap": 104.0,
+            "pirate_salvage": 104.0,
             "ore": 88.0,
             "ice": 60.0,
             "reactor_upgrade": 2618.0,
@@ -11337,7 +11337,7 @@
           "prices": {
             "flagged_cargo": 1242.0,
             "scrap": 44.0,
-            "pirate_scrap": 107.0,
+            "pirate_salvage": 107.0,
             "ore": 87.0,
             "ice": 57.0,
             "reactor_upgrade": 2503.0,
@@ -11401,7 +11401,7 @@
           },
           "inventory": {
             "ore": 3,
-            "pirate_scrap": 2,
+            "pirate_salvage": 2,
             "hedbergite": 10,
             "bistot": 2,
             "scordite": 9,
@@ -11413,7 +11413,7 @@
           "prices": {
             "flagged_cargo": 1223.0,
             "scrap": 46.0,
-            "pirate_scrap": 106.0,
+            "pirate_salvage": 106.0,
             "ore": 82.0,
             "ice": 63.0,
             "reactor_upgrade": 2603.0,
@@ -11503,7 +11503,7 @@
           "prices": {
             "flagged_cargo": 1307.0,
             "scrap": 47.0,
-            "pirate_scrap": 116.0,
+            "pirate_salvage": 116.0,
             "ore": 75.0,
             "ice": 60.0,
             "reactor_upgrade": 2302.0,
@@ -11570,7 +11570,7 @@
             "pyroxeres": 4,
             "ore": 8,
             "bistot": 72,
-            "pirate_scrap": 10,
+            "pirate_salvage": 10,
             "omber": 7,
             "hedbergite": 8,
             "hemorphite": 8,
@@ -11580,7 +11580,7 @@
           "prices": {
             "flagged_cargo": 1247.0,
             "scrap": 42.0,
-            "pirate_scrap": 121.0,
+            "pirate_salvage": 121.0,
             "ore": 85.0,
             "ice": 58.0,
             "reactor_upgrade": 2732.0,
@@ -11653,7 +11653,7 @@
           "prices": {
             "flagged_cargo": 1137.0,
             "scrap": 41.0,
-            "pirate_scrap": 112.0,
+            "pirate_salvage": 112.0,
             "ore": 75.0,
             "ice": 60.0,
             "reactor_upgrade": 2611.0,
@@ -11752,7 +11752,7 @@
           "prices": {
             "flagged_cargo": 1254.0,
             "scrap": 46.0,
-            "pirate_scrap": 120.0,
+            "pirate_salvage": 120.0,
             "ore": 86.0,
             "ice": 56.0,
             "reactor_upgrade": 2682.0,
@@ -11850,7 +11850,7 @@
           "prices": {
             "flagged_cargo": 1244.0,
             "scrap": 41.0,
-            "pirate_scrap": 103.0,
+            "pirate_salvage": 103.0,
             "ore": 85.0,
             "ice": 63.0,
             "reactor_upgrade": 2266.0,
@@ -11988,7 +11988,7 @@
           "prices": {
             "flagged_cargo": 1260.0,
             "scrap": 46.0,
-            "pirate_scrap": 116.0,
+            "pirate_salvage": 116.0,
             "ore": 78.0,
             "ice": 63.0,
             "reactor_upgrade": 2401.0,
@@ -12149,7 +12149,7 @@
           "prices": {
             "flagged_cargo": 1270.0,
             "scrap": 45.0,
-            "pirate_scrap": 101.0,
+            "pirate_salvage": 101.0,
             "ore": 76.0,
             "ice": 62.0,
             "reactor_upgrade": 2275.0,
@@ -12240,7 +12240,7 @@
           "prices": {
             "flagged_cargo": 1136.0,
             "scrap": 41.0,
-            "pirate_scrap": 99.0,
+            "pirate_salvage": 99.0,
             "ore": 85.0,
             "ice": 57.0,
             "reactor_upgrade": 2687.0,
@@ -12331,7 +12331,7 @@
           "inventory": {
             "dark_ochre": 3,
             "ore": 6,
-            "pirate_scrap": 67,
+            "pirate_salvage": 67,
             "arkonor": 5,
             "plagioclase": 9,
             "flagged_cargo": 10,
@@ -12343,7 +12343,7 @@
           "prices": {
             "flagged_cargo": 1256.0,
             "scrap": 49.0,
-            "pirate_scrap": 104.0,
+            "pirate_salvage": 104.0,
             "ore": 85.0,
             "ice": 56.0,
             "reactor_upgrade": 2472.0,
@@ -12480,7 +12480,7 @@
           "prices": {
             "flagged_cargo": 1157.0,
             "scrap": 45.0,
-            "pirate_scrap": 99.0,
+            "pirate_salvage": 99.0,
             "ore": 82.0,
             "ice": 60.0,
             "reactor_upgrade": 2415.0,
@@ -12696,7 +12696,7 @@
             "arkonor": 96,
             "pyroxeres": 2,
             "gneiss": 3,
-            "pirate_scrap": 12,
+            "pirate_salvage": 12,
             "mercoxit": 7,
             "flagged_cargo": 4,
             "plagioclase": 12,
@@ -12706,7 +12706,7 @@
           "prices": {
             "flagged_cargo": 1122.0,
             "scrap": 46.0,
-            "pirate_scrap": 105.0,
+            "pirate_salvage": 105.0,
             "ore": 76.0,
             "ice": 61.0,
             "reactor_upgrade": 2712.0,
@@ -12823,7 +12823,7 @@
           "prices": {
             "flagged_cargo": 1233.0,
             "scrap": 49.0,
-            "pirate_scrap": 100.0,
+            "pirate_salvage": 100.0,
             "ore": 76.0,
             "ice": 59.0,
             "reactor_upgrade": 2573.0,
@@ -12923,7 +12923,7 @@
           "prices": {
             "flagged_cargo": 1305.0,
             "scrap": 48.0,
-            "pirate_scrap": 112.0,
+            "pirate_salvage": 112.0,
             "ore": 75.0,
             "ice": 58.0,
             "reactor_upgrade": 2456.0,
@@ -12999,7 +12999,7 @@
           "prices": {
             "flagged_cargo": 1275.0,
             "scrap": 44.0,
-            "pirate_scrap": 121.0,
+            "pirate_salvage": 121.0,
             "ore": 78.0,
             "ice": 56.0,
             "reactor_upgrade": 2746.0,
@@ -13094,7 +13094,7 @@
           "prices": {
             "flagged_cargo": 1145.0,
             "scrap": 41.0,
-            "pirate_scrap": 119.0,
+            "pirate_salvage": 119.0,
             "ore": 84.0,
             "ice": 63.0,
             "reactor_upgrade": 2626.0,
@@ -13175,7 +13175,7 @@
           "prices": {
             "flagged_cargo": 1127.0,
             "scrap": 44.0,
-            "pirate_scrap": 109.0,
+            "pirate_salvage": 109.0,
             "ore": 82.0,
             "ice": 59.0,
             "reactor_upgrade": 2512.0,
@@ -13273,7 +13273,7 @@
             "crokite": 5,
             "scordite": 5,
             "arkonor": 2,
-            "pirate_scrap": 11,
+            "pirate_salvage": 11,
             "mercoxit": 10,
             "reactor_upgrade": 1,
             "weapons_upgrade": 1
@@ -13281,7 +13281,7 @@
           "prices": {
             "flagged_cargo": 1291.0,
             "scrap": 44.0,
-            "pirate_scrap": 102.0,
+            "pirate_salvage": 102.0,
             "ore": 85.0,
             "ice": 63.0,
             "reactor_upgrade": 2601.0,
@@ -13360,7 +13360,7 @@
           "prices": {
             "flagged_cargo": 1244.0,
             "scrap": 43.0,
-            "pirate_scrap": 116.0,
+            "pirate_salvage": 116.0,
             "ore": 80.0,
             "ice": 62.0,
             "reactor_upgrade": 2735.0,
