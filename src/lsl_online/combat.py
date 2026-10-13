@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import random
 
-from eve_ascii.models import (
+from lsl_online.models import (
     Explosion,
     GameMode,
     GameState,
@@ -16,7 +16,7 @@ from eve_ascii.models import (
     ShipComponent,
     Vec3,
 )
-from eve_ascii.ship import (
+from lsl_online.ship import (
     find_component,
     kind_integrity,
     is_powerless,
@@ -142,7 +142,7 @@ def _spawn_laser(state: GameState, tx: float, ty: float, target: str) -> None:
             ttl=PROJECTILE_TTL,
         )
     )
-    from eve_ascii.audio import request_sound
+    from lsl_online.audio import request_sound
 
     request_sound(state, "laserShoot")
 
@@ -163,7 +163,7 @@ def _spawn_enemy_laser(state: GameState, npc: NpcShip, tx: float, ty: float) -> 
             ttl=PROJECTILE_TTL,
         )
     )
-    from eve_ascii.audio import request_sound
+    from lsl_online.audio import request_sound
 
     request_sound(state, "laserShoot", volume=0.85)
 
@@ -179,7 +179,7 @@ def _spawn_component_explosion(state: GameState, npc: NpcShip, kind: str) -> Non
 
 
 def current_ship_xy(state: GameState) -> tuple[float, float]:
-    from eve_ascii.travel import current_ship_coords
+    from lsl_online.travel import current_ship_coords
 
     c = current_ship_coords(state)
     return c.x, c.y
@@ -277,7 +277,7 @@ def _handle_player_game_over(state: GameState) -> None:
     state.player.ship.weapons_active = False
     state.mining_active = False
     state.log("GAME OVER — ship destroyed. Type quit to exit.")
-    from eve_ascii.audio import request_sound, stop_all_loops
+    from lsl_online.audio import request_sound, stop_all_loops
 
     stop_all_loops()
     request_sound(state, "explosion")
@@ -303,12 +303,12 @@ def _destroy_npc(state: GameState, npc: NpcShip, *, reason: str) -> None:
         return
     npc.alive = False
     state.explosions.append(Explosion(x=npc.position.x, y=npc.position.y, ttl=0.8, large=True))
-    from eve_ascii.audio import request_sound
+    from lsl_online.audio import request_sound
 
     request_sound(state, "explosion")
     state.log(reason)
     if npc.asteroid and npc.asteroid_id:
-        from eve_ascii.models import CargoStack
+        from lsl_online.models import CargoStack
 
         state.depleted_asteroids.add(npc.asteroid_id)
         item_id = npc.loot_item_id or "ore"
@@ -320,7 +320,7 @@ def _destroy_npc(state: GameState, npc: NpcShip, *, reason: str) -> None:
             state.player.cargo.append(CargoStack(item_id, item_name, npc.loot_quantity))
         state.log(f"Mined {npc.loot_quantity}x {item_name}.")
     elif npc.hostile and npc.loot_item_id and npc.loot_quantity > 0:
-        from eve_ascii.models import CargoStack
+        from lsl_online.models import CargoStack
 
         cargo_used = sum(stack.quantity for stack in state.player.cargo)
         quantity = min(npc.loot_quantity, max(0, state.player.max_cargo - cargo_used))
@@ -362,7 +362,7 @@ def _apply_hit_player(state: GameState) -> None:
         return
     sx, sy = current_ship_xy(state)
     state.explosions.append(Explosion(x=sx, y=sy, ttl=0.45, large=False))
-    from eve_ascii.audio import request_sound
+    from lsl_online.audio import request_sound
 
     request_sound(state, "hit")
     damage = PIRATE_HIT_DAMAGE
@@ -411,7 +411,7 @@ def _apply_hit(state: GameState, npc: NpcShip) -> None:
     comp.health = max(0.0, comp.health - player_laser_damage(ship))
     npc.shield = max(0.0, npc.shield - 12.0)
     state.explosions.append(Explosion(x=npc.position.x, y=npc.position.y))
-    from eve_ascii.audio import request_sound
+    from lsl_online.audio import request_sound
 
     request_sound(state, "hit")
     state.log(f"HIT {npc.letter} {comp.slot_id} {comp.kind} ({comp.health:.0f} hp)")
@@ -436,7 +436,7 @@ def _decay_fx(state: GameState, dt: float) -> None:
 
 
 def tick_hyperspace_vfx(state: GameState, dt: float) -> None:
-    from eve_ascii.models import ShipStatus
+    from lsl_online.models import ShipStatus
 
     ship = state.player.ship
     in_hyperspace = state.mode == GameMode.HYPERSPACE or ship.status == ShipStatus.JUMPING

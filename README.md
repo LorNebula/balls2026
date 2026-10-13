@@ -1,6 +1,6 @@
-# EVE ASCII
+# LSL ONLINE
 
-Terminal EVE-inspired game: tutorial, combat, travel, quests. Finnish-inspired galaxy, Python + Textual.
+LSL ONLINE — ASCII terminal space trading: tutorial, combat, travel, quests. Finnish-inspired galaxy, Python + Textual.
 
 ## Setup
 
@@ -9,9 +9,9 @@ python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e .
 python scripts/generate_galaxy.py --seed 42
-python -m eve_ascii
-python -m eve_ascii --no-tutorial   # skip opening tutorial, free play
-python -m eve_ascii --no-sound      # disable WAV sound effects
+python -m lsl_online
+python -m lsl_online --no-tutorial   # skip opening tutorial, free play
+python -m lsl_online --no-sound      # disable WAV sound effects
 
 Sound uses **pygame-ce** (SDL). On Python 3.14+, stock `pygame` has no mixer — use `pip install -e .` so pygame-ce is installed.
 ```
@@ -19,7 +19,7 @@ Sound uses **pygame-ce** (SDL). On Python 3.14+, stock `pygame` has no mixer —
 Dev mode with CSS reload:
 
 ```bash
-textual run --dev src/eve_ascii/app.py
+textual run --dev src/lsl_online/app.py
 ```
 
 ## Controls

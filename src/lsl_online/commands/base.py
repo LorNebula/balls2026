@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from eve_ascii.models import GameState
+from lsl_online.models import GameState
 
 
 class Command(ABC):

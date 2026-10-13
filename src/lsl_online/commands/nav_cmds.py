@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from collections import deque
 
-from eve_ascii.ascii_ui import ascii_only
-from eve_ascii.commands.base import Command
-from eve_ascii.galaxy import find_system_by_name
-from eve_ascii.models import GameState
+from lsl_online.ascii_ui import ascii_only
+from lsl_online.commands.base import Command
+from lsl_online.galaxy import find_system_by_name
+from lsl_online.models import GameState
 
 
 MARK_COLORS = {

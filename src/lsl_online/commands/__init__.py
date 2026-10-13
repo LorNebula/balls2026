@@ -1,6 +1,6 @@
 """Player command dispatch."""
 
-from eve_ascii.commands.registry import (
+from lsl_online.commands.registry import (
     COMMANDS,
     completion_candidates,
     execute_command,

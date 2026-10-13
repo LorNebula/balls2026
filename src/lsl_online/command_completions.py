@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from eve_ascii.commands.registry import completion_candidates as _completion_candidates
-from eve_ascii.models import GameState
+from lsl_online.commands.registry import completion_candidates as _completion_candidates
+from lsl_online.models import GameState
 
 
 def completion_candidates(state: GameState) -> list[str]:

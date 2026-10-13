@@ -1,7 +1,7 @@
 [project]
-name = "eve-ascii"
+name = "lsl-online"
 version = "0.1.0"
-description = "EVE-like ASCII terminal game (travel MVP)"
+description = "LSL ONLINE — ASCII terminal space trading game"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -10,7 +10,7 @@ dependencies = [
 ]
 
 [project.scripts]
-eve-ascii = "eve_ascii.__main__:main"
+lsl-online = "lsl_online.__main__:main"
 
 [build-system]
 requires = ["setuptools>=61"]

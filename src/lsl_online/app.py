@@ -3,19 +3,19 @@ from __future__ import annotations
 from pathlib import Path
 from textual.app import App
 
-from eve_ascii.ascii_ui import ascii_only
-from eve_ascii.commands import execute_command
-from eve_ascii.events import OPEN_SCRIPT_EDITOR, QUIT_APP
-from eve_ascii.game_loop import GameLoop
-from eve_ascii.galaxy import load_galaxy
-from eve_ascii.models import GameState, ShipStatus
-from eve_ascii.screens.map_screen import MapScreen
-from eve_ascii.screens.script_edit_screen import ScriptEditScreen
-from eve_ascii import audio, travel
+from lsl_online.ascii_ui import ascii_only
+from lsl_online.commands import execute_command
+from lsl_online.events import OPEN_SCRIPT_EDITOR, QUIT_APP
+from lsl_online.game_loop import GameLoop
+from lsl_online.galaxy import load_galaxy
+from lsl_online.models import GameState, ShipStatus
+from lsl_online.screens.map_screen import MapScreen
+from lsl_online.screens.script_edit_screen import ScriptEditScreen
+from lsl_online import audio, travel
 
 
-class EveApp(App):
-    TITLE = "EVE ASCII"
+class LslOnlineApp(App):
+    TITLE = "LSL ONLINE"
     CSS_PATH = Path(__file__).with_name("app.tcss")
     ENABLE_COMMAND_PALETTE = False
     BINDINGS = []
@@ -73,6 +73,6 @@ def run_app(*, with_tutorial: bool = True, sound_enabled: bool = True) -> None:
     state = travel.new_game(galaxy, with_tutorial=with_tutorial)
     state.sound_enabled = sound_enabled
     try:
-        EveApp(state).run()
+        LslOnlineApp(state).run()
     finally:
         audio.shutdown()

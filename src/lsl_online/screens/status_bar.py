@@ -1,7 +1,7 @@
-from eve_ascii.ascii_ui import ascii_only
-from eve_ascii.models import GameState
-from eve_ascii.quests import current_objective
-from eve_ascii.ship import hull_totals
+from lsl_online.ascii_ui import ascii_only
+from lsl_online.models import GameState
+from lsl_online.quests import current_objective
+from lsl_online.ship import hull_totals
 
 
 def format_status(state: GameState) -> str:

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from eve_ascii.generate import dict_to_galaxy
-from eve_ascii.models import Galaxy, Planet, StarSystem, Station, Vec3
+from lsl_online.generate import dict_to_galaxy
+from lsl_online.models import Galaxy, Planet, StarSystem, Station, Vec3
 
 
 def default_galaxy_path() -> Path:

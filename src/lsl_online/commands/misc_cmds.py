@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from eve_ascii.commands.base import Command
-from eve_ascii.comms import list_messages
-from eve_ascii.events import QUIT_APP
-from eve_ascii.models import GameState
-from eve_ascii import quests
-from eve_ascii import tutorial
+from lsl_online.commands.base import Command
+from lsl_online.comms import list_messages
+from lsl_online.events import QUIT_APP
+from lsl_online.models import GameState
+from lsl_online import quests
+from lsl_online import tutorial
 
 
 class QuitCommand(Command):

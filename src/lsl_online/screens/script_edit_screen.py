@@ -5,7 +5,7 @@ from textual.binding import Binding
 from textual.screen import Screen
 from textual.widgets import Footer, Static, TextArea
 
-from eve_ascii.models import GameState
+from lsl_online.models import GameState
 
 
 class ScriptEditScreen(Screen):
@@ -50,6 +50,6 @@ class ScriptEditScreen(Screen):
 
 
 def automation_default_hint() -> str:
-    from eve_ascii.automation import TUTORIAL_TRADE_TEMPLATE
+    from lsl_online.automation import TUTORIAL_TRADE_TEMPLATE
 
     return TUTORIAL_TRADE_TEMPLATE

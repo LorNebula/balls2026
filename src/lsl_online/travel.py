@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from eve_ascii.galaxy import (
+from lsl_online.galaxy import (
     find_planet,
     find_station,
     find_system_by_name,
     planet_position,
     station_position,
 )
-from eve_ascii.models import (
+from lsl_online.models import (
     GameState,
     ShipLocation,
     ShipStatus,
@@ -57,7 +57,7 @@ def _set_warp(state: GameState, target: TravelTarget, dest: Vec3) -> str | None:
     ship.eta_seconds = dist / ship.warp_speed
     ship.status = ShipStatus.WARPING
     state.log(f"Warping to {target.label} ({ship.eta_seconds:.1f}s)")
-    from eve_ascii.audio import request_sound
+    from lsl_online.audio import request_sound
 
     request_sound(state, "warp")
     return None
@@ -143,8 +143,8 @@ def _sync_nav_path_after_jump(state: GameState, dest_id: str) -> None:
 
 
 def jump_system(state: GameState, system_name: str | None = None) -> str | None:
-    from eve_ascii.models import GameMode
-    from eve_ascii.vfx import trigger_flash
+    from lsl_online.models import GameMode
+    from lsl_online.vfx import trigger_flash
 
     ship = state.player.ship
     if state.mode == GameMode.HYPERSPACE and ship.status != ShipStatus.IDLE:
@@ -191,7 +191,7 @@ def jump_system(state: GameState, system_name: str | None = None) -> str | None:
     state.hyperspace_particles.clear()
     trigger_flash(state)
     state.log(f"Jumping to {dest.name} ({ship.eta_seconds:.1f}s)")
-    from eve_ascii.audio import request_sound
+    from lsl_online.audio import request_sound
 
     request_sound(state, "jump")
     return None
@@ -255,7 +255,7 @@ def undock(state: GameState) -> str | None:
 
 
 def _arrive_at_target(state: GameState, target: TravelTarget, dest: Vec3) -> None:
-    from eve_ascii.models import GameMode
+    from lsl_online.models import GameMode
 
     ship = state.player.ship
     if target.kind == "system":
@@ -268,14 +268,14 @@ def _arrive_at_target(state: GameState, target: TravelTarget, dest: Vec3) -> Non
             )
             state.player.system_id = dest_sys.id
             state.log(f"Arrived in {dest_sys.name}")
-            from eve_ascii.combat import enter_system
+            from lsl_online.combat import enter_system
 
             enter_system(state, dest_sys)
             for nebula in state.galaxy.nebulae:
                 if dest_sys.id in nebula.system_ids:
                     state.log(f"Nebula {nebula.name} envelops this system.")
             state.hyperspace_particles.clear()
-            from eve_ascii.events import ENTERED_SYSTEM
+            from lsl_online.events import ENTERED_SYSTEM
 
             state.bus.emit(
                 ENTERED_SYSTEM,
@@ -344,10 +344,10 @@ def tick(state: GameState, dt: float) -> None:
 
 
 def new_game(galaxy, *, with_tutorial: bool = True) -> GameState:
-    from eve_ascii.models import Galaxy, Player, Ship
-    from eve_ascii.space_render import init_background_stars
-    from eve_ascii.tutorial import init_tutorial, skip_tutorial
-    from eve_ascii.market import starter_cargo
+    from lsl_online.models import Galaxy, Player, Ship
+    from lsl_online.space_render import init_background_stars
+    from lsl_online.tutorial import init_tutorial, skip_tutorial
+    from lsl_online.market import starter_cargo
 
     assert isinstance(galaxy, Galaxy)
     start = next(iter(galaxy.systems.values()))
@@ -367,10 +367,10 @@ def new_game(galaxy, *, with_tutorial: bool = True) -> GameState:
     player = Player(ship=ship, system_id=start.id)
     state = GameState(galaxy=galaxy, player=player)
     init_background_stars(state)
-    from eve_ascii.event_handlers import bootstrap_events
+    from lsl_online.event_handlers import bootstrap_events
 
     bootstrap_events(state)
-    from eve_ascii.market import ensure_station_wallets, ensure_tutorial_station_credits
+    from lsl_online.market import ensure_station_wallets, ensure_tutorial_station_credits
 
     ensure_station_wallets(state)
     if with_tutorial:

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import shlex
 
-from eve_ascii.commands.base import Command
-from eve_ascii.commands.combat_cmds import CeaseCommand, FireCommand, LockCommand
-from eve_ascii.commands.mining_cmds import MineCommand, RadarCommand
-from eve_ascii.commands.map_cmds import GalaxyViewCommand, ZoomCommand
-from eve_ascii.commands.nav_cmds import MarkCommand, PathCommand
-from eve_ascii.commands.market_cmds import (
+from lsl_online.commands.base import Command
+from lsl_online.commands.combat_cmds import CeaseCommand, FireCommand, LockCommand
+from lsl_online.commands.mining_cmds import MineCommand, RadarCommand
+from lsl_online.commands.map_cmds import GalaxyViewCommand, ZoomCommand
+from lsl_online.commands.nav_cmds import MarkCommand, PathCommand
+from lsl_online.commands.market_cmds import (
     BuyCommand,
     BuyShipCommand,
     HangarCommand,
@@ -22,7 +22,7 @@ from eve_ascii.commands.market_cmds import (
     RepairCommand,
     UpgradeCommand,
 )
-from eve_ascii.commands.misc_cmds import (
+from lsl_online.commands.misc_cmds import (
     CommsCommand,
     HelpCommand,
     QuitCommand,
@@ -30,9 +30,9 @@ from eve_ascii.commands.misc_cmds import (
     QuestsCommand,
     SkipTutorialCommand,
 )
-from eve_ascii.commands.script_cmds import ScriptCommand
-from eve_ascii.commands.travel_cmds import DockCommand, JumpCommand, TravelCommand, UndockCommand
-from eve_ascii.models import GameState
+from lsl_online.commands.script_cmds import ScriptCommand
+from lsl_online.commands.travel_cmds import DockCommand, JumpCommand, TravelCommand, UndockCommand
+from lsl_online.models import GameState
 
 # Order matters: more specific matchers before generic ones (e.g. cease fire before cease-only).
 COMMANDS: list[Command] = [

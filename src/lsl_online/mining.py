@@ -5,9 +5,9 @@ from __future__ import annotations
 import random
 import re
 
-from eve_ascii.materials import Material
-from eve_ascii.models import Asteroid, CargoStack, GameMode, GameState, ShipStatus, TutorialStep, Vec3
-from eve_ascii.space_render import tutorial_arena
+from lsl_online.materials import Material
+from lsl_online.models import Asteroid, CargoStack, GameMode, GameState, ShipStatus, TutorialStep, Vec3
+from lsl_online.space_render import tutorial_arena
 
 ASTEROID_CAP = 9
 RESPAWN_INTERVAL = 8.0
@@ -24,7 +24,7 @@ def _system_rng(state: GameState, system_id: str) -> random.Random:
 
 
 def system_materials(state: GameState, system_id: str) -> list[Material]:
-    from eve_ascii.materials import MATERIALS
+    from lsl_online.materials import MATERIALS
 
     rng = _system_rng(state, system_id)
     count = rng.randint(2, 4)
@@ -93,13 +93,13 @@ def _alive_count(state: GameState) -> int:
 
 def fill_tutorial_mining_field(state: GameState) -> None:
     """Spawn a small cluster near the ship for the post-jump mining beat."""
-    from eve_ascii.travel import current_ship_coords
+    from lsl_online.travel import current_ship_coords
 
     system_id = state.player.ship.location.system_id
     materials = system_materials(state, system_id)
     mat = materials[0] if materials else None
     if not mat:
-        from eve_ascii.materials import MATERIALS
+        from lsl_online.materials import MATERIALS
 
         mat = MATERIALS[0]
     sc = current_ship_coords(state)
@@ -151,7 +151,7 @@ def lock_asteroid(state: GameState, code: str) -> str | None:
 
 
 def lock_target_unified(state: GameState, ref: str, subtarget: str | None = None) -> str | None:
-    from eve_ascii import combat
+    from lsl_online import combat
 
     ref_u = ref.upper()
     if CODE_PATTERN.match(ref_u):
@@ -183,7 +183,7 @@ def cease_mining(state: GameState) -> None:
     if state.mining_active:
         state.mining_active = False
         state.log("Cease mining.")
-        from eve_ascii.audio import stop_all_loops
+        from lsl_online.audio import stop_all_loops
 
         stop_all_loops()
 
@@ -239,7 +239,7 @@ def _tick_mining(state: GameState, dt: float) -> None:
         state.tutorial_mined_units += added
     state.log(f"Mined 1x {ast.material_id} -> hold ({ast.yield_left} left on {ast.code})")
     if added > 0 and _pickup_sound_timer <= 0:
-        from eve_ascii.audio import request_sound
+        from lsl_online.audio import request_sound
 
         request_sound(state, "pickup")
         _pickup_sound_timer = PICKUP_SOUND_COOLDOWN

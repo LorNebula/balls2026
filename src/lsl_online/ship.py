@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from eve_ascii.models import (
+from lsl_online.models import (
     COMPONENT_ALIASES,
     GameMode,
     GameState,

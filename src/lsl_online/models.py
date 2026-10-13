@@ -385,7 +385,7 @@ class Player:
 
 
 def _default_event_bus():
-    from eve_ascii.events import EventBus
+    from lsl_online.events import EventBus
 
     return EventBus()
 
@@ -442,7 +442,7 @@ class GameState:
     pending_shipments: list[PendingShipment] = field(default_factory=list)
 
     def log(self, message: str) -> None:
-        from eve_ascii.ascii_ui import ascii_only
+        from lsl_online.ascii_ui import ascii_only
 
         self.events.append(ascii_only(message))
         if len(self.events) > 200:

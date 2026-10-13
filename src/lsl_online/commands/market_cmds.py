@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from eve_ascii.commands.base import Command
-from eve_ascii import market
-from eve_ascii.models import GameState
-from eve_ascii.shipyard import SHIP_TYPES
+from lsl_online.commands.base import Command
+from lsl_online import market
+from lsl_online.models import GameState
+from lsl_online.shipyard import SHIP_TYPES
 
 
 class InventoryCommand(Command):

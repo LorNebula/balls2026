@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from eve_ascii import combat
-from eve_ascii.comms import push_message
-from eve_ascii.galaxy import station_position
-from eve_ascii.market import TUTORIAL_CARGO_ID
-from eve_ascii.models import GameMode, GameState, ShipStatus, TutorialStep, Vec3
-from eve_ascii.quests import unlock_quests
-from eve_ascii.vfx import trigger_flash
+from lsl_online import combat
+from lsl_online.comms import push_message
+from lsl_online.galaxy import station_position
+from lsl_online.market import TUTORIAL_CARGO_ID
+from lsl_online.models import GameMode, GameState, ShipStatus, TutorialStep, Vec3
+from lsl_online.quests import unlock_quests
+from lsl_online.vfx import trigger_flash
 
 # Seconds to wait at each beat before the next event
 PAUSE_HYPERSPACE = 5.0
@@ -42,7 +42,7 @@ def skip_tutorial(state: GameState) -> None:
     state.explosions.clear()
     state.hyperspace_particles.clear()
     unlock_quests(state)
-    from eve_ascii import mining
+    from lsl_online import mining
 
     mining.fill_asteroid_field(state)
     state.log("Tutorial skipped. Free play.")
@@ -135,7 +135,7 @@ def tick(state: GameState, dt: float) -> None:
             and ship.status == ShipStatus.IDLE
         )
         if jumped and state.tutorial_step_elapsed >= 1.0:
-            from eve_ascii import mining
+            from lsl_online import mining
 
             _set_step(state, TutorialStep.MINE)
             mining.fill_tutorial_mining_field(state)
@@ -149,7 +149,7 @@ def tick(state: GameState, dt: float) -> None:
 
     elif step == TutorialStep.MINE:
         if state.tutorial_mined_units >= TUTORIAL_MINE_UNITS:
-            from eve_ascii import mining
+            from lsl_online import mining
 
             mining.cease_mining(state)
             _set_step(state, TutorialStep.DOCK)
@@ -177,7 +177,7 @@ def tick(state: GameState, dt: float) -> None:
             state.player.ship.status == ShipStatus.DOCKED
             and state.tutorial_step_elapsed >= PAUSE_AFTER_DOCK
         ):
-            from eve_ascii.automation import TUTORIAL_TRADE_TEMPLATE
+            from lsl_online.automation import TUTORIAL_TRADE_TEMPLATE
 
             _set_step(state, TutorialStep.SELL)
             state.trade_script_source = TUTORIAL_TRADE_TEMPLATE

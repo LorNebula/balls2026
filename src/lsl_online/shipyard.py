@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from eve_ascii.models import COMPONENT_KINDS, Ship, ShipComponent, ShipLocation
+from lsl_online.models import COMPONENT_KINDS, Ship, ShipComponent, ShipLocation
 
 
 @dataclass(frozen=True)

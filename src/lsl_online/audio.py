@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from eve_ascii.models import GameState
+from lsl_online.models import GameState
 
 AUDIO_DIR = Path(__file__).resolve().parents[2] / "audio"
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from eve_ascii.models import GameState, Message
+from lsl_online.models import GameState, Message
 
 
 def push_message(state: GameState, sender: str, body: str) -> None:

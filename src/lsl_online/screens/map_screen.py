@@ -3,12 +3,12 @@ from textual.events import Key
 from textual.screen import Screen
 from textual.widgets import Input, Static
 
-from eve_ascii.ascii_ui import ascii_only, box_line
-from eve_ascii.command_completions import matching_completions
-from eve_ascii.models import GameState
-from eve_ascii.playfield import render_playfield
-from eve_ascii.screens.status_bar import format_status
-from eve_ascii.widgets.command_suggester import GameCommandSuggester
+from lsl_online.ascii_ui import ascii_only, box_line
+from lsl_online.command_completions import matching_completions
+from lsl_online.models import GameState
+from lsl_online.playfield import render_playfield
+from lsl_online.screens.status_bar import format_status
+from lsl_online.widgets.command_suggester import GameCommandSuggester
 
 
 class MapScreen(Screen):
@@ -56,7 +56,7 @@ class MapScreen(Screen):
             return
         self._chrome_view = view
         self.query_one("#title_bar", Static).update(
-            box_line(w, f" EVE ASCII | map={view} | space trading terminal ")
+            box_line(w, f" LSL ONLINE | map={view} | space trading terminal ")
         )
         self.query_one("#footer_bar", Static).update(
             box_line(
@@ -106,7 +106,7 @@ class MapScreen(Screen):
         if callable(runner):
             runner(line)
             return
-        from eve_ascii.commands import execute_command
+        from lsl_online.commands import execute_command
 
         err = execute_command(self.game_state, line)
         if err:
@@ -162,7 +162,7 @@ class MapScreen(Screen):
                 self._command_history = self._command_history[-100:]
             self._history_index = None
             self._history_draft = ""
-            from eve_ascii.audio import request_sound
+            from lsl_online.audio import request_sound
 
             request_sound(self.game_state, "blip")
             self.run_command(line)

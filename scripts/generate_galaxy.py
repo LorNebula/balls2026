@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from eve_ascii.generate import build_galaxy, write_galaxy_json  # noqa: E402
+from lsl_online.generate import build_galaxy, write_galaxy_json  # noqa: E402
 
 
 def main() -> None:

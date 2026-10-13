@@ -4,7 +4,7 @@ from typing import Callable
 
 from textual.suggester import Suggester
 
-from eve_ascii.models import GameState
+from lsl_online.models import GameState
 
 
 class GameCommandSuggester(Suggester):
@@ -15,6 +15,6 @@ class GameCommandSuggester(Suggester):
         self._get_state = get_state
 
     async def get_suggestion(self, value: str) -> str | None:
-        from eve_ascii.command_completions import best_completion
+        from lsl_online.command_completions import best_completion
 
         return best_completion(self._get_state(), value)

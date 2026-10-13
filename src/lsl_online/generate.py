@@ -7,9 +7,9 @@ import math
 import random
 from pathlib import Path
 
-from eve_ascii.models import BlackHole, Galaxy, Moon, Nebula, Planet, StarSystem, Station, SystemAsteroid, Vec3
-from eve_ascii.names import planet_name, station_name, system_name, water_name
-from eve_ascii.shipyard import SHIP_TYPES
+from lsl_online.models import BlackHole, Galaxy, Moon, Nebula, Planet, StarSystem, Station, SystemAsteroid, Vec3
+from lsl_online.names import planet_name, station_name, system_name, water_name
+from lsl_online.shipyard import SHIP_TYPES
 
 
 def _system_layout(
@@ -138,7 +138,7 @@ def _connect_layout(
 def build_galaxy(seed: int, num_systems: int = 72) -> Galaxy:
     if num_systems < 1:
         raise ValueError("A galaxy must contain at least one star system.")
-    from eve_ascii.market import BASE_PRICES, ITEM_NAMES
+    from lsl_online.market import BASE_PRICES, ITEM_NAMES
 
     rng = random.Random(seed)
     layout_rng = random.Random(seed + 1)

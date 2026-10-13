@@ -7,10 +7,10 @@ import textwrap
 from rich.style import Style
 from rich.text import Text
 
-from eve_ascii.ascii_ui import ascii_only, pad_line, split_pane_bottom, split_pane_top
-from eve_ascii.market import render_cargo_view, render_hangar_view, render_market_view
-from eve_ascii.models import GameMode, GameState, ShipStatus
-from eve_ascii.space_render import (
+from lsl_online.ascii_ui import ascii_only, pad_line, split_pane_bottom, split_pane_top
+from lsl_online.market import render_cargo_view, render_hangar_view, render_market_view
+from lsl_online.models import GameMode, GameState, ShipStatus
+from lsl_online.space_render import (
     render_docked_view,
     render_galaxy_map,
     render_open_space,

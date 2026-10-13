@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from eve_ascii.market import (
+from lsl_online.market import (
     BASE_PRICES,
     find_cargo,
     complete_station_sale,
@@ -12,8 +12,8 @@ from eve_ascii.market import (
     primary_station,
     sell_at_station,
 )
-from eve_ascii.models import GameState, PendingShipment
-from eve_ascii.galaxy import find_system_by_name
+from lsl_online.models import GameState, PendingShipment
+from lsl_online.galaxy import find_system_by_name
 
 TRADE_CRON_INTERVAL = 60.0
 COURIER_SPEED = 0.8

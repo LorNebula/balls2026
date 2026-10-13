@@ -1,10 +1,10 @@
 import argparse
 
-from eve_ascii.app import run_app
+from lsl_online.app import run_app
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="EVE ASCII terminal game")
+    parser = argparse.ArgumentParser(description="LSL ONLINE terminal game")
     parser.add_argument(
         "--no-tutorial",
         action="store_true",

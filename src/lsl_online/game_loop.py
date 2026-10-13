@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from eve_ascii import audio, automation, combat, market, mining, radar, ship as ship_sys, tutorial, travel, vfx
-from eve_ascii.models import GameState
-from eve_ascii.space_render import tick_star_scroll
+from lsl_online import audio, automation, combat, market, mining, radar, ship as ship_sys, tutorial, travel, vfx
+from lsl_online.models import GameState
+from lsl_online.space_render import tick_star_scroll
 
 
 class Behaviour(ABC):

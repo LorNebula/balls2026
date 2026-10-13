@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import random
 
-from eve_ascii import combat, mining
-from eve_ascii.events import ENTERED_SYSTEM
-from eve_ascii.models import GameMode, GameState, ShipStatus, TutorialStep
+from lsl_online import combat, mining
+from lsl_online.events import ENTERED_SYSTEM
+from lsl_online.models import GameMode, GameState, ShipStatus, TutorialStep
 
 PIRATE_ENCOUNTER_CHANCE = 0.25
 

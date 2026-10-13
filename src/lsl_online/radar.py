@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from eve_ascii.ascii_ui import ascii_only
-from eve_ascii.galaxy import station_position
-from eve_ascii.models import GameState, RadarContact
-from eve_ascii.travel import current_ship_coords
+from lsl_online.ascii_ui import ascii_only
+from lsl_online.galaxy import station_position
+from lsl_online.models import GameState, RadarContact
+from lsl_online.travel import current_ship_coords
 
 
 def _in_nebula(state: GameState, system_id: str) -> bool:

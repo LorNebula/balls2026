@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from eve_ascii.commands.base import Command
-from eve_ascii.models import GameState
+from lsl_online.commands.base import Command
+from lsl_online.models import GameState
 
 
 class GalaxyViewCommand(Command):

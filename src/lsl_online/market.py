@@ -7,13 +7,13 @@ import random
 from rich.style import Style
 from rich.text import Text
 
-from eve_ascii.ascii_ui import ascii_only
-from eve_ascii.materials import MATERIALS, base_prices_map
-from eve_ascii.models import CargoStack, GameState, ShipLocation, ShipStatus
-from eve_ascii.ship import find_component
-from eve_ascii.shipyard import SHIP_TYPES, SHIP_TYPES_BY_ID, build_ship
-from eve_ascii.models import CargoStack, GameState, ShipStatus, TutorialStep
-from eve_ascii.ship import find_component, kind_integrity
+from lsl_online.ascii_ui import ascii_only
+from lsl_online.materials import MATERIALS, base_prices_map
+from lsl_online.models import CargoStack, GameState, ShipLocation, ShipStatus
+from lsl_online.ship import find_component
+from lsl_online.shipyard import SHIP_TYPES, SHIP_TYPES_BY_ID, build_ship
+from lsl_online.models import CargoStack, GameState, ShipStatus, TutorialStep
+from lsl_online.ship import find_component, kind_integrity
 
 TUTORIAL_CARGO_ID = "flagged_cargo"
 TUTORIAL_CARGO_NAME = "Flagged Military Cargo"
@@ -154,7 +154,7 @@ def complete_station_sale(
     station.inventory[item_id] = station.inventory.get(item_id, 0) + quantity
     _mark_tutorial_sell(state, item_id)
     state.log(f"Courier sold {quantity}x {item_name} for {total:.0f} cr ({unit:.0f}/ea).")
-    from eve_ascii.audio import request_sound
+    from lsl_online.audio import request_sound
 
     request_sound(state, "sell")
     return None
@@ -186,7 +186,7 @@ def sell_at_station(
     station.inventory[stack.item_id] = station.inventory.get(stack.item_id, 0) + quantity
     state.log(f"Sold {quantity}x {stack.name} for {total:.0f} cr ({unit:.0f}/ea).")
     _mark_tutorial_sell(state, stack.item_id)
-    from eve_ascii.audio import request_sound
+    from lsl_online.audio import request_sound
 
     request_sound(state, "sell")
     return None
@@ -515,7 +515,7 @@ def buy_item(state: GameState, item_ref: str, quantity: int) -> str | None:
             else unit
         )
     else:
-        from eve_ascii.models import CargoStack
+        from lsl_online.models import CargoStack
 
         state.player.cargo.append(
             CargoStack(item_id, ITEM_NAMES[item_id], quantity, avg_unit_cost=unit)

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from eve_ascii import automation
-from eve_ascii.commands.base import Command
-from eve_ascii.events import OPEN_SCRIPT_EDITOR
-from eve_ascii.models import GameState
+from lsl_online import automation
+from lsl_online.commands.base import Command
+from lsl_online.events import OPEN_SCRIPT_EDITOR
+from lsl_online.models import GameState
 
 
 class ScriptCommand(Command):

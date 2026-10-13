@@ -10,9 +10,9 @@ from dataclasses import dataclass
 from rich.style import Style
 from rich.text import Text
 
-from eve_ascii.ascii_ui import ascii_only
-from eve_ascii.galaxy import planet_position, station_position
-from eve_ascii.models import (
+from lsl_online.ascii_ui import ascii_only
+from lsl_online.galaxy import planet_position, station_position
+from lsl_online.models import (
     Asteroid,
     BackgroundStar,
     Explosion,
@@ -24,7 +24,7 @@ from eve_ascii.models import (
     ShipStatus,
     TutorialStep,
 )
-from eve_ascii.ship import (
+from lsl_online.ship import (
     BASE_SHIELD_GEN,
     hull_totals,
     is_powerless,
@@ -375,7 +375,7 @@ def _draw_station_markers(
     ship_coords,
 ) -> None:
     """One marker per screen cluster (systems often have two stations on one planet)."""
-    from eve_ascii.travel import DOCK_RANGE
+    from lsl_online.travel import DOCK_RANGE
 
     placed: list[tuple[int, int]] = []
     min_dx, min_dy = 9, 4
@@ -669,7 +669,7 @@ def render_open_space(
     canvas = SpaceCanvas(width, height, anchor_x, anchor_y, bg_style=bg)
     inner_h = height
 
-    from eve_ascii.travel import current_ship_coords
+    from lsl_online.travel import current_ship_coords
 
     sc = current_ship_coords(state)
     ship_x, ship_y = sc.x, sc.y
@@ -693,7 +693,7 @@ def render_open_space(
         _apply_screen_flash(canvas, state)
         header = Text(" HYPERSPACE  ", style=Style(color="#bb88ff", bold=True))
         header.append(f"fuel {ship.fuel:.0f} ", style=Style(color="#aaccee"))
-        from eve_ascii.quests import current_objective
+        from lsl_online.quests import current_objective
 
         hs_obj = ascii_only(current_objective(state))
         if hs_obj:
@@ -832,7 +832,7 @@ def render_open_space(
         style=header_style,
     )
     header.append("01-04 components ", style=Style(color="#ffee66"))
-    from eve_ascii.quests import current_objective
+    from lsl_online.quests import current_objective
 
     objective = ascii_only(current_objective(state))
     if objective:
@@ -1007,7 +1007,7 @@ def render_galaxy_map(state: GameState, width: int, height: int, zoom: float = 1
             for cell in lane_cells_between((x0, y0), (x1, y1)):
                 lane_cells[cell] = lane_cells.get(cell, False) or bool(active)
 
-    from eve_ascii.commands.nav_cmds import MARK_COLORS
+    from lsl_online.commands.nav_cmds import MARK_COLORS
 
     for system in state.galaxy.systems.values():
         gx, gy = screen_positions[system.id]

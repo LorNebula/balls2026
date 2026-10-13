@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from eve_ascii.models import GameState
+from lsl_online.models import GameState
 
 FLASH_DURATION = 0.45
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from eve_ascii.models import GameState, Quest, QuestStatus, TutorialStep
+from lsl_online.models import GameState, Quest, QuestStatus, TutorialStep
 
 
 def seed_quests() -> list[Quest]:
@@ -27,7 +27,7 @@ def seed_quests() -> list[Quest]:
 
 def current_objective(state: GameState) -> str:
     if state.tutorial_step != TutorialStep.DONE:
-        from eve_ascii.tutorial import tutorial_objective
+        from lsl_online.tutorial import tutorial_objective
 
         return tutorial_objective(state)
     active = [q for q in state.quests if q.status == QuestStatus.ACTIVE]
