@@ -10,6 +10,7 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e .
 python scripts/generate_galaxy.py --seed 42
 python -m eve_ascii
+python -m eve_ascii --no-tutorial   # skip opening tutorial, free play
 ```
 
 Dev mode with CSS reload:

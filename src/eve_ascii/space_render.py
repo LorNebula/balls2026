@@ -81,6 +81,12 @@ STATION_MARKER = [
     " /===\\ ",
 ]
 
+ASTEROID_ART = [
+    " (@) ",
+    "/###\\",
+]
+ASTEROID_STYLE = Style(color="#cc8844", bold=True)
+
 SUN_ART = [
     "    \\  |  /    ",
     "  --- (O) ---   ",
@@ -388,6 +394,18 @@ def render_open_space(
         if show_stations:
             _draw_station_markers(canvas, sys, ship_x, ship_y, scale)
 
+        if not tutorial_arena(state):
+            lock_ast = ship.target_letter or ""
+            for ast in state.asteroids:
+                if not ast.alive:
+                    continue
+                ax, ay = canvas.world_to_screen(
+                    ast.position.x, ast.position.y, ship_x, ship_y, scale
+                )
+                highlight = lock_ast.upper() == ast.code.upper()
+                style = Style(color="#ffcc66", bold=True) if highlight else ASTEROID_STYLE
+                canvas.stamp_art(ax, ay, ASTEROID_ART, style, id_letter=ast.code)
+
     lock = ship.target_letter
     for npc in state.npc_ships:
         if not npc.alive:
@@ -428,10 +446,11 @@ def render_open_space(
     )
 
     wpn = "ON" if ship.weapons_active else "off"
+    mine = "ON" if state.mining_active else "off"
     title = sys.name if sys else "?"
     header = Text(f" {title} ", style=Style(color="#e8b84a", bold=True))
     header.append(
-        f"| {state.mode.value} lock={lock or '-'} wpn={wpn} ",
+        f"| {state.mode.value} lock={lock or '-'} wpn={wpn} mine={mine} ",
         style=Style(color="#aaccee"),
     )
     header.append("01-04 components ", style=Style(color="#ffee66"))

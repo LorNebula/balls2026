@@ -282,10 +282,10 @@ def tick(state: GameState, dt: float) -> None:
     _arrive_at_target(state, target, dest)
 
 
-def new_game(galaxy) -> GameState:
+def new_game(galaxy, *, with_tutorial: bool = True) -> GameState:
     from eve_ascii.models import Galaxy, Player, Ship
     from eve_ascii.space_render import init_background_stars
-    from eve_ascii.tutorial import init_tutorial
+    from eve_ascii.tutorial import init_tutorial, skip_tutorial
 
     assert isinstance(galaxy, Galaxy)
     start = next(iter(galaxy.systems.values()))
@@ -308,5 +308,8 @@ def new_game(galaxy) -> GameState:
     from eve_ascii.event_handlers import bootstrap_events
 
     bootstrap_events(state)
-    init_tutorial(state)
+    if with_tutorial:
+        init_tutorial(state)
+    else:
+        skip_tutorial(state)
     return state

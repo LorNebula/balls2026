@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from eve_ascii import combat, ship as ship_sys, tutorial, travel, vfx
+from eve_ascii import combat, mining, radar, ship as ship_sys, tutorial, travel, vfx
 from eve_ascii.models import GameState
 from eve_ascii.space_render import tick_star_scroll
 
@@ -45,6 +45,16 @@ class TravelBehaviour(Behaviour):
         travel.tick(state, dt)
 
 
+class MiningBehaviour(Behaviour):
+    def update(self, state: GameState, dt: float) -> None:
+        mining.tick(state, dt)
+
+
+class RadarBehaviour(Behaviour):
+    def update(self, state: GameState, dt: float) -> None:
+        radar.tick_radar(state, dt)
+
+
 def default_behaviours() -> list[Behaviour]:
     return [
         TutorialBehaviour(),
@@ -52,6 +62,8 @@ def default_behaviours() -> list[Behaviour]:
         ShipBehaviour(),
         CombatBehaviour(),
         TravelBehaviour(),
+        MiningBehaviour(),
+        RadarBehaviour(),
     ]
 
 

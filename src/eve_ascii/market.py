@@ -6,6 +6,7 @@ from rich.style import Style
 from rich.text import Text
 
 from eve_ascii.ascii_ui import ascii_only
+from eve_ascii.materials import base_prices_map
 from eve_ascii.models import CargoStack, GameState, ShipStatus
 from eve_ascii.ship import find_component
 
@@ -17,6 +18,7 @@ BASE_PRICES: dict[str, float] = {
     TUTORIAL_CARGO_ID: 1200.0,
     "scrap": 45.0,
     "ore": 80.0,
+    **base_prices_map(),
 }
 
 UPGRADE_COST: dict[str, float] = {

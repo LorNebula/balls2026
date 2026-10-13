@@ -71,7 +71,7 @@ class EveApp(App):
         self.refresh_sub_title()
 
 
-def run_app() -> None:
+def run_app(*, with_tutorial: bool = True) -> None:
     galaxy = load_galaxy()
-    state = travel.new_game(galaxy)
+    state = travel.new_game(galaxy, with_tutorial=with_tutorial)
     EveApp(state).run()

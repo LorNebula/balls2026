@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import random
 
-from eve_ascii import combat
+from eve_ascii import combat, mining
 from eve_ascii.events import ENTERED_SYSTEM
 from eve_ascii.models import GameMode, GameState, ShipStatus, TutorialStep
 
@@ -12,7 +12,8 @@ PIRATE_ENCOUNTER_CHANCE = 0.25
 
 
 def _on_entered_system(state: GameState, *, system_id: str, system_name: str) -> None:
-    _ = system_id
+    if state.tutorial_step == TutorialStep.DONE:
+        mining.fill_asteroid_field(state)
     if state.tutorial_step != TutorialStep.DONE:
         return
     ship = state.player.ship

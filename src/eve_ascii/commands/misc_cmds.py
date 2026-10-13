@@ -81,7 +81,7 @@ class HelpCommand(Command):
     def execute(self, state: GameState, parts: list[str]) -> str | None:
         state.log(
             "travel, jump, dock, inventory, sell <item> <qty>, upgrade reactor|weapons, "
-            "lock, fire, cease, ship, comms, quests"
+            "lock, mine, cease, fire, radar, ship, comms, quests"
         )
         return None
 

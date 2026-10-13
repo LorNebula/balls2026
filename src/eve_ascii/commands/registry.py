@@ -6,6 +6,7 @@ import shlex
 
 from eve_ascii.commands.base import Command
 from eve_ascii.commands.combat_cmds import CeaseCommand, FireCommand, LockCommand
+from eve_ascii.commands.mining_cmds import MineCommand, RadarCommand
 from eve_ascii.commands.market_cmds import (
     HangarCommand,
     InventoryCommand,
@@ -35,8 +36,10 @@ COMMANDS: list[Command] = [
     JumpCommand(),
     TravelCommand(),
     LockCommand(),
+    MineCommand(),
     FireCommand(),
     CeaseCommand(),
+    RadarCommand(),
     CommsCommand(),
     QuestsCommand(),
     QuestCommand(),

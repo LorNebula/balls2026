@@ -184,7 +184,19 @@ class Ship:
     subtarget: str | None = None
     weapons_active: bool = False
     fire_cooldown: float = 0.0
+    mine_cooldown: float = 0.0
     power_starve_logged: bool = False
+
+
+@dataclass
+class Asteroid:
+    code: str
+    material_id: str
+    material_name: str
+    position: Vec3
+    yield_left: int
+    max_yield: int
+    alive: bool = True
 
 
 @dataclass
@@ -266,6 +278,7 @@ class Player:
     ship: Ship
     system_id: str
     credits: float = 0.0
+    max_cargo: int = 100
     cargo: list[CargoStack] = field(default_factory=list)
 
     @property
@@ -288,6 +301,11 @@ class GameState:
     mode: GameMode = GameMode.SPACE
     tutorial_step: TutorialStep = TutorialStep.DONE
     tutorial_timer: float = 0.0
+    asteroids: list[Asteroid] = field(default_factory=list)
+    mining_active: bool = False
+    radar_active: bool = False
+    radar_timer: float = 0.0
+    asteroid_respawn_timer: float = 0.0
     npc_ships: list[NpcShip] = field(default_factory=list)
     projectiles: list[Projectile] = field(default_factory=list)
     explosions: list[Explosion] = field(default_factory=list)
