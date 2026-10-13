@@ -40,15 +40,24 @@ SUFFIXES = ("nen", "la", "jarvi", "maa", "asema", "kyla", "niemi", "ranta", "lah
 
 STATION_PREFIXES = ("Satama", "Telakka", "Kaivos", "Terminaali", "Telakointi", "Satelliitti")
 
-CURATED_SYSTEMS = (
-    "Aurinko",
-    "Pohjantahti",
-    "Valojarvi",
-    "Kivijarvi",
-    "Lumimaa",
-    "Merenranta",
-    "Havumetsa",
-    "Usvalahti",
+FINNISH_CITIES = (
+    "Helsinki", "Espoo", "Tampere", "Vantaa", "Oulu", "Turku", "Jyvaskyla",
+    "Lahti", "Kuopio", "Pori", "Kouvola", "Joensuu", "Lappeenranta", "Hameenlinna",
+    "Vaasa", "Rovaniemi", "Seinajoki", "Mikkeli", "Kotka", "Salo", "Porvoo",
+    "Kokkola", "Lohja", "Hyvinkaa", "Nokia", "Jarvenpaa", "Rauma", "Kerava",
+    "Kajaani", "Kemi", "Tornio", "Iisalmi", "Varkaus", "Savonlinna", "Imatra",
+    "Riihimaki", "Ylivieska", "Kuusamo", "Heinola", "Naantali", "Kaarina",
+    "Loviisa", "Hanko", "Uusikaarlepyy", "Kristiinankaupunki", "Pietarsaari",
+    "Maarianhamina", "Kankaanpaa", "Forssa", "Orimattila", "Laitila", "Kiuruvesi",
+)
+
+FINNISH_WATERS = (
+    "Saimaa", "Paijanne", "Inari", "Pielinen", "Oulujarvi", "Kallavesi",
+    "Keitele", "Nasi", "Pyhajarvi", "Lappajarvi", "Lokan", "Porttipahdan",
+    "Kemijoki", "Tornionjoki", "Oulujoki", "Kymijoki", "Kokemaenjoki",
+    "Vuoksi", "Tenojoki", "Iijoki", "Paatsjoki", "Kitkajoki", "Koitajoki",
+    "Porvoonjoki", "Aurajoki", "Vantaanjoki", "Muonionjoki", "Siikajoki",
+    "Lestijoki", "Kalajoki", "Kyronselka", "Haukivesi", "Vesijarvi", "Lohjanjarvi",
 )
 
 
@@ -59,13 +68,11 @@ def _capitalize(s: str) -> str:
 
 
 def system_name(rng: random.Random) -> str:
-    if rng.random() < 0.15:
-        return rng.choice(CURATED_SYSTEMS)
-    parts = rng.randint(1, 2)
-    name = "".join(_capitalize(rng.choice(SYLLABLES)) for _ in range(parts))
-    if rng.random() < 0.6:
-        name += rng.choice(SUFFIXES)
-    return name
+    return rng.choice(FINNISH_CITIES)
+
+
+def water_name(rng: random.Random) -> str:
+    return rng.choice(FINNISH_WATERS)
 
 
 def planet_name(rng: random.Random, system_name_str: str) -> str:

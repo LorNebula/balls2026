@@ -21,6 +21,49 @@ class InventoryCommand(Command):
         return []
 
 
+class SystemViewCommand(Command):
+    def matches(self, parts: list[str]) -> bool:
+        return bool(parts) and parts[0].lower() in ("system", "map", "close", "exit")
+
+    def execute(self, state: GameState, parts: list[str]) -> str | None:
+        return market.show_system_view(state)
+
+    def completions(self, state: GameState) -> list[str]:
+        return ["system", "close"]
+
+
+class BuyCommand(Command):
+    def matches(self, parts: list[str]) -> bool:
+        return bool(parts) and parts[0].lower() == "buy"
+
+    def execute(self, state: GameState, parts: list[str]) -> str | None:
+        args = parts[1:]
+        if len(args) < 2:
+            return "Usage: buy <item|reactor|weapons> <quantity>"
+        try:
+            quantity = int(args[-1])
+        except ValueError:
+            return "Quantity must be an integer."
+        return market.buy_item(state, " ".join(args[:-1]), quantity)
+
+    def completions(self, state: GameState) -> list[str]:
+        cmds = ["buy "]
+        if state.player.ship.status.value != "docked":
+            return cmds
+        sys = state.galaxy.get_system(state.player.ship.location.system_id)
+        station = None
+        if sys and state.player.ship.location.station_id:
+            station = next(
+                (st for st in sys.stations if st.id == state.player.ship.location.station_id),
+                None,
+            )
+        if station:
+            for item_id, quantity in station.inventory.items():
+                if quantity > 0:
+                    cmds.append(f"buy {item_id} ")
+        return cmds
+
+
 class HangarCommand(Command):
     def matches(self, parts: list[str]) -> bool:
         return bool(parts) and parts[0].lower() == "hangar"

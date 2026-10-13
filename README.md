@@ -26,8 +26,9 @@ textual run --dev src/eve_ascii/app.py
 - `Esc` — focus map (so `g`, `h/j/k/l` work)
 - `?` — list commands in the log
 - `h` / `j` / `k` / `l` — pan map
-- `+` / `-` — zoom map
+- `+` / `-` — zoom map; galaxy view centers on your system and lists its linked systems
 - `g` — toggle galaxy / system view
+- `system` / `close` — exit the market and show the current system
 - `q` — quit
 
 ## UI (ASCII)
@@ -48,12 +49,17 @@ Open-space view: your ship stays left-center; world scrolls around it with ASCII
 | `travel <x> <y> <z>` | Warp to coords in current system |
 | `travel planet <name>` | Orbit a planet |
 | `travel station <name>` | Warp near a station |
-| `jump <system>` | Jump to linked system (costs fuel) |
+| `jump <system>` | Jump to a linked system (costs 1 fuel) |
+| `market` / `inventory` | Open the docked station market |
+| `buy <item> <quantity>` | Buy stocked cargo, or `buy reactor 1` / `buy weapons 1` to upgrade |
+| `sell <item> <quantity>` | Sell cargo at a docked station |
 | `lock <A-Z> [reactor\|shield\|01-04]` | Combat target lock |
 | `fire` / `cease` | Start / stop lasers |
 | `comms` | Show inbox (Commander Crosshair) |
 | `quests` / `quest start <id>` / `quest status` | Quest board |
 
 New games start the **tutorial** (hyperspace → pirate fight → jump → galaxy → quests). During combat try: `lock A`, `fire`.
+
+Asteroid fields appear in some systems without stations. Lock an asteroid and fire to mine ore; mined asteroids stay depleted for the current game session. Galaxy generation is deterministic for a seed; regenerate with `python scripts/generate_galaxy.py --seed <seed>`.
 
 Game state is in-memory only (no backend).

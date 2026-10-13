@@ -3,22 +3,24 @@
   "systems": [
     {
       "id": "sys_000",
-      "name": "Koskimaa",
+      "name": "Kaarina",
       "position": {
-        "x": -0.18023103573742805,
-        "y": -0.19875241191424625,
-        "z": 0.24066774466767582
+        "x": 2.383399320449704,
+        "y": 0.07246514992794986,
+        "z": -0.2551081461965238
       },
       "neighbors": [
-        "sys_001",
-        "sys_006"
+        "sys_001"
       ],
       "planets": [
         {
           "id": "sys_000_p0",
-          "name": "Tuo",
-          "orbit_radius": 71.87390479723184,
-          "angle": 1.4618515069079712
+          "name": "Paiva",
+          "orbit_radius": 81.8098502489808,
+          "angle": 0.19969646474274078,
+          "size": "small",
+          "type": "terra",
+          "moon": null
         }
       ],
       "stations": [
@@ -27,584 +29,739 @@
           "name": "Satelliitti-1",
           "planet_id": "sys_000_p0",
           "offset": {
-            "x": 62.49422188897616,
-            "y": 1.7976592241286653,
+            "x": 65.0662486795118,
+            "y": -3.2192071615336495,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 25,
+            "scrap": 10,
+            "ice": 15,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 79.0,
+            "scrap": 43.0,
+            "ice": 64.0,
+            "reactor_upgrade": 2629.0,
+            "weapons_upgrade": 2330.0
           }
         }
-      ]
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_001",
-      "name": "UsvaYotajarvi",
+      "name": "Kerava",
       "position": {
-        "x": 5.099069697494113,
-        "y": -0.07987474174100406,
-        "z": -0.34452050018821845
+        "x": 2.561838622690781,
+        "y": 1.6064785327341802,
+        "z": 0.4572130722067812
       },
       "neighbors": [
         "sys_000",
-        "sys_002",
-        "sys_007"
+        "sys_002"
       ],
       "planets": [
         {
           "id": "sys_001_p0",
-          "name": "UsvaYotajarvi 4",
-          "orbit_radius": 71.93432753666929,
-          "angle": 5.324964150551833
+          "name": "Tahtila",
+          "orbit_radius": 86.1425654654876,
+          "angle": 4.585040040336504,
+          "size": "large",
+          "type": "gas",
+          "moon": {
+            "id": "sys_001_p0_m0",
+            "name": "Aurajoki-1",
+            "size": "tiny"
+          }
         },
         {
           "id": "sys_001_p1",
-          "name": "Usva",
-          "orbit_radius": 204.59463573387634,
-          "angle": 3.369220465525127
-        },
-        {
-          "id": "sys_001_p2",
-          "name": "Pohja",
-          "orbit_radius": 321.0408126254645,
-          "angle": 5.211303200140635
+          "name": "Rantala",
+          "orbit_radius": 206.5880932850599,
+          "angle": 3.886274220255387,
+          "size": "medium",
+          "type": "terra",
+          "moon": null
         }
       ],
       "stations": [
         {
           "id": "sys_001_st0",
-          "name": "Telakointi-1",
-          "planet_id": "sys_001_p1",
+          "name": "Kaivos-1",
+          "planet_id": "sys_001_p0",
           "offset": {
-            "x": 39.614429512833,
-            "y": -17.21779404705036,
+            "x": 79.26107603303788,
+            "y": 14.212708840605877,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 29,
+            "scrap": 11,
+            "ice": 16,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 86.0,
+            "scrap": 44.0,
+            "ice": 59.0,
+            "reactor_upgrade": 2667.0,
+            "weapons_upgrade": 2331.0
           }
         }
-      ]
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_002",
-      "name": "JarYotala",
+      "name": "Lohja",
       "position": {
-        "x": 9.940063112519583,
-        "y": -0.023294848815782254,
-        "z": 0.3341104266407503
+        "x": 1.4063819492109082,
+        "y": 3.3589369734211423,
+        "z": 0.436654587712494
       },
       "neighbors": [
         "sys_001",
-        "sys_003",
-        "sys_008"
+        "sys_003"
       ],
-      "planets": [
-        {
-          "id": "sys_002_p0",
-          "name": "Merila",
-          "orbit_radius": 84.03640626917102,
-          "angle": 4.294856648856894
-        },
-        {
-          "id": "sys_002_p1",
-          "name": "JarYotala 2",
-          "orbit_radius": 200.68279754059415,
-          "angle": 1.5381924079484826
-        }
-      ],
-      "stations": [
-        {
-          "id": "sys_002_st0",
-          "name": "Satelliitti-1",
-          "planet_id": "sys_002_p1",
-          "offset": {
-            "x": 64.40809792166566,
-            "y": -11.215393041189241,
-            "z": 0.0
-          }
-        }
-      ]
+      "planets": [],
+      "stations": [],
+      "asteroids": []
     },
     {
       "id": "sys_003",
-      "name": "Suo",
+      "name": "Kouvola",
       "position": {
-        "x": 15.152522900385607,
-        "y": -0.04941760648883553,
-        "z": -0.43381139478845276
+        "x": -0.7239709099490623,
+        "y": 4.221178897268441,
+        "z": -0.037739788148884235
       },
       "neighbors": [
         "sys_002",
-        "sys_004",
-        "sys_009"
+        "sys_004"
       ],
       "planets": [
         {
           "id": "sys_003_p0",
-          "name": "Kesamaa",
-          "orbit_radius": 87.69366307773404,
-          "angle": 4.039157425536224
+          "name": "Rantanen",
+          "orbit_radius": 83.6922850197975,
+          "angle": 5.295794801064713,
+          "size": "small",
+          "type": "terra",
+          "moon": null
         },
         {
           "id": "sys_003_p1",
-          "name": "Suo 2",
-          "orbit_radius": 194.93255015387967,
-          "angle": 3.5271800124927277
-        },
-        {
-          "id": "sys_003_p2",
-          "name": "Niemimaa",
-          "orbit_radius": 327.9564576720495,
-          "angle": 2.509507385578249
+          "name": "Pohjala",
+          "orbit_radius": 191.32377210423095,
+          "angle": 5.73740347893753,
+          "size": "large",
+          "type": "oceanic",
+          "moon": null
         }
       ],
       "stations": [
         {
           "id": "sys_003_st0",
-          "name": "Telakointi-1",
-          "planet_id": "sys_003_p0",
+          "name": "Kaivos-1",
+          "planet_id": "sys_003_p1",
           "offset": {
-            "x": 54.67579174448155,
-            "y": 10.231286301349513,
+            "x": 36.98151597627532,
+            "y": 9.799559283664262,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 20,
+            "scrap": 18,
+            "ice": 6,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 81.0,
+            "scrap": 47.0,
+            "ice": 59.0,
+            "reactor_upgrade": 2542.0,
+            "weapons_upgrade": 2431.0
           }
         }
-      ]
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_004",
-      "name": "Lahtiniemi",
+      "name": "Kuopio",
       "position": {
-        "x": 20.04820451536599,
-        "y": -0.057616344162749966,
-        "z": 0.0958884283611281
+        "x": -3.3888003968226803,
+        "y": 3.5237854149227905,
+        "z": -0.45288362457526543
       },
       "neighbors": [
         "sys_003",
         "sys_005",
-        "sys_010"
+        "sys_006"
       ],
-      "planets": [
+      "planets": [],
+      "stations": [],
+      "asteroids": [
         {
-          "id": "sys_004_p0",
-          "name": "Ranta",
-          "orbit_radius": 83.60566820513037,
-          "angle": 0.7197498284269122
-        },
-        {
-          "id": "sys_004_p1",
-          "name": "Hallala",
-          "orbit_radius": 205.37197465314892,
-          "angle": 2.137385534011529
-        },
-        {
-          "id": "sys_004_p2",
-          "name": "Lumimaa",
-          "orbit_radius": 310.0649063220346,
-          "angle": 4.537038230053453
-        },
-        {
-          "id": "sys_004_p3",
-          "name": "Talvinen",
-          "orbit_radius": 440.1536334920865,
-          "angle": 0.6685989183274305
-        }
-      ],
-      "stations": [
-        {
-          "id": "sys_004_st0",
-          "name": "Telakka-1",
-          "planet_id": "sys_004_p1",
-          "offset": {
-            "x": 48.6956926295574,
-            "y": -13.538038569873866,
+          "id": "sys_004_a0",
+          "name": "Siikajoki Rock",
+          "position": {
+            "x": 382.7790704488711,
+            "y": -41.48376779717998,
             "z": 0.0
-          }
+          },
+          "loot_item_id": "ore",
+          "loot_name": "Ore",
+          "loot_quantity": 6
         }
       ]
     },
     {
       "id": "sys_005",
-      "name": "Saarinen",
+      "name": "Kemi",
       "position": {
-        "x": 24.805933862660446,
-        "y": -0.06850961640953324,
-        "z": 0.4853213789438122
+        "x": -5.428631421307966,
+        "y": 1.481119756882387,
+        "z": 0.36077970223449807
       },
       "neighbors": [
         "sys_004",
-        "sys_011"
+        "sys_006"
       ],
-      "planets": [
-        {
-          "id": "sys_005_p0",
-          "name": "Suo",
-          "orbit_radius": 71.71306904135757,
-          "angle": 3.0535681385403475
-        },
-        {
-          "id": "sys_005_p1",
-          "name": "Saarinen 2",
-          "orbit_radius": 192.56782928999525,
-          "angle": 2.9862872548313213
-        },
-        {
-          "id": "sys_005_p2",
-          "name": "Metsamaa",
-          "orbit_radius": 329.2872581201491,
-          "angle": 5.836535610872145
-        }
-      ],
-      "stations": []
+      "planets": [],
+      "stations": [],
+      "asteroids": []
     },
     {
       "id": "sys_006",
-      "name": "PohjaVuori",
+      "name": "Lahti",
       "position": {
-        "x": -0.03094995804274797,
-        "y": 5.008787920517795,
-        "z": -0.3789958041317343
+        "x": -5.812717095373547,
+        "y": -2.053856771610325,
+        "z": -0.23317481004745721
       },
       "neighbors": [
-        "sys_000",
+        "sys_005",
         "sys_007",
-        "sys_012"
+        "sys_004"
       ],
       "planets": [
         {
           "id": "sys_006_p0",
-          "name": "PohjaVuori 1",
-          "orbit_radius": 81.76617436914466,
-          "angle": 1.445853506816372
+          "name": "Koskila",
+          "orbit_radius": 89.43776197740229,
+          "angle": 4.787549693710179,
+          "size": "large",
+          "type": "gas",
+          "moon": {
+            "id": "sys_006_p0_m0",
+            "name": "Siikajoki-1",
+            "size": "tiny"
+          }
         },
         {
           "id": "sys_006_p1",
-          "name": "Jar",
-          "orbit_radius": 194.5788356762231,
-          "angle": 5.6889217225464535
+          "name": "Lahtinen",
+          "orbit_radius": 193.05678537099269,
+          "angle": 4.790996655597941,
+          "size": "large",
+          "type": "gas",
+          "moon": null
         }
       ],
-      "stations": []
+      "stations": [
+        {
+          "id": "sys_006_st0",
+          "name": "Kaivos-1",
+          "planet_id": "sys_006_p1",
+          "offset": {
+            "x": 41.97261551690294,
+            "y": -10.365136302110676,
+            "z": 0.0
+          },
+          "inventory": {
+            "ore": 8,
+            "scrap": 7,
+            "ice": 9,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 81.0,
+            "scrap": 41.0,
+            "ice": 63.0,
+            "reactor_upgrade": 2658.0,
+            "weapons_upgrade": 2739.0
+          }
+        }
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_007",
-      "name": "Kivijarvi",
+      "name": "Imatra",
       "position": {
-        "x": 4.889238631982273,
-        "y": 4.992707249575245,
-        "z": 0.03923393139475462
+        "x": -4.0727213690943564,
+        "y": -5.546791088990665,
+        "z": -0.024717621901268694
       },
       "neighbors": [
-        "sys_001",
         "sys_006",
-        "sys_008",
-        "sys_013"
+        "sys_008"
       ],
       "planets": [
         {
           "id": "sys_007_p0",
-          "name": "Kesamaa",
-          "orbit_radius": 73.80819828723756,
-          "angle": 0.6090342677754967
-        },
-        {
-          "id": "sys_007_p1",
-          "name": "Itamaa",
-          "orbit_radius": 199.3404933607335,
-          "angle": 4.580918665145609
-        },
-        {
-          "id": "sys_007_p2",
-          "name": "Lahti",
-          "orbit_radius": 311.2122534815403,
-          "angle": 4.575500919382161
-        },
-        {
-          "id": "sys_007_p3",
-          "name": "Valonen",
-          "orbit_radius": 433.83180144283307,
-          "angle": 3.3695827694192033
+          "name": "Hallanen",
+          "orbit_radius": 84.25897945638243,
+          "angle": 2.5069425570216364,
+          "size": "large",
+          "type": "oceanic",
+          "moon": {
+            "id": "sys_007_p0_m0",
+            "name": "Siikajoki-1",
+            "size": "tiny"
+          }
         }
       ],
       "stations": [
         {
           "id": "sys_007_st0",
-          "name": "Kaivos-1",
-          "planet_id": "sys_007_p1",
+          "name": "Satama-1",
+          "planet_id": "sys_007_p0",
           "offset": {
-            "x": 53.13140342004837,
-            "y": 14.9794381628232,
+            "x": 46.90427810737277,
+            "y": 3.5323487382893326,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 11,
+            "scrap": 11,
+            "ice": 7,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 76.0,
+            "scrap": 42.0,
+            "ice": 55.0,
+            "reactor_upgrade": 2566.0,
+            "weapons_upgrade": 2364.0
           }
         }
-      ]
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_008",
-      "name": "Pohjantahti",
+      "name": "Tampere",
       "position": {
-        "x": 9.77529416476244,
-        "y": 5.249641234206363,
-        "z": 0.3360275850799519
+        "x": -0.43165966331315453,
+        "y": -7.56920551530118,
+        "z": -0.2619953656310048
       },
       "neighbors": [
-        "sys_002",
         "sys_007",
-        "sys_009",
-        "sys_014"
+        "sys_009"
       ],
       "planets": [
         {
           "id": "sys_008_p0",
-          "name": "Yotanen",
-          "orbit_radius": 73.32622221207828,
-          "angle": 3.0513731839941123
+          "name": "Kesamaa",
+          "orbit_radius": 73.80819828723756,
+          "angle": 0.6090342677754967,
+          "size": "medium",
+          "type": "oceanic",
+          "moon": {
+            "id": "sys_008_p0_m0",
+            "name": "Pyhajarvi-1",
+            "size": "small"
+          }
+        },
+        {
+          "id": "sys_008_p1",
+          "name": "Lahti",
+          "orbit_radius": 191.21225348154027,
+          "angle": 4.575500919382161,
+          "size": "small",
+          "type": "terra",
+          "moon": {
+            "id": "sys_008_p1_m0",
+            "name": "Kalajoki-2",
+            "size": "tiny"
+          }
+        },
+        {
+          "id": "sys_008_p2",
+          "name": "Metsamaa",
+          "orbit_radius": 314.996128957642,
+          "angle": 5.801048847995399,
+          "size": "medium",
+          "type": "gas",
+          "moon": {
+            "id": "sys_008_p2_m0",
+            "name": "Lestijoki-3",
+            "size": "tiny"
+          }
         }
       ],
       "stations": [
         {
           "id": "sys_008_st0",
-          "name": "Satama-1",
-          "planet_id": "sys_008_p0",
+          "name": "Telakka-1",
+          "planet_id": "sys_008_p2",
           "offset": {
-            "x": 38.23185607007635,
-            "y": -19.913784865942944,
+            "x": 38.3155555301957,
+            "y": -0.5743549819712612,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 8,
+            "scrap": 6,
+            "ice": 16,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 75.0,
+            "scrap": 44.0,
+            "ice": 55.0,
+            "reactor_upgrade": 2439.0,
+            "weapons_upgrade": 2743.0
           }
         }
-      ]
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_009",
-      "name": "HavuIta",
+      "name": "Seinajoki",
       "position": {
-        "x": 15.115252658707734,
-        "y": 5.141680764242143,
-        "z": 0.16187131195074522
+        "x": 4.055569783274357,
+        "y": -6.975639949348264,
+        "z": -0.21475077105307971
       },
       "neighbors": [
-        "sys_003",
         "sys_008",
-        "sys_010",
-        "sys_015"
+        "sys_010"
       ],
       "planets": [
         {
           "id": "sys_009_p0",
-          "name": "HavuIta 3",
-          "orbit_radius": 74.3540179682835,
-          "angle": 0.36746136105575694
+          "name": "Niemi",
+          "orbit_radius": 84.95951120758129,
+          "angle": 0.35918000281320894,
+          "size": "large",
+          "type": "volcanic",
+          "moon": {
+            "id": "sys_009_p0_m0",
+            "name": "Tenojoki-1",
+            "size": "tiny"
+          }
         },
         {
           "id": "sys_009_p1",
-          "name": "Tuola",
-          "orbit_radius": 191.14330545814965,
-          "angle": 3.6704960782881226
+          "name": "Lumi",
+          "orbit_radius": 209.215578065489,
+          "angle": 0.5033551813362837,
+          "size": "small",
+          "type": "gas",
+          "moon": null
         },
         {
           "id": "sys_009_p2",
-          "name": "Yotanen",
-          "orbit_radius": 311.1375915945737,
-          "angle": 3.1907805508761395
-        },
-        {
-          "id": "sys_009_p3",
-          "name": "Jar",
-          "orbit_radius": 443.5042510720818,
-          "angle": 1.477829657261261
+          "name": "Suomaa",
+          "orbit_radius": 312.3977322789425,
+          "angle": 5.593840171306459,
+          "size": "small",
+          "type": "gas",
+          "moon": null
         }
       ],
       "stations": [
         {
           "id": "sys_009_st0",
-          "name": "Telakointi-1",
+          "name": "Kaivos-1",
           "planet_id": "sys_009_p1",
           "offset": {
-            "x": 59.72595767667206,
-            "y": 4.775260413284123,
+            "x": 40.21295997117682,
+            "y": 8.64767203157659,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 29,
+            "scrap": 20,
+            "ice": 9,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 76.0,
+            "scrap": 44.0,
+            "ice": 62.0,
+            "reactor_upgrade": 2400.0,
+            "weapons_upgrade": 2408.0
           }
         }
-      ]
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_010",
-      "name": "MetsaMeri",
+      "name": "Forssa",
       "position": {
-        "x": 19.907091931397787,
-        "y": 4.882807256265677,
-        "z": -0.36912171787254355
+        "x": 7.834740083622921,
+        "y": -4.189244323834415,
+        "z": 0.12115925549309281
       },
       "neighbors": [
-        "sys_004",
         "sys_009",
-        "sys_011",
-        "sys_016"
+        "sys_011"
       ],
-      "planets": [
+      "planets": [],
+      "stations": [],
+      "asteroids": [
         {
-          "id": "sys_010_p0",
-          "name": "Halla",
-          "orbit_radius": 70.18630913768493,
-          "angle": 3.9028587075328116
-        },
-        {
-          "id": "sys_010_p1",
-          "name": "Valo",
-          "orbit_radius": 200.75268808203253,
-          "angle": 3.178567276774243
-        },
-        {
-          "id": "sys_010_p2",
-          "name": "MetsaMeri 3",
-          "orbit_radius": 327.6172834737288,
-          "angle": 5.524617868619111
-        }
-      ],
-      "stations": [
-        {
-          "id": "sys_010_st0",
-          "name": "Terminaali-1",
-          "planet_id": "sys_010_p0",
-          "offset": {
-            "x": 71.68724773199035,
-            "y": 8.141597003494837,
+          "id": "sys_010_a0",
+          "name": "Vesijarvi Rock",
+          "position": {
+            "x": 270.1681410151365,
+            "y": 155.97337607773528,
             "z": 0.0
-          }
+          },
+          "loot_item_id": "ore",
+          "loot_name": "Ore",
+          "loot_quantity": 2
         }
       ]
     },
     {
       "id": "sys_011",
-      "name": "Vuori",
+      "name": "Rovaniemi",
       "position": {
-        "x": 24.89968937609999,
-        "y": 5.081694357483038,
-        "z": 0.4389300039271039
+        "x": 9.237213657963503,
+        "y": 0.7982280713119784,
+        "z": 0.333744954639807
       },
       "neighbors": [
-        "sys_005",
         "sys_010",
-        "sys_017"
+        "sys_012"
       ],
       "planets": [
         {
           "id": "sys_011_p0",
-          "name": "Paiva",
-          "orbit_radius": 84.84833367961997,
-          "angle": 0.976708022729998
+          "name": "Lahti",
+          "orbit_radius": 83.35726407425167,
+          "angle": 3.4846689126674057,
+          "size": "large",
+          "type": "gas",
+          "moon": null
         },
         {
           "id": "sys_011_p1",
-          "name": "Merila",
-          "orbit_radius": 194.07194624654906,
-          "angle": 3.9850346245223034
+          "name": "Rovaniemi 1",
+          "orbit_radius": 207.7942541401142,
+          "angle": 4.664741600594401,
+          "size": "small",
+          "type": "oceanic",
+          "moon": null
         }
       ],
       "stations": [
         {
           "id": "sys_011_st0",
-          "name": "Kaivos-1",
-          "planet_id": "sys_011_p1",
+          "name": "Satelliitti-1",
+          "planet_id": "sys_011_p0",
           "offset": {
-            "x": 75.26682455396616,
-            "y": 13.844148531794218,
+            "x": 61.71189794425399,
+            "y": -9.440643934783623,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 30,
+            "scrap": 14,
+            "ice": 7,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 80.0,
+            "scrap": 49.0,
+            "ice": 64.0,
+            "reactor_upgrade": 2296.0,
+            "weapons_upgrade": 2462.0
           }
         }
-      ]
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_012",
-      "name": "Havumetsa",
+      "name": "Mikkeli",
       "position": {
-        "x": 0.16467404468610963,
-        "y": 9.772043380899525,
-        "z": -0.16644346139491184
+        "x": 7.6121684244043495,
+        "y": 6.175618482978779,
+        "z": -0.36918033929829774
       },
       "neighbors": [
-        "sys_006",
-        "sys_013",
-        "sys_018"
+        "sys_011",
+        "sys_013"
       ],
       "planets": [
         {
           "id": "sys_012_p0",
-          "name": "Metsanen",
-          "orbit_radius": 84.82461816695862,
-          "angle": 3.466310316279988
+          "name": "Valo",
+          "orbit_radius": 88.90101878093279,
+          "angle": 4.341804346955689,
+          "size": "small",
+          "type": "gas",
+          "moon": {
+            "id": "sys_012_p0_m0",
+            "name": "Lestijoki-1",
+            "size": "small"
+          }
         },
         {
           "id": "sys_012_p1",
-          "name": "Kai",
-          "orbit_radius": 191.50487720147535,
-          "angle": 5.5487211150598155
+          "name": "Kivimaa",
+          "orbit_radius": 192.54891038564278,
+          "angle": 1.9368443350964393,
+          "size": "small",
+          "type": "oceanic",
+          "moon": null
         }
       ],
-      "stations": []
+      "stations": [
+        {
+          "id": "sys_012_st0",
+          "name": "Telakointi-1",
+          "planet_id": "sys_012_p0",
+          "offset": {
+            "x": 74.20673507255044,
+            "y": -3.744904406715328,
+            "z": 0.0
+          },
+          "inventory": {
+            "ore": 29,
+            "scrap": 7,
+            "ice": 9,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 82.0,
+            "scrap": 42.0,
+            "ice": 65.0,
+            "reactor_upgrade": 2682.0,
+            "weapons_upgrade": 2738.0
+          }
+        }
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_013",
-      "name": "NiemiRantajarvi",
+      "name": "Kiuruvesi",
       "position": {
-        "x": 4.770914429084429,
-        "y": 9.932325757663628,
-        "z": 0.43308801052065415
+        "x": 3.1645511403736752,
+        "y": 10.017424626925205,
+        "z": -0.320639336581793
       },
       "neighbors": [
-        "sys_007",
         "sys_012",
-        "sys_014",
-        "sys_019"
+        "sys_014"
       ],
       "planets": [
         {
           "id": "sys_013_p0",
-          "name": "Merinen",
-          "orbit_radius": 83.33866821271086,
-          "angle": 2.2222284004739072
+          "name": "Vuorinen",
+          "orbit_radius": 75.33611419188944,
+          "angle": 4.947219947047731,
+          "size": "small",
+          "type": "volcanic",
+          "moon": null
+        },
+        {
+          "id": "sys_013_p1",
+          "name": "Suonen",
+          "orbit_radius": 206.33173211193858,
+          "angle": 2.8921705209819657,
+          "size": "medium",
+          "type": "terra",
+          "moon": null
         }
       ],
       "stations": [
         {
           "id": "sys_013_st0",
-          "name": "Telakointi-1",
+          "name": "Satama-1",
           "planet_id": "sys_013_p0",
           "offset": {
-            "x": 67.47388055717695,
-            "y": 17.03055290278226,
+            "x": 78.34445520241806,
+            "y": -8.835000291125144,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 20,
+            "scrap": 14,
+            "ice": 8,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 82.0,
+            "scrap": 44.0,
+            "ice": 66.0,
+            "reactor_upgrade": 2518.0,
+            "weapons_upgrade": 2720.0
           }
         }
-      ]
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_014",
-      "name": "Usva",
+      "name": "Lahti-2",
       "position": {
-        "x": 10.190708102331662,
-        "y": 9.762393180949095,
-        "z": 0.2365644717550821
+        "x": -2.8260204728876355,
+        "y": 10.715111200419825,
+        "z": 0.08058973373870781
       },
       "neighbors": [
-        "sys_008",
         "sys_013",
-        "sys_015",
-        "sys_020"
+        "sys_015"
       ],
       "planets": [
         {
           "id": "sys_014_p0",
-          "name": "Itanen",
-          "orbit_radius": 75.33611419188944,
-          "angle": 4.947219947047731
+          "name": "Kuumaa",
+          "orbit_radius": 82.12417706612287,
+          "angle": 3.2133658542680936,
+          "size": "medium",
+          "type": "terra",
+          "moon": {
+            "id": "sys_014_p0_m0",
+            "name": "Siikajoki-1",
+            "size": "small"
+          }
         },
         {
           "id": "sys_014_p1",
-          "name": "Usva 1",
-          "orbit_radius": 207.17186502675563,
-          "angle": 1.397592265904253
-        },
-        {
-          "id": "sys_014_p2",
-          "name": "Lansila",
-          "orbit_radius": 316.103817346772,
-          "angle": 4.997303154408676
+          "name": "Usvanen",
+          "orbit_radius": 197.28442943562527,
+          "angle": 0.4396584219561916,
+          "size": "large",
+          "type": "oceanic",
+          "moon": {
+            "id": "sys_014_p1_m0",
+            "name": "Siikajoki-2",
+            "size": "tiny"
+          }
         }
       ],
       "stations": [
@@ -613,80 +770,79 @@
           "name": "Satelliitti-1",
           "planet_id": "sys_014_p0",
           "offset": {
-            "x": 39.65648941638543,
-            "y": -6.869521952091739,
+            "x": 50.41964543096084,
+            "y": -3.903984517691015,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 17,
+            "scrap": 20,
+            "ice": 8,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 77.0,
+            "scrap": 42.0,
+            "ice": 59.0,
+            "reactor_upgrade": 2720.0,
+            "weapons_upgrade": 2589.0
           }
         }
-      ]
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_015",
-      "name": "TahtiLahtilahti",
+      "name": "Joensuu",
       "position": {
-        "x": 14.915574934107203,
-        "y": 9.763800267559818,
-        "z": 0.3770384115755603
+        "x": -8.799375943263891,
+        "y": 7.7633218773394335,
+        "z": 0.04793721313569821
       },
       "neighbors": [
-        "sys_009",
         "sys_014",
         "sys_016",
-        "sys_021"
+        "sys_017"
       ],
-      "planets": [
+      "planets": [],
+      "stations": [],
+      "asteroids": [
         {
-          "id": "sys_015_p0",
-          "name": "TahtiLahtilahti 3",
-          "orbit_radius": 70.76514394706525,
-          "angle": 3.7483677440246836
-        },
-        {
-          "id": "sys_015_p1",
-          "name": "Usvala",
-          "orbit_radius": 198.72787767741215,
-          "angle": 6.184136227225419
-        },
-        {
-          "id": "sys_015_p2",
-          "name": "TahtiLahtilahti 2",
-          "orbit_radius": 315.09445012277166,
-          "angle": 4.453429281331974
-        }
-      ],
-      "stations": [
-        {
-          "id": "sys_015_st0",
-          "name": "Satelliitti-1",
-          "planet_id": "sys_015_p2",
-          "offset": {
-            "x": 65.97149995724227,
-            "y": 9.67800311357906,
+          "id": "sys_015_a0",
+          "name": "Siikajoki Rock",
+          "position": {
+            "x": 447.15800134237725,
+            "y": 38.398165372714544,
             "z": 0.0
-          }
+          },
+          "loot_item_id": "ore",
+          "loot_name": "Ore",
+          "loot_quantity": 4
         }
       ]
     },
     {
       "id": "sys_016",
-      "name": "ItaJar",
+      "name": "Kemi-2",
       "position": {
-        "x": 20.21038542810902,
-        "y": 10.061577704973205,
-        "z": 0.16338747626554428
+        "x": -12.307525713641564,
+        "y": 1.8445553153511094,
+        "z": 0.011173996874587089
       },
       "neighbors": [
-        "sys_010",
         "sys_015",
-        "sys_017",
-        "sys_022"
+        "sys_017"
       ],
       "planets": [
         {
           "id": "sys_016_p0",
-          "name": "Havula",
-          "orbit_radius": 83.3378580821146,
-          "angle": 2.0494676352531718
+          "name": "Vuorila",
+          "orbit_radius": 71.86774400151126,
+          "angle": 5.981590291561318,
+          "size": "small",
+          "type": "oceanic",
+          "moon": null
         }
       ],
       "stations": [
@@ -695,569 +851,747 @@
           "name": "Telakka-1",
           "planet_id": "sys_016_p0",
           "offset": {
-            "x": 51.02231668864542,
-            "y": 17.61454682920732,
+            "x": 79.19680113909257,
+            "y": 4.450958922427205,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 12,
+            "scrap": 4,
+            "ice": 4,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 84.0,
+            "scrap": 45.0,
+            "ice": 65.0,
+            "reactor_upgrade": 2538.0,
+            "weapons_upgrade": 2609.0
           }
         }
-      ]
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_017",
-      "name": "Saariniemi",
+      "name": "Nokia",
       "position": {
-        "x": 25.02396860656785,
-        "y": 9.750202969848644,
-        "z": -0.2130862831310728
-      },
-      "neighbors": [
-        "sys_011",
-        "sys_016",
-        "sys_023"
-      ],
-      "planets": [
-        {
-          "id": "sys_017_p0",
-          "name": "Saarila",
-          "orbit_radius": 79.29976380494028,
-          "angle": 2.7781719544174406
-        },
-        {
-          "id": "sys_017_p1",
-          "name": "Kesanen",
-          "orbit_radius": 203.17701489996844,
-          "angle": 1.7830825702295054
-        },
-        {
-          "id": "sys_017_p2",
-          "name": "Saarila",
-          "orbit_radius": 311.86774400151126,
-          "angle": 5.981590291561318
-        },
-        {
-          "id": "sys_017_p3",
-          "name": "Havunen",
-          "orbit_radius": 446.1312578915253,
-          "angle": 0.9258522505373344
-        }
-      ],
-      "stations": [
-        {
-          "id": "sys_017_st0",
-          "name": "Telakointi-1",
-          "planet_id": "sys_017_p3",
-          "offset": {
-            "x": 72.48688473123659,
-            "y": -17.086870832617237,
-            "z": 0.0
-          }
-        }
-      ]
-    },
-    {
-      "id": "sys_018",
-      "name": "Joki",
-      "position": {
-        "x": -0.002811415494781533,
-        "y": 14.87199221978922,
+        "x": -11.826051761258688,
+        "y": -5.574621910338702,
         "z": 0.15605801111178408
       },
       "neighbors": [
-        "sys_012",
-        "sys_019",
-        "sys_024"
+        "sys_016",
+        "sys_018",
+        "sys_015"
+      ],
+      "planets": [],
+      "stations": [],
+      "asteroids": []
+    },
+    {
+      "id": "sys_018",
+      "name": "Orimattila",
+      "position": {
+        "x": -7.089072003663468,
+        "y": -11.5219782298106,
+        "z": -0.2811588631876806
+      },
+      "neighbors": [
+        "sys_017",
+        "sys_019"
       ],
       "planets": [
         {
           "id": "sys_018_p0",
-          "name": "Yota",
-          "orbit_radius": 85.5684081353465,
-          "angle": 1.375019415425643
+          "name": "Usvamaa",
+          "orbit_radius": 83.35155465172706,
+          "angle": 6.207111346180705,
+          "size": "large",
+          "type": "oceanic",
+          "moon": {
+            "id": "sys_018_p0_m0",
+            "name": "Kymijoki-1",
+            "size": "tiny"
+          }
+        },
+        {
+          "id": "sys_018_p1",
+          "name": "Saarimaa",
+          "orbit_radius": 206.6113833944283,
+          "angle": 3.4423809902937768,
+          "size": "small",
+          "type": "volcanic",
+          "moon": null
+        },
+        {
+          "id": "sys_018_p2",
+          "name": "Talvimaa",
+          "orbit_radius": 322.53496873963564,
+          "angle": 1.725346643861303,
+          "size": "small",
+          "type": "oceanic",
+          "moon": {
+            "id": "sys_018_p2_m0",
+            "name": "Kymijoki-3",
+            "size": "small"
+          }
         }
       ],
-      "stations": []
+      "stations": [
+        {
+          "id": "sys_018_st0",
+          "name": "Telakka-1",
+          "planet_id": "sys_018_p1",
+          "offset": {
+            "x": 41.563073986409336,
+            "y": 7.757992491962092,
+            "z": 0.0
+          },
+          "inventory": {
+            "ore": 18,
+            "scrap": 6,
+            "ice": 6,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 83.0,
+            "scrap": 41.0,
+            "ice": 59.0,
+            "reactor_upgrade": 2521.0,
+            "weapons_upgrade": 2458.0
+          }
+        }
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_019",
-      "name": "TuoRantala",
+      "name": "Hameenlinna",
       "position": {
-        "x": 4.9782309127350866,
-        "y": 15.150708300861131,
-        "z": 0.1675777325863531
+        "x": 0.4486318422575132,
+        "y": -14.308897333830068,
+        "z": 0.26979577231466323
       },
       "neighbors": [
-        "sys_013",
         "sys_018",
-        "sys_020",
-        "sys_025"
+        "sys_020"
       ],
-      "planets": [
-        {
-          "id": "sys_019_p0",
-          "name": "Paivamaa",
-          "orbit_radius": 82.25304645523525,
-          "angle": 4.519331585326015
-        },
-        {
-          "id": "sys_019_p1",
-          "name": "Aamumaa",
-          "orbit_radius": 207.94416206466525,
-          "angle": 4.672524947781242
-        },
-        {
-          "id": "sys_019_p2",
-          "name": "Metsanen",
-          "orbit_radius": 326.7972577568384,
-          "angle": 1.7423986195051586
-        }
-      ],
-      "stations": []
+      "planets": [],
+      "stations": [],
+      "asteroids": []
     },
     {
       "id": "sys_020",
-      "name": "Metsaasema",
+      "name": "Forssa-2",
       "position": {
-        "x": 9.867246789007318,
-        "y": 14.917923768310658,
-        "z": 0.3930268327903168
+        "x": 8.49022258758583,
+        "y": -12.267052145266556,
+        "z": 0.4427416574340969
       },
       "neighbors": [
-        "sys_014",
         "sys_019",
-        "sys_021",
-        "sys_026"
+        "sys_021"
       ],
       "planets": [
         {
           "id": "sys_020_p0",
-          "name": "Metsaasema 2",
-          "orbit_radius": 77.66070584862676,
-          "angle": 0.9601038058171961
-        }
-      ],
-      "stations": [
+          "name": "Aamumaa",
+          "orbit_radius": 80.76441135220463,
+          "angle": 4.615841936698023,
+          "size": "large",
+          "type": "terra",
+          "moon": null
+        },
         {
-          "id": "sys_020_st0",
-          "name": "Terminaali-1",
-          "planet_id": "sys_020_p0",
-          "offset": {
-            "x": 46.54406955190418,
-            "y": -1.363027865953974,
-            "z": 0.0
+          "id": "sys_020_p1",
+          "name": "Pohjala",
+          "orbit_radius": 203.37747241245833,
+          "angle": 5.014876125835094,
+          "size": "large",
+          "type": "terra",
+          "moon": {
+            "id": "sys_020_p1_m0",
+            "name": "Vuoksi-2",
+            "size": "small"
           }
         }
-      ]
+      ],
+      "stations": [],
+      "asteroids": []
     },
     {
       "id": "sys_021",
-      "name": "Yota",
+      "name": "Naantali",
       "position": {
-        "x": 15.03784517340504,
-        "y": 14.988489866278679,
-        "z": 0.4427416574340969
+        "x": 14.386146386268969,
+        "y": -5.7263084584267325,
+        "z": 0.09189277562791087
       },
       "neighbors": [
-        "sys_015",
         "sys_020",
-        "sys_022",
-        "sys_027"
+        "sys_022"
       ],
-      "planets": [
+      "planets": [],
+      "stations": [],
+      "asteroids": [
         {
-          "id": "sys_021_p0",
-          "name": "Yotamaa",
-          "orbit_radius": 80.76441135220463,
-          "angle": 4.615841936698023
-        },
-        {
-          "id": "sys_021_p1",
-          "name": "Paivanen",
-          "orbit_radius": 199.764589551005,
-          "angle": 1.7149031406813735
-        },
-        {
-          "id": "sys_021_p2",
-          "name": "Pohjala",
-          "orbit_radius": 323.37747241245836,
-          "angle": 5.014876125835094
-        }
-      ],
-      "stations": [
-        {
-          "id": "sys_021_st0",
-          "name": "Telakka-1",
-          "planet_id": "sys_021_p1",
-          "offset": {
-            "x": 79.03609887594615,
-            "y": 1.3649451813001754,
+          "id": "sys_021_a0",
+          "name": "Pyhajarvi Rock",
+          "position": {
+            "x": 474.7294609023442,
+            "y": -114.57755045516443,
             "z": 0.0
-          }
+          },
+          "loot_item_id": "ore",
+          "loot_name": "Ore",
+          "loot_quantity": 4
+        },
+        {
+          "id": "sys_021_a1",
+          "name": "Aurajoki Rock",
+          "position": {
+            "x": 291.29990676018963,
+            "y": -16.308242994066433,
+            "z": 0.0
+          },
+          "loot_item_id": "ore",
+          "loot_name": "Ore",
+          "loot_quantity": 4
         }
       ]
     },
     {
       "id": "sys_022",
-      "name": "Jar",
+      "name": "Forssa-3",
       "position": {
-        "x": 19.817849743615284,
-        "y": 14.980849222025755,
-        "z": -0.44971536651137245
+        "x": 15.952272956350598,
+        "y": 3.0391634705569417,
+        "z": 0.45120411986056175
       },
       "neighbors": [
-        "sys_016",
         "sys_021",
-        "sys_023",
-        "sys_028"
+        "sys_023"
       ],
       "planets": [
         {
           "id": "sys_022_p0",
-          "name": "Lansila",
-          "orbit_radius": 76.75001096147741,
-          "angle": 5.526941035654766
+          "name": "Forssa-3 1",
+          "orbit_radius": 89.9981565701842,
+          "angle": 2.1988656897581773,
+          "size": "large",
+          "type": "gas",
+          "moon": {
+            "id": "sys_022_p0_m0",
+            "name": "Kallavesi-1",
+            "size": "small"
+          }
         },
         {
           "id": "sys_022_p1",
-          "name": "Aamumaa",
-          "orbit_radius": 195.04543063564762,
-          "angle": 0.5146320382543838
+          "name": "Halla",
+          "orbit_radius": 208.9922346543198,
+          "angle": 1.2526201102495633,
+          "size": "small",
+          "type": "terra",
+          "moon": null
         },
         {
           "id": "sys_022_p2",
-          "name": "Jar 1",
-          "orbit_radius": 329.99815657018416,
-          "angle": 2.1988656897581773
-        },
-        {
-          "id": "sys_022_p3",
-          "name": "Halla",
-          "orbit_radius": 445.0846640811905,
-          "angle": 5.96658648652645
+          "name": "Merimaa",
+          "orbit_radius": 323.989299424923,
+          "angle": 4.818562863695897,
+          "size": "small",
+          "type": "gas",
+          "moon": {
+            "id": "sys_022_p2_m0",
+            "name": "Kyronselka-3",
+            "size": "tiny"
+          }
         }
       ],
-      "stations": [
+      "stations": [],
+      "asteroids": [
         {
-          "id": "sys_022_st0",
-          "name": "Telakointi-1",
-          "planet_id": "sys_022_p0",
-          "offset": {
-            "x": 37.61911728923952,
-            "y": -14.95116100503175,
+          "id": "sys_022_a0",
+          "name": "Keitele Rock",
+          "position": {
+            "x": 376.7528090531428,
+            "y": 154.39938062656375,
             "z": 0.0
-          }
+          },
+          "loot_item_id": "ore",
+          "loot_name": "Ore",
+          "loot_quantity": 6
+        },
+        {
+          "id": "sys_022_a1",
+          "name": "Aurajoki Rock",
+          "position": {
+            "x": 314.8625101156533,
+            "y": 77.40529381780863,
+            "z": 0.0
+          },
+          "loot_item_id": "ore",
+          "loot_name": "Ore",
+          "loot_quantity": 2
         }
       ]
     },
     {
       "id": "sys_023",
-      "name": "Lansi",
+      "name": "Kuusamo",
       "position": {
-        "x": 25.13344904917812,
-        "y": 14.833894571683901,
-        "z": 0.10724749389093169
+        "x": 12.046943129218384,
+        "y": 11.748991810929569,
+        "z": -0.39809869455402347
       },
       "neighbors": [
-        "sys_017",
         "sys_022",
-        "sys_029"
+        "sys_024"
       ],
       "planets": [
         {
           "id": "sys_023_p0",
-          "name": "Lumila",
-          "orbit_radius": 72.16197499315213,
-          "angle": 0.16134230579718414
+          "name": "Valo",
+          "orbit_radius": 76.94407530616898,
+          "angle": 2.6915784386753288,
+          "size": "medium",
+          "type": "gas",
+          "moon": null
+        },
+        {
+          "id": "sys_023_p1",
+          "name": "Yotamaa",
+          "orbit_radius": 206.44661836180117,
+          "angle": 0.6631202813666989,
+          "size": "medium",
+          "type": "volcanic",
+          "moon": null
         }
       ],
       "stations": [
         {
           "id": "sys_023_st0",
-          "name": "Terminaali-1",
-          "planet_id": "sys_023_p0",
+          "name": "Kaivos-1",
+          "planet_id": "sys_023_p1",
           "offset": {
-            "x": 77.07352992706548,
-            "y": -12.06680891633139,
+            "x": 60.79561770267755,
+            "y": 16.784706276110683,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 13,
+            "scrap": 20,
+            "ice": 14,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 84.0,
+            "scrap": 45.0,
+            "ice": 64.0,
+            "reactor_upgrade": 2546.0,
+            "weapons_upgrade": 2411.0
           }
         }
-      ]
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_024",
-      "name": "Valo",
+      "name": "Rovaniemi-2",
       "position": {
-        "x": -0.09920865725616651,
-        "y": 20.092129519583327,
-        "z": 0.3055279636461664
+        "x": 3.8439832102610376,
+        "y": 16.847773770671164,
+        "z": 0.38163118400277196
       },
       "neighbors": [
-        "sys_018",
-        "sys_025",
-        "sys_030"
+        "sys_023",
+        "sys_025"
       ],
       "planets": [
         {
           "id": "sys_024_p0",
-          "name": "Itala",
-          "orbit_radius": 71.3791347303928,
-          "angle": 4.068634259652976
+          "name": "Vuorimaa",
+          "orbit_radius": 76.7279323978275,
+          "angle": 3.105819360762874,
+          "size": "medium",
+          "type": "terra",
+          "moon": null
         }
       ],
       "stations": [
         {
           "id": "sys_024_st0",
-          "name": "Terminaali-1",
+          "name": "Telakointi-1",
           "planet_id": "sys_024_p0",
           "offset": {
-            "x": 35.27694353219993,
-            "y": 18.431502688583144,
+            "x": 65.05918751661008,
+            "y": -8.949256969752604,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 16,
+            "scrap": 14,
+            "ice": 8,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 72.0,
+            "scrap": 49.0,
+            "ice": 55.0,
+            "reactor_upgrade": 2610.0,
+            "weapons_upgrade": 2494.0
           }
         }
-      ]
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_025",
-      "name": "JokiKivilahti",
+      "name": "Forssa-4",
       "position": {
-        "x": 5.232736865619039,
-        "y": 19.8850411981937,
-        "z": 0.30819921880675594
+        "x": -6.466539621359395,
+        "y": 16.820938932679557,
+        "z": 0.21184240647272268
       },
       "neighbors": [
-        "sys_019",
         "sys_024",
-        "sys_026",
-        "sys_031"
+        "sys_026"
       ],
       "planets": [
         {
           "id": "sys_025_p0",
-          "name": "Aamula",
-          "orbit_radius": 76.44609165962237,
-          "angle": 1.5424916394330463
+          "name": "Forssa-4 2",
+          "orbit_radius": 78.08802257355856,
+          "angle": 1.528731430831362,
+          "size": "large",
+          "type": "oceanic",
+          "moon": null
         },
         {
           "id": "sys_025_p1",
-          "name": "Metsamaa",
-          "orbit_radius": 194.87726878381912,
-          "angle": 2.919849409483381
+          "name": "Koskila",
+          "orbit_radius": 197.03621055228336,
+          "angle": 2.8509655687614304,
+          "size": "medium",
+          "type": "oceanic",
+          "moon": {
+            "id": "sys_025_p1_m0",
+            "name": "Lohjanjarvi-2",
+            "size": "small"
+          }
         },
         {
           "id": "sys_025_p2",
-          "name": "Pohjala",
-          "orbit_radius": 310.5739999554018,
-          "angle": 5.346694358221239
-        },
-        {
-          "id": "sys_025_p3",
-          "name": "JokiKivilahti 2",
-          "orbit_radius": 437.0964993235219,
-          "angle": 1.623276059415299
-        }
-      ],
-      "stations": [
-        {
-          "id": "sys_025_st0",
-          "name": "Telakointi-1",
-          "planet_id": "sys_025_p2",
-          "offset": {
-            "x": 30.507555721933855,
-            "y": 17.922503111081248,
-            "z": 0.0
+          "name": "Forssa-4 2",
+          "orbit_radius": 313.8308194602109,
+          "angle": 4.640789906741908,
+          "size": "medium",
+          "type": "oceanic",
+          "moon": {
+            "id": "sys_025_p2_m0",
+            "name": "Kemijoki-3",
+            "size": "small"
           }
         }
-      ]
+      ],
+      "stations": [],
+      "asteroids": []
     },
     {
       "id": "sys_026",
-      "name": "Jokiranta",
+      "name": "Kotka",
       "position": {
-        "x": 9.974087274793286,
-        "y": 19.758621629674188,
-        "z": -0.20576441867950268
+        "x": -15.149538730703007,
+        "y": 10.843041528679176,
+        "z": -0.48585163274393617
       },
       "neighbors": [
-        "sys_020",
         "sys_025",
         "sys_027"
       ],
       "planets": [
         {
           "id": "sys_026_p0",
-          "name": "Havula",
-          "orbit_radius": 79.46520977519049,
-          "angle": 3.3358808770345
-        },
-        {
-          "id": "sys_026_p1",
-          "name": "Koskila",
-          "orbit_radius": 197.03621055228336,
-          "angle": 2.8509655687614304
-        },
-        {
-          "id": "sys_026_p2",
-          "name": "Suo",
-          "orbit_radius": 324.4256866265214,
-          "angle": 1.9826462054891412
-        },
-        {
-          "id": "sys_026_p3",
-          "name": "Hallanen",
-          "orbit_radius": 433.8308194602109,
-          "angle": 4.640789906741908
+          "name": "Kivimaa",
+          "orbit_radius": 72.05175293575522,
+          "angle": 0.07706580227562256,
+          "size": "medium",
+          "type": "volcanic",
+          "moon": {
+            "id": "sys_026_p0_m0",
+            "name": "Pielinen-1",
+            "size": "small"
+          }
         }
       ],
       "stations": [
         {
           "id": "sys_026_st0",
-          "name": "Satama-1",
-          "planet_id": "sys_026_p2",
+          "name": "Terminaali-1",
+          "planet_id": "sys_026_p0",
           "offset": {
-            "x": 71.6314181663534,
-            "y": -8.150141469394221,
+            "x": 35.70435703624623,
+            "y": -17.3862625954427,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 13,
+            "scrap": 5,
+            "ice": 8,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 80.0,
+            "scrap": 46.0,
+            "ice": 62.0,
+            "reactor_upgrade": 2326.0,
+            "weapons_upgrade": 2656.0
           }
         }
-      ]
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_027",
-      "name": "KaiJokiasema",
+      "name": "Salo",
       "position": {
-        "x": 14.77275785049161,
-        "y": 19.777263010119494,
-        "z": -0.20786335544722245
+        "x": -19.342319399528616,
+        "y": 0.8469167844403818,
+        "z": 0.05807303461762847
       },
       "neighbors": [
-        "sys_021",
         "sys_026",
         "sys_028"
       ],
       "planets": [
         {
           "id": "sys_027_p0",
-          "name": "Hallamaa",
-          "orbit_radius": 72.05175293575522,
-          "angle": 0.07706580227562256
+          "name": "Suomaa",
+          "orbit_radius": 79.01028929777509,
+          "angle": 2.7816981076340386,
+          "size": "large",
+          "type": "volcanic",
+          "moon": null
         },
         {
           "id": "sys_027_p1",
-          "name": "Kesamaa",
-          "orbit_radius": 196.81411865120586,
-          "angle": 6.066400605483053
+          "name": "Merinen",
+          "orbit_radius": 195.29292250580014,
+          "angle": 0.5101158901493058,
+          "size": "small",
+          "type": "terra",
+          "moon": {
+            "id": "sys_027_p1_m0",
+            "name": "Pielinen-2",
+            "size": "tiny"
+          }
+        },
+        {
+          "id": "sys_027_p2",
+          "name": "Salo 4",
+          "orbit_radius": 319.01007409235405,
+          "angle": 3.7310257764139902,
+          "size": "medium",
+          "type": "gas",
+          "moon": null
         }
       ],
       "stations": [
         {
           "id": "sys_027_st0",
-          "name": "Satama-1",
-          "planet_id": "sys_027_p1",
+          "name": "Satelliitti-1",
+          "planet_id": "sys_027_p2",
           "offset": {
-            "x": 71.10578226497151,
-            "y": -3.97170230992241,
+            "x": 41.67119030800128,
+            "y": -9.417814973644013,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 17,
+            "scrap": 18,
+            "ice": 5,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 85.0,
+            "scrap": 46.0,
+            "ice": 64.0,
+            "reactor_upgrade": 2349.0,
+            "weapons_upgrade": 2307.0
           }
         }
-      ]
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_028",
-      "name": "Aurinko",
+      "name": "Vaasa",
       "position": {
-        "x": 19.825863503475478,
-        "y": 20.155571038137523,
-        "z": 0.4491256423580312
+        "x": -17.070573906319012,
+        "y": -9.952247987846832,
+        "z": 0.3266311596500596
       },
       "neighbors": [
-        "sys_022",
         "sys_027",
         "sys_029"
       ],
-      "planets": [
+      "planets": [],
+      "stations": [],
+      "asteroids": [
         {
-          "id": "sys_028_p0",
-          "name": "Valomaa",
-          "orbit_radius": 82.12635302485926,
-          "angle": 4.9683711638591666
-        }
-      ],
-      "stations": [
-        {
-          "id": "sys_028_st0",
-          "name": "Terminaali-1",
-          "planet_id": "sys_028_p0",
-          "offset": {
-            "x": 75.42521888119019,
-            "y": -8.105874699304504,
+          "id": "sys_028_a0",
+          "name": "Tenojoki Rock",
+          "position": {
+            "x": 329.31217254907074,
+            "y": -11.268730700581727,
             "z": 0.0
-          }
+          },
+          "loot_item_id": "ore",
+          "loot_name": "Ore",
+          "loot_quantity": 4
+        },
+        {
+          "id": "sys_028_a1",
+          "name": "Vantaanjoki Rock",
+          "position": {
+            "x": 500.5099218529739,
+            "y": 0.16998376245319946,
+            "z": 0.0
+          },
+          "loot_item_id": "ore",
+          "loot_name": "Ore",
+          "loot_quantity": 5
         }
       ]
     },
     {
       "id": "sys_029",
-      "name": "HavuNiemi",
+      "name": "Kajaani",
       "position": {
-        "x": 25.054815456122565,
-        "y": 20.120044652742273,
-        "z": 0.447590200325378
+        "x": -9.195154817075451,
+        "y": -18.500460629164102,
+        "z": -0.06797133583922743
       },
       "neighbors": [
-        "sys_023",
-        "sys_028"
+        "sys_028",
+        "sys_030",
+        "sys_031"
       ],
       "planets": [
         {
           "id": "sys_029_p0",
-          "name": "Metsa",
-          "orbit_radius": 73.14114186761755,
-          "angle": 1.092102733033402
+          "name": "Kajaani 2",
+          "orbit_radius": 89.23822204385674,
+          "angle": 5.252482880305531,
+          "size": "large",
+          "type": "gas",
+          "moon": null
         },
         {
           "id": "sys_029_p1",
-          "name": "HavuNiemi 1",
-          "orbit_radius": 198.17035145320054,
-          "angle": 4.331446591556563
+          "name": "Metsa",
+          "orbit_radius": 205.26218008343412,
+          "angle": 1.1007558077339659,
+          "size": "large",
+          "type": "volcanic",
+          "moon": null
         }
       ],
-      "stations": [
+      "stations": [],
+      "asteroids": [
         {
-          "id": "sys_029_st0",
-          "name": "Telakka-1",
-          "planet_id": "sys_029_p0",
-          "offset": {
-            "x": 44.40524447968446,
-            "y": -8.69126507550849,
+          "id": "sys_029_a0",
+          "name": "Siikajoki Rock",
+          "position": {
+            "x": 395.8268046143895,
+            "y": -2.9787112112351792,
             "z": 0.0
-          }
+          },
+          "loot_item_id": "ore",
+          "loot_name": "Ore",
+          "loot_quantity": 2
+        },
+        {
+          "id": "sys_029_a1",
+          "name": "Kyronselka Rock",
+          "position": {
+            "x": 298.30675914018116,
+            "y": -60.00897828056688,
+            "z": 0.0
+          },
+          "loot_item_id": "ore",
+          "loot_name": "Ore",
+          "loot_quantity": 2
+        },
+        {
+          "id": "sys_029_a2",
+          "name": "Lokan Rock",
+          "position": {
+            "x": 292.1332456168482,
+            "y": 69.7225226340357,
+            "z": 0.0
+          },
+          "loot_item_id": "ore",
+          "loot_name": "Ore",
+          "loot_quantity": 4
         }
       ]
     },
     {
       "id": "sys_030",
-      "name": "Vuoriasema",
+      "name": "Hanko",
       "position": {
-        "x": 0.14391401332336567,
-        "y": 25.06252900358211,
-        "z": 0.16118304285336782
+        "x": 2.685468020359768,
+        "y": -20.85104311750897,
+        "z": 0.05009660897178292
       },
       "neighbors": [
-        "sys_024",
+        "sys_029",
         "sys_031"
       ],
       "planets": [
         {
           "id": "sys_030_p0",
-          "name": "Rantanen",
-          "orbit_radius": 82.95269446804961,
-          "angle": 5.70771744543362
+          "name": "Hanko 4",
+          "orbit_radius": 87.29821168103759,
+          "angle": 5.18317048307065,
+          "size": "small",
+          "type": "volcanic",
+          "moon": {
+            "id": "sys_030_p0_m0",
+            "name": "Kokemaenjoki-1",
+            "size": "small"
+          }
         },
         {
           "id": "sys_030_p1",
-          "name": "Jar",
-          "orbit_radius": 193.31845578441448,
-          "angle": 1.9327820213326259
+          "name": "Kesamaa",
+          "orbit_radius": 205.19981072122033,
+          "angle": 1.278994132357801,
+          "size": "large",
+          "type": "terra",
+          "moon": {
+            "id": "sys_030_p1_m0",
+            "name": "Kemijoki-2",
+            "size": "small"
+          }
+        },
+        {
+          "id": "sys_030_p2",
+          "name": "Jokimaa",
+          "orbit_radius": 312.4285216672524,
+          "angle": 6.114461774899469,
+          "size": "large",
+          "type": "terra",
+          "moon": null
         }
       ],
       "stations": [
@@ -1266,56 +1600,146 @@
           "name": "Terminaali-1",
           "planet_id": "sys_030_p1",
           "offset": {
-            "x": 36.21768290873541,
-            "y": 7.547119648483751,
+            "x": 34.660460064076126,
+            "y": 19.690285575808787,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 25,
+            "scrap": 4,
+            "ice": 12,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 87.0,
+            "scrap": 45.0,
+            "ice": 55.0,
+            "reactor_upgrade": 2666.0,
+            "weapons_upgrade": 2499.0
           }
         }
-      ]
+      ],
+      "asteroids": []
     },
     {
       "id": "sys_031",
-      "name": "TalviRantala",
+      "name": "Pietarsaari",
       "position": {
-        "x": 5.049018331020552,
-        "y": 25.194711444646227,
-        "z": 0.2345339232856153
+        "x": 13.950561939130017,
+        "y": -16.53337978671638,
+        "z": -0.08450965706464697
       },
       "neighbors": [
-        "sys_025",
-        "sys_030"
+        "sys_030",
+        "sys_029"
       ],
       "planets": [
         {
           "id": "sys_031_p0",
-          "name": "TalviRantala 2",
-          "orbit_radius": 89.23822204385674,
-          "angle": 5.252482880305531
+          "name": "Rantanen",
+          "orbit_radius": 77.67172026494299,
+          "angle": 5.792268414806817,
+          "size": "large",
+          "type": "terra",
+          "moon": null
         },
         {
           "id": "sys_031_p1",
-          "name": "Kaila",
-          "orbit_radius": 201.52493969205494,
-          "angle": 4.794755282788105
+          "name": "Usvamaa",
+          "orbit_radius": 196.7975048622859,
+          "angle": 4.9493744301078335,
+          "size": "medium",
+          "type": "gas",
+          "moon": null
         },
         {
           "id": "sys_031_p2",
-          "name": "TalviRantala 4",
-          "orbit_radius": 328.32145575853536,
-          "angle": 1.1403299432448977
+          "name": "Lansimaa",
+          "orbit_radius": 316.90247883386013,
+          "angle": 3.4677994057158275,
+          "size": "large",
+          "type": "volcanic",
+          "moon": {
+            "id": "sys_031_p2_m0",
+            "name": "Iijoki-3",
+            "size": "small"
+          }
         }
       ],
       "stations": [
         {
           "id": "sys_031_st0",
           "name": "Terminaali-1",
-          "planet_id": "sys_031_p2",
+          "planet_id": "sys_031_p1",
           "offset": {
-            "x": 78.45276180328518,
-            "y": -1.1995842015859317,
+            "x": 41.67812230289466,
+            "y": 11.021779003970352,
             "z": 0.0
+          },
+          "inventory": {
+            "ore": 14,
+            "scrap": 11,
+            "ice": 13,
+            "reactor_upgrade": 1,
+            "weapons_upgrade": 1
+          },
+          "prices": {
+            "ore": 73.0,
+            "scrap": 47.0,
+            "ice": 62.0,
+            "reactor_upgrade": 2656.0,
+            "weapons_upgrade": 2443.0
           }
         }
+      ],
+      "asteroids": []
+    }
+  ],
+  "black_hole": {
+    "name": "Lokan",
+    "position": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  "nebulae": [
+    {
+      "id": "neb_00",
+      "name": "Tenojoki",
+      "position": {
+        "x": -3.3888003968226803,
+        "y": 3.5237854149227905,
+        "z": -0.45288362457526543
+      },
+      "system_ids": [
+        "sys_004",
+        "sys_003"
+      ]
+    },
+    {
+      "id": "neb_01",
+      "name": "Siikajoki",
+      "position": {
+        "x": -2.8260204728876355,
+        "y": 10.715111200419825,
+        "z": 0.08058973373870781
+      },
+      "system_ids": [
+        "sys_014"
+      ]
+    },
+    {
+      "id": "neb_02",
+      "name": "Lestijoki",
+      "position": {
+        "x": -5.812717095373547,
+        "y": -2.053856771610325,
+        "z": -0.23317481004745721
+      },
+      "system_ids": [
+        "sys_006"
       ]
     }
   ]

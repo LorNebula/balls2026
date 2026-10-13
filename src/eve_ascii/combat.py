@@ -12,6 +12,7 @@ from eve_ascii.models import (
     HyperspaceParticle,
     NpcShip,
     Projectile,
+    ShipComponent,
     Vec3,
 )
 from eve_ascii.ship import (
@@ -49,6 +50,42 @@ def spawn_pirates(state: GameState, count: int = 1) -> None:
             )
         )
     state.log("HOSTILE CONTACT: pirate on scope. lock / fire")
+
+
+def enter_system(state: GameState, system) -> None:
+    state.npc_ships.clear()
+    state.projectiles.clear()
+    state.player.ship.weapons_active = False
+    state.player.ship.target_letter = None
+    state.player.ship.subtarget = None
+    state.mode = GameMode.SPACE
+    if system.stations:
+        return
+
+    letters = "ABCDEFGH"
+    for asteroid in system.asteroids:
+        if asteroid.id in state.depleted_asteroids:
+            continue
+        if len(state.npc_ships) >= len(letters):
+            break
+        state.npc_ships.append(
+            NpcShip(
+                letter=letters[len(state.npc_ships)],
+                name=asteroid.name,
+                position=asteroid.position,
+                components=[ShipComponent("01", "reactor", max_health=28.0, health=28.0)],
+                shield=0.0,
+                max_shield=0.0,
+                asteroid=True,
+                asteroid_id=asteroid.id,
+                loot_item_id=asteroid.loot_item_id,
+                loot_name=asteroid.loot_name,
+                loot_quantity=asteroid.loot_quantity,
+            )
+        )
+    if state.npc_ships:
+        state.mode = GameMode.COMBAT
+        state.log("ASTEROID CONTACT: lock a rock and fire to mine its ore.")
 
 
 def lock_target(state: GameState, letter: str, subtarget: str | None = None) -> str | None:
@@ -155,6 +192,9 @@ def tick(state: GameState, dt: float) -> None:
                 _spawn_laser(state, npc.position.x, npc.position.y, npc.letter)
 
     _tick_projectiles(state, dt)
+    if state.npc_ships and all_hostiles_dead(state):
+        state.mode = GameMode.SPACE
+        state.player.ship.weapons_active = False
 
 
 def _alive_components(npc: NpcShip) -> list:
@@ -182,6 +222,18 @@ def _destroy_npc(state: GameState, npc: NpcShip, *, reason: str) -> None:
     npc.alive = False
     state.explosions.append(Explosion(x=npc.position.x, y=npc.position.y, ttl=0.8, large=True))
     state.log(reason)
+    if npc.asteroid and npc.asteroid_id:
+        from eve_ascii.models import CargoStack
+
+        state.depleted_asteroids.add(npc.asteroid_id)
+        item_id = npc.loot_item_id or "ore"
+        item_name = npc.loot_name or "Ore"
+        stack = next((item for item in state.player.cargo if item.item_id == item_id), None)
+        if stack:
+            stack.quantity += npc.loot_quantity
+        else:
+            state.player.cargo.append(CargoStack(item_id, item_name, npc.loot_quantity))
+        state.log(f"Mined {npc.loot_quantity}x {item_name}.")
 
 
 def _tick_projectiles(state: GameState, dt: float) -> None:
