@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import random
 import textwrap
 from dataclasses import dataclass
@@ -57,6 +58,52 @@ ENEMY_SHIP = [
     "       \\  04  /       ",
     "        ------        ",
 ]
+
+OTHER_SHIP_ART = {
+    "pioneer": [
+        "       .--01--.",
+        "   ___/       \\___",
+        "<==|02|--==--|03|==>",
+        "   `---\\ 04 /---'",
+        "       '--'",
+    ],
+    "courier": [
+        "          .----01----.",
+        "  _______/            \\_______",
+        "<==|02|==[----]====[----]==|03|==>",
+        "  `------\\____04____/------'",
+        "          '----------'",
+    ],
+    "bulwark": [
+        "       .----------------.",
+        "   ___/_______01_________\\___",
+        "  /___|##################|___\\",
+        "<|02|===|##############|===|03|>",
+        "  \\___|_______04_______|___/",
+        "   `--|################|--'",
+        "       '--------------'",
+    ],
+    "leviathan": [
+        "              .------01------.",
+        "   __________/                \\__________",
+        "  /______/======================\\______\\",
+        "<|02|====|########################|====|03|>",
+        "  \\______\\_________04_________/______/",
+        "   `----------|############|----------'",
+        "              '------------'",
+    ],
+    "titan": [
+        "            ___/\\___",
+        "       ____/   01   \\____",
+        "  ____/___________________\\____",
+        " /____|###################|____\\",
+        "<|02|==|#####[====]#####|==|03|>",
+        " \\____|#######04########|____/",
+        "  `---\\_________________/---'",
+        "       \\___||_____||___/",
+        "           '--------'",
+    ],
+}
 
 STATION_MARKER = [
     "  (S)  ",
@@ -209,17 +256,21 @@ def _draw_player(canvas: SpaceCanvas, ship: Ship) -> None:
 
 
 def player_ship_art(ship: Ship) -> list[str]:
-    size = max(1, min(6, ship.visual_size))
-    flank = 3 + size * 2
-    body = ">" + "=" * flank + "|02||03|" + "=" * flank + ">"
-    width = len(body)
-    return [
-        ("/" + "_" * (width - 2) + "\\").center(width),
-        ("/ " + " " * (size * 2) + "01" + " " * (size * 2) + " \\").center(width),
-        body,
-        ("\\ " + " " * (size * 2) + "04" + " " * (size * 2) + " /").center(width),
-        ("\\" + "_" * (width - 2) + "/").center(width),
-    ]
+    if ship.hull_id == "venture":
+        size = 1
+        flank = 3 + size * 2
+        body = ">" + "=" * flank + "|02||03|" + "=" * flank + ">"
+        width = len(body)
+        return [
+            ("/" + "_" * (width - 2) + "\\").center(width),
+            ("/ " + " " * (size * 2) + "01" + " " * (size * 2) + " \\").center(width),
+            body,
+            ("\\ " + " " * (size * 2) + "04" + " " * (size * 2) + " /").center(width),
+            ("\\" + "_" * (width - 2) + "/").center(width),
+        ]
+    art = OTHER_SHIP_ART.get(ship.hull_id, OTHER_SHIP_ART["pioneer"])
+    width = max(20 + ship.visual_size * 4, max(len(row) for row in art))
+    return [row.center(width) for row in art]
 def tick_star_scroll(state: GameState, dt: float) -> None:
     state.star_scroll += dt
 
@@ -305,6 +356,72 @@ def _draw_explosion(canvas: SpaceCanvas, ex: Explosion, px: int, py: int) -> Non
         canvas.stamp_art(px, py, EXPLOSION_LARGE_ART, EXPLOSION_LARGE)
     else:
         canvas.stamp_art(px, py, EXPLOSION_SMALL, EXPLOSION_STYLE)
+
+
+def _draw_offscreen_indicators(
+    canvas: SpaceCanvas,
+    objects: list[tuple[str, float, float]],
+    ship: Ship,
+    ship_x: float,
+    ship_y: float,
+    scale: float,
+) -> None:
+    contacts: list[tuple[float, int, int, str]] = []
+    nearby_range = max(canvas.width, canvas.height) * 1.5
+    for name, world_x, world_y in objects:
+        px, py = canvas.world_to_screen(world_x, world_y, ship_x, ship_y, scale)
+        if 0 <= px < canvas.width and 0 <= py < canvas.height:
+            continue
+        distance = math.hypot(px - canvas.anchor_x, py - canvas.anchor_y)
+        if distance <= nearby_range:
+            contacts.append((distance, px, py, ascii_only(name)))
+
+    max_indicators = min(6, max(1, canvas.height // 3))
+    ship_art = player_ship_art(ship)
+    ship_top = canvas.anchor_y - len(ship_art) // 2
+    ship_bottom = ship_top + len(ship_art) - 1
+    label_cells: set[tuple[int, int]] = set()
+    for _, px, py, name in sorted(contacts)[:max_indicators]:
+        dx, dy = px - canvas.anchor_x, py - canvas.anchor_y
+        if abs(dx) >= abs(dy):
+            arrow = ">" if dx > 0 else "<"
+        else:
+            arrow = "v" if dy > 0 else "^"
+
+        edge_x = min(canvas.width - 1, max(0, px))
+        edge_y = min(canvas.height - 1, max(0, py))
+        style = Style(color="#ffdd77", bold=True)
+        canvas.put(edge_x, edge_y, arrow, style)
+
+        label_width = max(1, min(14, canvas.width - 4))
+        label = name if len(name) <= label_width else name[:label_width - 1] + "~"
+        if arrow == "<":
+            label_x = 1
+        elif arrow == ">":
+            label_x = canvas.width - len(label) - 1
+        else:
+            label_x = min(canvas.width - len(label), max(1, edge_x - len(label) // 2))
+        label_rows = sorted(
+            (
+                row
+                for row in range(canvas.height)
+                if row != edge_y and not ship_top <= row <= ship_bottom
+            ),
+            key=lambda row: abs(row - edge_y),
+        )
+        label_y = next(
+            (
+                row
+                for row in label_rows
+                if all((label_x + offset, row) not in label_cells for offset in range(len(label)))
+            ),
+            None,
+        )
+        if label_y is None:
+            continue
+        for offset, character in enumerate(label):
+            canvas.put(label_x + offset, label_y, character, style)
+            label_cells.add((label_x + offset, label_y))
 
 
 def render_docked_view(state: GameState, width: int, height: int) -> Text:
@@ -408,6 +525,27 @@ def render_open_space(
                 style = Style(color="#ffcc66", bold=True) if highlight else ASTEROID_STYLE
                 canvas.stamp_art(ax, ay, ASTEROID_ART, style, id_letter=ast.code)
 
+        offscreen_objects: list[tuple[str, float, float]] = [("Sun", 0.0, 0.0)]
+        offscreen_objects.extend(
+            (f"Planet {planet.name}", planet_position(planet).x, planet_position(planet).y)
+            for planet in sys.planets
+        )
+        if show_stations:
+            offscreen_objects.extend(
+                (f"Station {station.name}", station_position(sys, station).x, station_position(sys, station).y)
+                for station in sys.stations
+            )
+        offscreen_objects.extend(
+            (f"Asteroid {asteroid.code}", asteroid.position.x, asteroid.position.y)
+            for asteroid in state.asteroids
+            if asteroid.alive
+        )
+        offscreen_objects.extend(
+            (f"Ship {npc.name}", npc.position.x, npc.position.y)
+            for npc in state.npc_ships
+            if npc.alive
+        )
+
     lock = ship.target_letter
     for npc in state.npc_ships:
         if not npc.alive:
@@ -446,6 +584,8 @@ def render_open_space(
         components=ship.components,
         subtarget=ship.subtarget,
     )
+    if sys and not tutorial_arena(state):
+        _draw_offscreen_indicators(canvas, offscreen_objects, ship, ship_x, ship_y, scale)
 
     wpn = "ON" if ship.weapons_active else "off"
     mine = "ON" if state.mining_active else "off"
