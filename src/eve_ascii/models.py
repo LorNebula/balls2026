@@ -273,10 +273,17 @@ class Player:
         return self.ship.location
 
 
+def _default_event_bus():
+    from eve_ascii.events import EventBus
+
+    return EventBus()
+
+
 @dataclass
 class GameState:
     galaxy: Galaxy
     player: Player
+    bus: object = field(default_factory=_default_event_bus)
     events: list[str] = field(default_factory=list)
     mode: GameMode = GameMode.SPACE
     tutorial_step: TutorialStep = TutorialStep.DONE

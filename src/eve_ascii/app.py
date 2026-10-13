@@ -3,14 +3,15 @@ from __future__ import annotations
 from pathlib import Path
 from textual.app import App
 
-from eve_ascii import combat, ship as ship_sys, tutorial, travel, vfx
-from eve_ascii.space_render import tick_star_scroll
 from eve_ascii.ascii_ui import ascii_only
 from eve_ascii.commands import execute_command
+from eve_ascii.events import OPEN_SHIP_UI
+from eve_ascii.game_loop import GameLoop
 from eve_ascii.galaxy import load_galaxy
 from eve_ascii.models import GameState, ShipStatus
 from eve_ascii.screens.map_screen import MapScreen
 from eve_ascii.screens.ship_screen import ShipScreen
+from eve_ascii import travel
 
 
 class EveApp(App):
@@ -21,24 +22,25 @@ class EveApp(App):
         ("q", "quit", "Quit"),
     ]
 
-    def __init__(self, game_state: GameState) -> None:
-        super().__init__()
+    def __init__(self, game_state: GameState, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.game_state = game_state
+        self.game_loop = GameLoop(game_state)
 
     def on_mount(self) -> None:
+        self.game_state.bus.on(OPEN_SHIP_UI, self._open_ship_screen)
+        self.game_loop.start()
         self.push_screen(MapScreen(self.game_state))
         self.set_interval(0.2, self.game_tick)
         self.refresh_sub_title()
 
+    def _open_ship_screen(self, **_payload) -> None:
+        if not isinstance(self.screen, ShipScreen):
+            self.push_screen(ShipScreen(self.game_state))
+
     def game_tick(self) -> None:
         dt = 0.2
-        tutorial.tick(self.game_state, dt)
-        vfx.tick_flash(self.game_state, dt)
-        tick_star_scroll(self.game_state, dt)
-        combat.tick_hyperspace_vfx(self.game_state, dt)
-        ship_sys.tick_all(self.game_state, dt)
-        combat.tick(self.game_state, dt)
-        travel.tick(self.game_state, dt)
+        self.game_loop.update(dt)
         screen = self.screen
         if isinstance(screen, MapScreen):
             screen.refresh_ui(refresh_command_line=False)
@@ -58,12 +60,6 @@ class EveApp(App):
         )
 
     def run_game_command(self, line: str) -> None:
-        raw = line.strip()
-        cmd = raw.split()[0].lower() if raw else ""
-        if cmd in ("ship", "fit"):
-            if not isinstance(self.screen, ShipScreen):
-                self.push_screen(ShipScreen(self.game_state))
-            return
         err = execute_command(self.game_state, line)
         if err:
             self.game_state.log(f"ERR: {err}")

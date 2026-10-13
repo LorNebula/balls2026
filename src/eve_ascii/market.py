@@ -137,7 +137,7 @@ def render_inventory_view(state: GameState, width: int, height: int) -> Text:
     rule = "-" * min(inner_w, table_w)
     header.append(rule + "\n", style=Style(color="#556677"))
     header.append(
-        f" {'item name':<{name_w}}{'id/slug':<{slug_w}}{'qty':>{qty_w}}{'price':>{price_w}}\n",
+        f" {'item name':<{name_w}}{'code':<{slug_w}}{'qty':>{qty_w}}{'price':>{price_w}}\n",
         style=Style(color="#aaccee", bold=True),
     )
     header.append(rule + "\n", style=Style(color="#556677"))

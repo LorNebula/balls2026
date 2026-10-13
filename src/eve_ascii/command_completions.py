@@ -2,59 +2,12 @@
 
 from __future__ import annotations
 
-from eve_ascii.ascii_ui import ascii_only
+from eve_ascii.commands.registry import completion_candidates as _completion_candidates
 from eve_ascii.models import GameState
 
 
 def completion_candidates(state: GameState) -> list[str]:
-    cmds = [
-        "help",
-        "ship",
-        "fire",
-        "cease",
-        "comms",
-        "messages",
-        "quests",
-        "quest start ",
-        "quest status",
-        "lock ",
-        "travel ",
-        "travel planet ",
-        "travel station ",
-        "jump ",
-        "dock",
-        "inventory",
-        "hangar",
-        "sell ",
-        "upgrade reactor",
-        "upgrade weapons",
-    ]
-    for npc in state.npc_ships:
-        if npc.alive:
-            cmds.append(f"lock {npc.letter}")
-            for comp in npc.components:
-                cmds.append(f"lock {npc.letter} {comp.kind}")
-                cmds.append(f"lock {npc.letter} {comp.slot_id}")
-    if state.quests_unlocked:
-        for q in state.quests:
-            cmds.append(f"quest start {q.id}")
-    ship = state.player.ship
-    sys = state.galaxy.get_system(ship.location.system_id)
-    if ship.status.value == "docked":
-        for stack in state.player.cargo:
-            if stack.quantity > 0:
-                cmds.append(f"sell {stack.item_id} ")
-                cmds.append(f"sell {stack.name} ")
-    if sys:
-        for p in sys.planets:
-            cmds.append(f"travel planet {ascii_only(p.name)}")
-        for st in sys.stations:
-            cmds.append(f"travel station {ascii_only(st.name)}")
-        for nid in sys.neighbors:
-            other = state.galaxy.get_system(nid)
-            if other:
-                cmds.append(f"jump {ascii_only(other.name)}")
-    return cmds
+    return _completion_candidates(state)
 
 
 def matching_completions(state: GameState, partial: str, limit: int = 5) -> list[str]:

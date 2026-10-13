@@ -223,6 +223,13 @@ def _arrive_at_target(state: GameState, target: TravelTarget, dest: Vec3) -> Non
             if state.mode == GameMode.HYPERSPACE:
                 state.mode = GameMode.SPACE
             state.hyperspace_particles.clear()
+            from eve_ascii.events import ENTERED_SYSTEM
+
+            state.bus.emit(
+                ENTERED_SYSTEM,
+                system_id=dest_sys.id,
+                system_name=dest_sys.name,
+            )
     elif target.kind == "planet" and target.planet_id:
         ship.location = ShipLocation(
             system_id=target.system_id,
@@ -298,5 +305,8 @@ def new_game(galaxy) -> GameState:
     player = Player(ship=ship, system_id=start.id, cargo=starter_cargo())
     state = GameState(galaxy=galaxy, player=player)
     init_background_stars(state)
+    from eve_ascii.event_handlers import bootstrap_events
+
+    bootstrap_events(state)
     init_tutorial(state)
     return state
