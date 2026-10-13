@@ -12,7 +12,9 @@ from eve_ascii.space_render import tutorial_arena
 ASTEROID_CAP = 9
 RESPAWN_INTERVAL = 8.0
 MINE_INTERVAL = 1.0
+PICKUP_SOUND_COOLDOWN = 0.3
 WORLD_SPAN = 600.0
+_pickup_sound_timer = 0.0
 CODE_PATTERN = re.compile(r"^R\d+$", re.IGNORECASE)
 
 
@@ -181,6 +183,9 @@ def cease_mining(state: GameState) -> None:
     if state.mining_active:
         state.mining_active = False
         state.log("Cease mining.")
+        from eve_ascii.audio import stop_all_loops
+
+        stop_all_loops()
 
 
 def cargo_total(player) -> int:
@@ -205,9 +210,12 @@ def add_cargo(state: GameState, item_id: str, name: str, qty: int) -> int:
 
 
 def _tick_mining(state: GameState, dt: float) -> None:
+    global _pickup_sound_timer
     ship = state.player.ship
     if ship.mine_cooldown > 0:
         ship.mine_cooldown = max(0.0, ship.mine_cooldown - dt)
+    if _pickup_sound_timer > 0:
+        _pickup_sound_timer = max(0.0, _pickup_sound_timer - dt)
     if not state.mining_active:
         return
     if not ship.target_letter:
@@ -230,6 +238,11 @@ def _tick_mining(state: GameState, dt: float) -> None:
     if state.tutorial_step == TutorialStep.MINE:
         state.tutorial_mined_units += added
     state.log(f"Mined 1x {ast.material_id} -> hold ({ast.yield_left} left on {ast.code})")
+    if added > 0 and _pickup_sound_timer <= 0:
+        from eve_ascii.audio import request_sound
+
+        request_sound(state, "pickup")
+        _pickup_sound_timer = PICKUP_SOUND_COOLDOWN
     if ast.yield_left <= 0:
         ast.alive = False
         state.mining_active = False

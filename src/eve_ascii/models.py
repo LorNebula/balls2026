@@ -418,6 +418,7 @@ class GameState:
     star_scroll: float = 0.0
     background_stars: list[BackgroundStar] = field(default_factory=list)
     game_over: bool = False
+    sound_enabled: bool = True
     trade_script_source: str = ""
     trade_script_enabled: bool = False
     trade_script_timer: float = 0.0

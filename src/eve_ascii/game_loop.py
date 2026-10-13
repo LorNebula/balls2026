@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from eve_ascii import automation, combat, market, mining, radar, ship as ship_sys, tutorial, travel, vfx
+from eve_ascii import audio, automation, combat, market, mining, radar, ship as ship_sys, tutorial, travel, vfx
 from eve_ascii.models import GameState
 from eve_ascii.space_render import tick_star_scroll
 
@@ -65,6 +65,11 @@ class AutomationBehaviour(Behaviour):
         automation.tick(state, dt)
 
 
+class AudioBehaviour(Behaviour):
+    def update(self, state: GameState, dt: float) -> None:
+        audio.tick_mining_loop(state)
+
+
 def default_behaviours() -> list[Behaviour]:
     return [
         TutorialBehaviour(),
@@ -76,6 +81,7 @@ def default_behaviours() -> list[Behaviour]:
         RadarBehaviour(),
         MarketBehaviour(),
         AutomationBehaviour(),
+        AudioBehaviour(),
     ]
 
 
@@ -88,6 +94,10 @@ class GameLoop:
     def start(self) -> None:
         if self._started:
             return
+        if self.state.sound_enabled and not audio.init_audio():
+            self.state.sound_enabled = False
+            detail = audio.last_init_error() or "unknown error"
+            self.state.log(f"Audio unavailable: {detail}")
         for behaviour in self.behaviours:
             behaviour.start(self.state)
         self._started = True
@@ -96,6 +106,7 @@ class GameLoop:
         if not self._started:
             self.start()
         if self.state.game_over:
+            audio.tick_mining_loop(self.state)
             return
         for behaviour in self.behaviours:
             behaviour.update(self.state, dt)

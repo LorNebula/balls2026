@@ -169,6 +169,9 @@ def _spawn_laser(state: GameState, tx: float, ty: float, target: str) -> None:
             ttl=PROJECTILE_TTL,
         )
     )
+    from eve_ascii.audio import request_sound
+
+    request_sound(state, "laserShoot")
 
 
 def _spawn_enemy_laser(state: GameState, npc: NpcShip, tx: float, ty: float) -> None:
@@ -187,6 +190,9 @@ def _spawn_enemy_laser(state: GameState, npc: NpcShip, tx: float, ty: float) -> 
             ttl=PROJECTILE_TTL,
         )
     )
+    from eve_ascii.audio import request_sound
+
+    request_sound(state, "laserShoot", volume=0.85)
 
 
 def _spawn_component_explosion(state: GameState, npc: NpcShip, kind: str) -> None:
@@ -298,6 +304,10 @@ def _handle_player_game_over(state: GameState) -> None:
     state.player.ship.weapons_active = False
     state.mining_active = False
     state.log("GAME OVER — ship destroyed. Type quit to exit.")
+    from eve_ascii.audio import request_sound, stop_all_loops
+
+    stop_all_loops()
+    request_sound(state, "explosion")
 
 
 def _pick_hit_component(vessel: Ship | NpcShip, ref: str):
@@ -320,6 +330,9 @@ def _destroy_npc(state: GameState, npc: NpcShip, *, reason: str) -> None:
         return
     npc.alive = False
     state.explosions.append(Explosion(x=npc.position.x, y=npc.position.y, ttl=0.8, large=True))
+    from eve_ascii.audio import request_sound
+
+    request_sound(state, "explosion")
     state.log(reason)
     if npc.asteroid and npc.asteroid_id:
         from eve_ascii.models import CargoStack
@@ -348,6 +361,7 @@ def _destroy_npc(state: GameState, npc: NpcShip, *, reason: str) -> None:
             else:
                 state.player.cargo.append(CargoStack(npc.loot_item_id, npc.loot_name or npc.name, quantity))
             state.log(f"Recovered {quantity}x {npc.loot_name or npc.name}.")
+            request_sound(state, "pickup")
         else:
             state.log("Cargo hold full; pirate salvage lost.")
 
@@ -375,6 +389,9 @@ def _apply_hit_player(state: GameState) -> None:
         return
     sx, sy = current_ship_xy(state)
     state.explosions.append(Explosion(x=sx, y=sy, ttl=0.45, large=False))
+    from eve_ascii.audio import request_sound
+
+    request_sound(state, "hit")
     damage = PIRATE_HIT_DAMAGE
     if ship.shield > 0 and kind_integrity(ship.components, "shields") > 0:
         absorbed = min(ship.shield, damage)
@@ -396,6 +413,7 @@ def _apply_hit_player(state: GameState) -> None:
         ox, oy = COMP_BLAST_OFFSET.get(comp.kind, (0.0, 0.0))
         state.explosions.append(Explosion(x=sx + ox, y=sy + oy, ttl=0.75, large=True))
         state.log(f"Your {comp.kind} DESTROYED")
+        request_sound(state, "explosion")
     if is_powerless(ship):
         state.log("REACTOR OFFLINE - ship powerless!")
         ship.weapons_active = False
@@ -420,10 +438,14 @@ def _apply_hit(state: GameState, npc: NpcShip) -> None:
     comp.health = max(0.0, comp.health - player_laser_damage(ship))
     npc.shield = max(0.0, npc.shield - 12.0)
     state.explosions.append(Explosion(x=npc.position.x, y=npc.position.y))
+    from eve_ascii.audio import request_sound
+
+    request_sound(state, "hit")
     state.log(f"HIT {npc.letter} {comp.slot_id} {comp.kind} ({comp.health:.0f} hp)")
     if before > 0 and comp.health <= 0:
         _spawn_component_explosion(state, npc, comp.kind)
         state.log(f"{npc.letter} component {comp.slot_id} {comp.kind} DESTROYED")
+        request_sound(state, "explosion")
     if is_powerless(npc):
         _destroy_npc(state, npc, reason=f"{npc.name} reactor destroyed - ship powerless.")
         return

@@ -57,6 +57,9 @@ def _set_warp(state: GameState, target: TravelTarget, dest: Vec3) -> str | None:
     ship.eta_seconds = dist / ship.warp_speed
     ship.status = ShipStatus.WARPING
     state.log(f"Warping to {target.label} ({ship.eta_seconds:.1f}s)")
+    from eve_ascii.audio import request_sound
+
+    request_sound(state, "warp")
     return None
 
 
@@ -162,6 +165,9 @@ def jump_system(state: GameState, system_name: str) -> str | None:
     state.hyperspace_particles.clear()
     trigger_flash(state)
     state.log(f"Jumping to {dest.name} ({ship.eta_seconds:.1f}s)")
+    from eve_ascii.audio import request_sound
+
+    request_sound(state, "jump")
     return None
 
 

@@ -11,6 +11,9 @@ pip install -e .
 python scripts/generate_galaxy.py --seed 42
 python -m eve_ascii
 python -m eve_ascii --no-tutorial   # skip opening tutorial, free play
+python -m eve_ascii --no-sound      # disable WAV sound effects
+
+Sound uses **pygame-ce** (SDL). On Python 3.14+, stock `pygame` has no mixer — use `pip install -e .` so pygame-ce is installed.
 ```
 
 Dev mode with CSS reload:
@@ -64,5 +67,3 @@ Open-space view: your ship stays left-center; world scrolls around it with ASCII
 New games start the **tutorial** (hyperspace → pirate fight → jump → galaxy → quests). During combat try: `lock A`, `fire`.
 
 The default galaxy has 72 systems arranged in a central ring and spiral arms, with each arm connecting only to the ring. Every generated station has a hangar with a small ship selection. Station markets stock a rotating selection of pirate salvage and asteroid minerals; prices respond to supply. Use `skip` to bypass the opening tutorial. Asteroid fields appear in some systems without stations. Lock an asteroid and fire to mine ore; mined asteroids stay depleted for the current game session. Galaxy generation is deterministic for a seed; regenerate with `python scripts/generate_galaxy.py --seed <seed>`.
-
-Game state is in-memory only (no backend).

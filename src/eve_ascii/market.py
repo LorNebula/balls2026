@@ -113,6 +113,9 @@ def complete_station_sale(
     station.inventory[item_id] = station.inventory.get(item_id, 0) + quantity
     _mark_tutorial_sell(state, item_id)
     state.log(f"Courier sold {quantity}x {item_name} for {total:.0f} cr ({unit:.0f}/ea).")
+    from eve_ascii.audio import request_sound
+
+    request_sound(state, "sell")
     return total
 
 
@@ -139,6 +142,9 @@ def sell_at_station(
     station.inventory[stack.item_id] = station.inventory.get(stack.item_id, 0) + quantity
     state.log(f"Sold {quantity}x {stack.name} for {total:.0f} cr ({unit:.0f}/ea).")
     _mark_tutorial_sell(state, stack.item_id)
+    from eve_ascii.audio import request_sound
+
+    request_sound(state, "sell")
     return None
 
 

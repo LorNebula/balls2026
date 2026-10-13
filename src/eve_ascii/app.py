@@ -11,7 +11,7 @@ from eve_ascii.galaxy import load_galaxy
 from eve_ascii.models import GameState, ShipStatus
 from eve_ascii.screens.map_screen import MapScreen
 from eve_ascii.screens.script_edit_screen import ScriptEditScreen
-from eve_ascii import travel
+from eve_ascii import audio, travel
 
 
 class EveApp(App):
@@ -68,7 +68,11 @@ class EveApp(App):
         self.refresh_sub_title()
 
 
-def run_app(*, with_tutorial: bool = True) -> None:
+def run_app(*, with_tutorial: bool = True, sound_enabled: bool = True) -> None:
     galaxy = load_galaxy()
     state = travel.new_game(galaxy, with_tutorial=with_tutorial)
-    EveApp(state).run()
+    state.sound_enabled = sound_enabled
+    try:
+        EveApp(state).run()
+    finally:
+        audio.shutdown()

@@ -164,5 +164,8 @@ class MapScreen(Screen):
                 self._command_history = self._command_history[-100:]
             self._history_index = None
             self._history_draft = ""
+            from eve_ascii.audio import request_sound
+
+            request_sound(self.game_state, "blip")
             self.run_command(line)
         self._update_completion_hint("")
