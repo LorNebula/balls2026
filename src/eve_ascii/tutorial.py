@@ -26,13 +26,22 @@ def skip_tutorial(state: GameState) -> None:
     _set_step(state, TutorialStep.DONE)
     state.tutorial_force_galaxy = False
     state.mode = GameMode.SPACE
-    state.player.ship.status = ShipStatus.IDLE
-    state.player.ship.weapons_active = False
+    ship = state.player.ship
+    ship.status = ShipStatus.IDLE
+    ship.destination = None
+    ship.eta_seconds = 0.0
+    ship.weapons_active = False
+    ship.target_letter = None
+    ship.subtarget = None
+    state.npc_ships.clear()
+    state.projectiles.clear()
+    state.explosions.clear()
+    state.hyperspace_particles.clear()
     unlock_quests(state)
     from eve_ascii import mining
 
     mining.fill_asteroid_field(state)
-    state.log("Free play. Type help or quests.")
+    state.log("Tutorial skipped. Free play.")
 
 
 def init_tutorial(state: GameState) -> None:

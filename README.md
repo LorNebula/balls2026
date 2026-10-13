@@ -23,6 +23,7 @@ textual run --dev src/eve_ascii/app.py
 
 - `:` — focus command line (always visible at bottom)
 - `Tab` / `Right` — accept inline completion ghost text
+- `Up` / `Down` — browse command history and restore the current draft
 - Enter commands at the prompt: `galaxy`, `system`, `zoom in`, `zoom out`, `help`, `quit`
 
 ## UI (ASCII)
@@ -32,7 +33,6 @@ The game UI uses **7-bit ASCII** characters only (`+`, `-`, `|`, letters, digits
 - **Top and bottom bars** — single-line `| ... |` chrome (title + footer).
 - **Playfield** — map and event log share one `+---|` frame (map ~2/3, log ~1/3).
 - **Status, command input, completions** — plain ASCII lines (no extra `| ... |` bars).
-- **Ship inspect** — modal content wrapped in `+---|`.
 
 Open-space view: your ship stays left-center; world scrolls around it with ASCII ship shapes and colors.
 
@@ -47,9 +47,10 @@ Open-space view: your ship stays left-center; world scrolls around it with ASCII
 | `galaxy` / `system` | Switch between galaxy and current-system views |
 | `zoom in` / `zoom out` | Zoom the active map view |
 | `quit` | Exit the game |
-| `market` / `inventory` | Open the docked station market |
+| `market` | Open the docked station market and your cargo tables |
+| `cargo` / `inventory` | Open your cargo hold anywhere |
 | `buy <item> <quantity>` | Buy stocked cargo, or `buy reactor 1` / `buy weapons 1` to upgrade |
-| `sell <item> <quantity>` | Sell cargo at a docked station |
+| `sell <item> <quantity\|all>` | Sell cargo at a docked station |
 | `lock <A-Z> [reactor\|shield\|01-04]` | Combat target lock |
 | `fire` / `cease` | Start / stop lasers |
 | `comms` | Show inbox (Commander Crosshair) |
@@ -57,6 +58,6 @@ Open-space view: your ship stays left-center; world scrolls around it with ASCII
 
 New games start the **tutorial** (hyperspace → pirate fight → jump → galaxy → quests). During combat try: `lock A`, `fire`.
 
-Asteroid fields appear in some systems without stations. Lock an asteroid and fire to mine ore; mined asteroids stay depleted for the current game session. Galaxy generation is deterministic for a seed; regenerate with `python scripts/generate_galaxy.py --seed <seed>`.
+The default galaxy has 72 systems arranged in a central ring and spiral arms, with each arm connecting only to the ring. Station markets stock a rotating selection of pirate salvage and asteroid minerals; prices respond to supply. Use `skip` to bypass the opening tutorial. Asteroid fields appear in some systems without stations. Lock an asteroid and fire to mine ore; mined asteroids stay depleted for the current game session. Galaxy generation is deterministic for a seed; regenerate with `python scripts/generate_galaxy.py --seed <seed>`.
 
 Game state is in-memory only (no backend).

@@ -1,4 +1,5 @@
 from textual.containers import Horizontal
+from textual.events import Key
 from textual.screen import Screen
 from textual.widgets import Input, Static
 
@@ -23,6 +24,9 @@ class MapScreen(Screen):
         super().__init__(**kwargs)
         self.game_state = state
         self._chrome_view: str | None = None
+        self._command_history: list[str] = []
+        self._history_index: int | None = None
+        self._history_draft = ""
 
     def compose(self):
         yield Static("", id="title_bar")
@@ -120,11 +124,45 @@ class MapScreen(Screen):
         self._update_completion_hint(event.value)
         event.input.refresh()
 
+    def on_key(self, event: Key) -> None:
+        if event.key not in ("up", "down"):
+            return
+        command_input = self.query_one("#cmd_input", Input)
+        if self.focused is not command_input:
+            return
+        if event.key == "up":
+            if not self._command_history:
+                return
+            if self._history_index is None:
+                self._history_draft = command_input.value
+                self._history_index = len(self._command_history) - 1
+            else:
+                self._history_index = max(0, self._history_index - 1)
+            command_input.value = self._command_history[self._history_index]
+        else:
+            if self._history_index is None:
+                return
+            if self._history_index >= len(self._command_history) - 1:
+                self._history_index = None
+                command_input.value = self._history_draft
+                self._history_draft = ""
+            else:
+                self._history_index += 1
+                command_input.value = self._command_history[self._history_index]
+        command_input.cursor_position = len(command_input.value)
+        event.stop()
+        event.prevent_default()
+
     def on_input_submitted(self, event: Input.Submitted) -> None:
         if event.input.id != "cmd_input":
             return
         line = event.value.strip()
         event.input.value = ""
         if line:
+            if not self._command_history or self._command_history[-1] != line:
+                self._command_history.append(line)
+                self._command_history = self._command_history[-100:]
+            self._history_index = None
+            self._history_draft = ""
             self.run_command(line)
         self._update_completion_hint("")

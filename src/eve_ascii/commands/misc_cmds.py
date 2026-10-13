@@ -2,25 +2,10 @@ from __future__ import annotations
 
 from eve_ascii.commands.base import Command
 from eve_ascii.comms import list_messages
-from eve_ascii.events import OPEN_SHIP_UI
 from eve_ascii.events import QUIT_APP
 from eve_ascii.models import GameState
 from eve_ascii import quests
-
-
-class ShipCommand(Command):
-    def matches(self, parts: list[str]) -> bool:
-        return bool(parts) and parts[0].lower() in ("ship", "fit")
-
-    def execute(self, state: GameState, parts: list[str]) -> str | None:
-        state.bus.emit(OPEN_SHIP_UI)
-        return None
-
-    def completions(self, state: GameState) -> list[str]:
-        return ["ship"]
-
-    def palette_items(self, state: GameState) -> list[tuple[str, str]]:
-        return [("Ship", "ship")]
+from eve_ascii import tutorial
 
 
 class QuitCommand(Command):
@@ -36,6 +21,25 @@ class QuitCommand(Command):
 
     def completions(self, state: GameState) -> list[str]:
         return ["quit"]
+
+
+class SkipTutorialCommand(Command):
+    def matches(self, parts: list[str]) -> bool:
+        return bool(parts) and parts[0].lower() == "skip"
+
+    def execute(self, state: GameState, parts: list[str]) -> str | None:
+        if state.tutorial_step.value == "done":
+            return "Tutorial is already complete."
+        tutorial.skip_tutorial(state)
+        return None
+
+    def completions(self, state: GameState) -> list[str]:
+        return ["skip"] if state.tutorial_step.value != "done" else []
+
+    def palette_items(self, state: GameState) -> list[tuple[str, str]]:
+        if state.tutorial_step.value != "done":
+            return [("Skip tutorial", "skip")]
+        return []
 
 
 class CommsCommand(Command):
@@ -96,8 +100,8 @@ class HelpCommand(Command):
 
     def execute(self, state: GameState, parts: list[str]) -> str | None:
         state.log(
-            "travel, jump, galaxy, system, zoom in|out, dock, inventory, buy/sell <item> <qty>, quit, "
-            "upgrade reactor|weapons, lock, mine, cease, fire, radar, ship, comms, quests"
+            "travel, jump, galaxy, system, zoom in|out, dock, market, cargo, buy/sell <item> <qty|all>, "
+            "upgrade reactor|weapons, lock, mine, cease, fire, radar, comms, quests, skip, quit"
         )
         return None
 

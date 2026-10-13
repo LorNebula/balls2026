@@ -366,6 +366,8 @@ class GameState:
     tutorial_jump_from_system: str | None = None
     screen_flash: float = 0.0
     station_view: str = "hangar"
+    market_restock_timer: float = 0.0
+    market_restock_count: int = 0
     map_view: Literal["system", "galaxy"] = "system"
     system_zoom: float = 4.0
     galaxy_zoom: float = 1.0

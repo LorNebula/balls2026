@@ -7,17 +7,31 @@ from eve_ascii.models import GameState
 
 class InventoryCommand(Command):
     def matches(self, parts: list[str]) -> bool:
-        return bool(parts) and parts[0].lower() in ("inventory", "inv", "market")
+        return bool(parts) and parts[0].lower() in ("cargo", "inventory", "inv")
 
     def execute(self, state: GameState, parts: list[str]) -> str | None:
-        return market.show_inventory(state)
+        return market.show_cargo(state)
 
     def completions(self, state: GameState) -> list[str]:
-        return ["inventory"]
+        return ["cargo", "inventory"]
+
+    def palette_items(self, state: GameState) -> list[tuple[str, str]]:
+        return [("Cargo", "cargo")]
+
+
+class MarketCommand(Command):
+    def matches(self, parts: list[str]) -> bool:
+        return bool(parts) and parts[0].lower() == "market"
+
+    def execute(self, state: GameState, parts: list[str]) -> str | None:
+        return market.show_market(state)
+
+    def completions(self, state: GameState) -> list[str]:
+        return ["market"]
 
     def palette_items(self, state: GameState) -> list[tuple[str, str]]:
         if state.player.ship.status.value == "docked":
-            return [("Inventory", "inventory")]
+            return [("Market", "market")]
         return []
 
 
@@ -87,12 +101,16 @@ class SellCommand(Command):
         args = parts[1:]
         if len(args) < 2:
             return "Usage: sell <item> <quantity>"
-        try:
-            qty = int(args[-1])
-        except ValueError:
-            return "Quantity must be an integer."
+        quantity_arg = args[-1].lower()
+        if quantity_arg != "all":
+            try:
+                quantity: int | str = int(quantity_arg)
+            except ValueError:
+                return "Quantity must be an integer or all."
+        else:
+            quantity = "all"
         item_ref = " ".join(args[:-1])
-        return market.sell_item(state, item_ref, qty)
+        return market.sell_item(state, item_ref, quantity)
 
     def completions(self, state: GameState) -> list[str]:
         cmds = ["sell "]
@@ -101,6 +119,7 @@ class SellCommand(Command):
                 if stack.quantity > 0:
                     cmds.append(f"sell {stack.item_id} ")
                     cmds.append(f"sell {stack.name} ")
+                    cmds.append(f"sell {stack.item_id} all")
         return cmds
 
     def palette_items(self, state: GameState) -> list[tuple[str, str]]:

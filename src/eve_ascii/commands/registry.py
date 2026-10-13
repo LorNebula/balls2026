@@ -12,6 +12,7 @@ from eve_ascii.commands.market_cmds import (
     BuyCommand,
     HangarCommand,
     InventoryCommand,
+    MarketCommand,
     SellCommand,
     SystemViewCommand,
     UpgradeCommand,
@@ -22,7 +23,7 @@ from eve_ascii.commands.misc_cmds import (
     QuitCommand,
     QuestCommand,
     QuestsCommand,
-    ShipCommand,
+    SkipTutorialCommand,
 )
 from eve_ascii.commands.travel_cmds import DockCommand, JumpCommand, TravelCommand, UndockCommand
 from eve_ascii.models import GameState
@@ -31,10 +32,11 @@ from eve_ascii.models import GameState
 COMMANDS: list[Command] = [
     HelpCommand(),
     QuitCommand(),
-    ShipCommand(),
+    SkipTutorialCommand(),
     DockCommand(),
     UndockCommand(),
     InventoryCommand(),
+    MarketCommand(),
     SystemViewCommand(),
     GalaxyViewCommand(),
     ZoomCommand(),

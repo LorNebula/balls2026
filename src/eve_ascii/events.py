@@ -6,7 +6,6 @@ from collections import defaultdict
 from typing import Any, Callable
 
 ENTERED_SYSTEM = "entered_system"
-OPEN_SHIP_UI = "open_ship_ui"
 QUIT_APP = "quit_app"
 
 Listener = Callable[..., None]

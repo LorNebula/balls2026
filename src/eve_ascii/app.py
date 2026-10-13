@@ -5,12 +5,11 @@ from textual.app import App
 
 from eve_ascii.ascii_ui import ascii_only
 from eve_ascii.commands import execute_command
-from eve_ascii.events import OPEN_SHIP_UI, QUIT_APP
+from eve_ascii.events import QUIT_APP
 from eve_ascii.game_loop import GameLoop
 from eve_ascii.galaxy import load_galaxy
 from eve_ascii.models import GameState, ShipStatus
 from eve_ascii.screens.map_screen import MapScreen
-from eve_ascii.screens.ship_screen import ShipScreen
 from eve_ascii import travel
 
 
@@ -26,16 +25,11 @@ class EveApp(App):
         self.game_loop = GameLoop(game_state)
 
     def on_mount(self) -> None:
-        self.game_state.bus.on(OPEN_SHIP_UI, self._open_ship_screen)
         self.game_state.bus.on(QUIT_APP, self._quit_from_command)
         self.game_loop.start()
         self.push_screen(MapScreen(self.game_state))
         self.set_interval(0.2, self.game_tick)
         self.refresh_sub_title()
-
-    def _open_ship_screen(self, **_payload) -> None:
-        if not isinstance(self.screen, ShipScreen):
-            self.push_screen(ShipScreen(self.game_state))
 
     def _quit_from_command(self, **_payload) -> None:
         self.exit()
@@ -46,8 +40,6 @@ class EveApp(App):
         screen = self.screen
         if isinstance(screen, MapScreen):
             screen.refresh_ui(refresh_command_line=False)
-        elif isinstance(screen, ShipScreen):
-            screen.refresh_view()
         self.refresh_sub_title()
 
     def refresh_sub_title(self) -> None:
@@ -68,8 +60,6 @@ class EveApp(App):
         screen = self.screen
         if isinstance(screen, MapScreen):
             screen.refresh_ui()
-        elif isinstance(screen, ShipScreen):
-            screen.refresh_view()
         self.refresh_sub_title()
 
 
