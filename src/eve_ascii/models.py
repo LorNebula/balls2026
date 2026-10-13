@@ -35,10 +35,7 @@ class TutorialStep(str, Enum):
     WARNING = "warning"
     INTERDICT = "interdict"
     COMBAT = "combat"
-    JUMP_STATION = "jump_station"
-    DOCK = "dock"
-    SELL = "sell"
-    UPGRADE = "upgrade"
+    JUMP = "jump"
     GALAXY = "galaxy"
     QUESTS = "quests"
     DONE = "done"
@@ -370,9 +367,11 @@ class GameState:
     tutorial_jump_from_system: str | None = None
     screen_flash: float = 0.0
     station_view: str = "hangar"
-    tutorial_sell_done: bool = False
-    tutorial_upgraded_reactor: bool = False
-    tutorial_upgraded_weapons: bool = False
+    market_restock_timer: float = 0.0
+    market_restock_count: int = 0
+    map_view: Literal["system", "galaxy"] = "system"
+    system_zoom: float = 4.0
+    galaxy_zoom: float = 1.0
     star_scroll: float = 0.0
     background_stars: list[BackgroundStar] = field(default_factory=list)
 

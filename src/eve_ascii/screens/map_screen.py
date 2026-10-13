@@ -1,5 +1,5 @@
-from textual.binding import Binding
 from textual.containers import Horizontal
+from textual.events import Key
 from textual.screen import Screen
 from textual.widgets import Input, Static
 
@@ -15,16 +15,7 @@ class MapScreen(Screen):
     """Main play screen: ASCII map + log + command line."""
 
     BINDINGS = [
-        ("h", "pan_left", "Pan L"),
-        ("l", "pan_right", "Pan R"),
-        ("k", "pan_up", "Pan U"),
-        ("j", "pan_down", "Pan D"),
-        ("plus", "zoom_in", "Zoom+"),
-        ("minus", "zoom_out", "Zoom-"),
-        Binding("g", "toggle_galaxy", "Galaxy", priority=True),
         ("colon", "focus_cmd", "Cmd"),
-        ("?", "help", "Help"),
-        ("escape", "map_focus", "Map"),
     ]
 
     TITLE_WIDTH = 78
@@ -32,9 +23,10 @@ class MapScreen(Screen):
     def __init__(self, state: GameState, **kwargs) -> None:
         super().__init__(**kwargs)
         self.game_state = state
-        self._galaxy_view = False
-        self._galaxy_zoom = 1.0
-        self._scale = 4.0
+        self._chrome_view: str | None = None
+        self._command_history: list[str] = []
+        self._history_index: int | None = None
+        self._history_draft = ""
 
     def compose(self):
         yield Static("", id="title_bar")
@@ -59,14 +51,17 @@ class MapScreen(Screen):
 
     def _refresh_chrome(self) -> None:
         w = self.TITLE_WIDTH
-        view = "GALAXY" if self._galaxy_view else "SYSTEM"
+        view = self.game_state.map_view.upper()
+        if view == self._chrome_view:
+            return
+        self._chrome_view = view
         self.query_one("#title_bar", Static).update(
             box_line(w, f" EVE ASCII | map={view} | space trading terminal ")
         )
         self.query_one("#footer_bar", Static).update(
             box_line(
                 w,
-                " Esc map keys  g toggle view  +/- zoom  system exits market  ? help  q quit ",
+                " : command  galaxy/system  zoom in/out  quit ",
             )
         )
 
@@ -79,16 +74,18 @@ class MapScreen(Screen):
     def refresh_ui(self, *, refresh_command_line: bool = True) -> None:
         st = self.game_state
         if st.tutorial_force_galaxy:
-            self._galaxy_view = True
+            st.map_view = "galaxy"
+        if st.map_view.upper() != self._chrome_view:
+            self._refresh_chrome()
         pw, ph = self._playfield_size()
         self.query_one("#playfield", Static).update(
             render_playfield(
                 st,
                 pw,
                 ph,
-                galaxy_view=self._galaxy_view,
-                scale=self._scale,
-                galaxy_zoom=self._galaxy_zoom,
+                galaxy_view=st.map_view == "galaxy",
+                scale=st.system_zoom,
+                galaxy_zoom=st.galaxy_zoom,
             )
         )
         self.query_one("#status_line", Static).update(format_status(st))
@@ -107,10 +104,6 @@ class MapScreen(Screen):
         self.query_one("#cmd_completions", Static).update(ascii_only(line))
 
     def run_command(self, line: str) -> None:
-        command = line.strip().split(maxsplit=1)[0].casefold() if line.strip() else ""
-        if command in ("system", "close", "exit", "map"):
-            self._galaxy_view = False
-            self._refresh_chrome()
         runner = getattr(self.app, "run_game_command", None)
         if callable(runner):
             runner(line)
@@ -122,58 +115,8 @@ class MapScreen(Screen):
             self.game_state.log(f"ERR: {err}")
         self.refresh_ui()
 
-    def action_help(self) -> None:
-        self.game_state.log("travel, jump, lock A [reactor|thrusters|shields|weapons|01-04], fire, cease")
-        self.game_state.log("ship - inspect hull components, power, shield")
-        self.game_state.log("dock, inventory, sell <item> <qty>, upgrade reactor|weapons")
-        self.game_state.log("comms, quests, quest start q_scout, quest status")
-        self.refresh_ui()
-
-    def action_pan_left(self) -> None:
-        self._scale = max(1.0, min(8.0, self._scale + 0.05))
-        self.refresh_ui()
-
-    def action_pan_right(self) -> None:
-        self._scale = max(1.0, min(8.0, self._scale - 0.05))
-        self.refresh_ui()
-
-    def action_pan_up(self) -> None:
-        pass
-
-    def action_pan_down(self) -> None:
-        pass
-
-    def action_zoom_in(self) -> None:
-        if self._galaxy_view or self.game_state.tutorial_force_galaxy:
-            self._galaxy_zoom = min(8.0, self._galaxy_zoom * 1.5)
-            self.refresh_ui()
-            return
-        self._scale = max(1.0, min(8.0, self._scale - 0.25))
-        self.refresh_ui()
-
-    def action_zoom_out(self) -> None:
-        if self._galaxy_view or self.game_state.tutorial_force_galaxy:
-            self._galaxy_zoom = max(0.05, self._galaxy_zoom / 1.5)
-            self.refresh_ui()
-            return
-        self._scale = max(1.0, min(8.0, self._scale + 0.25))
-        self.refresh_ui()
-
-    def action_toggle_galaxy(self) -> None:
-        self._galaxy_view = not self._galaxy_view
-        if not self._galaxy_view and self.game_state.player.ship.status.value == "docked":
-            self.game_state.station_view = "system"
-        mode = "galaxy" if self._galaxy_view else "system"
-        self.game_state.log(f"Map view: {mode}")
-        self._refresh_chrome()
-        self.refresh_ui()
-
     def action_focus_cmd(self) -> None:
         self.query_one("#cmd_input", Input).focus()
-
-    def action_map_focus(self) -> None:
-        self.set_focus(None)
-        self._refresh_chrome()
 
     def on_input_changed(self, event: Input.Changed) -> None:
         if event.input.id != "cmd_input":
@@ -181,11 +124,45 @@ class MapScreen(Screen):
         self._update_completion_hint(event.value)
         event.input.refresh()
 
+    def on_key(self, event: Key) -> None:
+        if event.key not in ("up", "down"):
+            return
+        command_input = self.query_one("#cmd_input", Input)
+        if self.focused is not command_input:
+            return
+        if event.key == "up":
+            if not self._command_history:
+                return
+            if self._history_index is None:
+                self._history_draft = command_input.value
+                self._history_index = len(self._command_history) - 1
+            else:
+                self._history_index = max(0, self._history_index - 1)
+            command_input.value = self._command_history[self._history_index]
+        else:
+            if self._history_index is None:
+                return
+            if self._history_index >= len(self._command_history) - 1:
+                self._history_index = None
+                command_input.value = self._history_draft
+                self._history_draft = ""
+            else:
+                self._history_index += 1
+                command_input.value = self._command_history[self._history_index]
+        command_input.cursor_position = len(command_input.value)
+        event.stop()
+        event.prevent_default()
+
     def on_input_submitted(self, event: Input.Submitted) -> None:
         if event.input.id != "cmd_input":
             return
         line = event.value.strip()
         event.input.value = ""
         if line:
+            if not self._command_history or self._command_history[-1] != line:
+                self._command_history.append(line)
+                self._command_history = self._command_history[-100:]
+            self._history_index = None
+            self._history_draft = ""
             self.run_command(line)
         self._update_completion_hint("")

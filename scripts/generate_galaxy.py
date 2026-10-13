@@ -16,7 +16,7 @@ from eve_ascii.generate import build_galaxy, write_galaxy_json  # noqa: E402
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate galaxy data")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--systems", type=int, default=32)
+    parser.add_argument("--systems", type=int, default=72)
     parser.add_argument(
         "--out",
         type=Path,

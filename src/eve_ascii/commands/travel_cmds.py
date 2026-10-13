@@ -34,6 +34,9 @@ class JumpCommand(Command):
         return bool(parts) and parts[0].lower() in ("jump", "gate")
 
     def execute(self, state: GameState, parts: list[str]) -> str | None:
+        state.map_view = "system"
+        if state.player.ship.status.value == "docked":
+            state.station_view = "system"
         args = parts[1:]
         if not args:
             return "Usage: jump <system>"

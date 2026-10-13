@@ -69,18 +69,4 @@ Screen {
     color: #8aa4be;
     background: #132238;
 }
-
-ShipScreen {
-    align: center middle;
-    background: #050d18 80%;
-}
-
-#ship_inspect {
-    width: 84;
-    height: auto;
-    max-height: 90%;
-    background: #050d18;
-    color: #c9d6e3;
-    border: none;
-    padding: 0 0;
-}
+/* Main-screen styles end here. */

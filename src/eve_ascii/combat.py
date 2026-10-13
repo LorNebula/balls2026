@@ -56,6 +56,9 @@ def spawn_pirates(state: GameState, count: int = 1) -> None:
                 shield=90.0,
                 max_shield=90.0,
                 fire_cooldown=0.8,
+                loot_item_id="pirate_scrap",
+                loot_name="Pirate salvage",
+                loot_quantity=random.randint(1, 4),
             )
         )
     state.log("HOSTILE CONTACT: pirates engaging. lock / fire")
@@ -271,6 +274,23 @@ def _destroy_npc(state: GameState, npc: NpcShip, *, reason: str) -> None:
         else:
             state.player.cargo.append(CargoStack(item_id, item_name, npc.loot_quantity))
         state.log(f"Mined {npc.loot_quantity}x {item_name}.")
+    elif npc.hostile and npc.loot_item_id and npc.loot_quantity > 0:
+        from eve_ascii.models import CargoStack
+
+        cargo_used = sum(stack.quantity for stack in state.player.cargo)
+        quantity = min(npc.loot_quantity, max(0, state.player.max_cargo - cargo_used))
+        if quantity > 0:
+            stack = next(
+                (item for item in state.player.cargo if item.item_id == npc.loot_item_id),
+                None,
+            )
+            if stack:
+                stack.quantity += quantity
+            else:
+                state.player.cargo.append(CargoStack(npc.loot_item_id, npc.loot_name or npc.name, quantity))
+            state.log(f"Recovered {quantity}x {npc.loot_name or npc.name}.")
+        else:
+            state.log("Cargo hold full; pirate salvage lost.")
 
 
 def _tick_hostile_fire(state: GameState, dt: float) -> None:

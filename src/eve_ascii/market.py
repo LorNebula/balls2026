@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import random
+
 from rich.style import Style
 from rich.text import Text
 
@@ -17,6 +19,7 @@ TUTORIAL_CARGO_NAME = "Flagged Military Cargo"
 BASE_PRICES: dict[str, float] = {
     TUTORIAL_CARGO_ID: 1200.0,
     "scrap": 45.0,
+    "pirate_scrap": 110.0,
     "ore": 80.0,
     "ice": 60.0,
     "reactor_upgrade": 2500.0,
@@ -27,6 +30,7 @@ BASE_PRICES: dict[str, float] = {
 ITEM_NAMES: dict[str, str] = {
     TUTORIAL_CARGO_ID: TUTORIAL_CARGO_NAME,
     "scrap": "Scrap",
+    "pirate_scrap": "Pirate salvage",
     "ore": "Ore",
     "ice": "Ice",
     "reactor_upgrade": "Reactor upgrade",
@@ -40,6 +44,7 @@ UPGRADE_COST: dict[str, float] = {
     "weapons": 2500.0,
 }
 UPGRADE_HP_BONUS = 30.0
+MARKET_RESTOCK_INTERVAL = 60.0
 
 
 def starter_cargo() -> list[CargoStack]:
@@ -48,16 +53,23 @@ def starter_cargo() -> list[CargoStack]:
     ]
 
 
-def local_price(state: GameState, item_id: str) -> float:
-    base = BASE_PRICES.get(item_id, 100.0)
+def _station_price(station, item_id: str) -> float:
+    base = station.prices.get(item_id, BASE_PRICES.get(item_id, 100.0))
+    stock = station.inventory.get(item_id, 0)
+    supply_factor = max(0.5, min(1.5, 1.0 + (20 - stock) / 50.0))
+    return round(base * supply_factor, 0)
+
+
+def local_price(state: GameState, item_id: str) -> float | None:
     station = _current_station(state)
-    if station and item_id in station.prices:
-        return station.prices[item_id]
-    station_id = state.player.ship.location.station_id or "none"
-    sys_id = state.player.ship.location.system_id
-    seed = sum((index + 1) * ord(char) for index, char in enumerate(f"{sys_id}:{station_id}:{item_id}")) % 1000
-    factor = 0.92 + (seed / 1000.0) * 0.16
-    return round(base * factor, 0)
+    return _station_price(station, item_id) if station else None
+
+
+def global_price(state: GameState, item_id: str) -> float:
+    stations = [station for system in state.galaxy.systems.values() for station in system.stations]
+    if not stations:
+        return round(BASE_PRICES.get(item_id, 100.0), 0)
+    return round(sum(_station_price(station, item_id) for station in stations) / len(stations), 0)
 
 
 def _current_station(state: GameState):
@@ -80,12 +92,26 @@ def find_cargo(player, ref: str) -> CargoStack | None:
     return None
 
 
-def show_inventory(state: GameState) -> str | None:
+def show_market(state: GameState) -> str | None:
     if state.player.ship.status != ShipStatus.DOCKED:
-        return "Inventory is only available while docked."
-    state.station_view = "inventory"
-    state.log("Station inventory / market prices.")
+        return "Market is only available while docked."
+    if not _current_station(state):
+        return "No market at this station."
+    state.map_view = "system"
+    state.station_view = "market"
+    state.log("Station market opened.")
     return None
+
+
+def show_cargo(state: GameState) -> str | None:
+    state.map_view = "system"
+    state.station_view = "cargo"
+    state.log("Cargo hold opened.")
+    return None
+
+
+def show_inventory(state: GameState) -> str | None:
+    return show_cargo(state)
 
 
 def show_hangar(state: GameState) -> str | None:
@@ -97,23 +123,49 @@ def show_hangar(state: GameState) -> str | None:
 
 
 def show_system_view(state: GameState) -> str | None:
-    if state.player.ship.status == ShipStatus.DOCKED:
-        state.station_view = "system"
+    state.station_view = "system"
     state.log("System view.")
     return None
 
 
-def sell_item(state: GameState, item_ref: str, quantity: int) -> str | None:
+def tick(state: GameState, dt: float) -> None:
+    markets = [station for system in state.galaxy.systems.values() for station in system.stations]
+    if not markets:
+        return
+    state.market_restock_timer += dt
+    while state.market_restock_timer >= MARKET_RESTOCK_INTERVAL:
+        state.market_restock_timer -= MARKET_RESTOCK_INTERVAL
+        state.market_restock_count += 1
+        rng = random.Random(state.galaxy.seed + state.market_restock_count * 1_000_003)
+        for station in markets:
+            trade_items = [item_id for item_id in station.prices if not item_id.endswith("_upgrade")]
+            if not trade_items:
+                trade_items = [item_id for item_id in BASE_PRICES if not item_id.endswith("_upgrade")]
+            for _ in range(rng.randint(1, 2)):
+                item_id = rng.choice(trade_items)
+                station.inventory[item_id] = min(
+                    500,
+                    station.inventory.get(item_id, 0) + rng.randint(2, 8),
+                )
+
+
+def sell_item(state: GameState, item_ref: str, quantity: int | str) -> str | None:
     if state.player.ship.status != ShipStatus.DOCKED:
         return "Must be docked to sell."
-    if quantity <= 0:
-        return "Quantity must be positive."
     stack = find_cargo(state.player, item_ref)
     if not stack:
         return f"No cargo matching '{item_ref}'."
+    if isinstance(quantity, str):
+        if quantity.casefold() != "all":
+            return "Quantity must be a positive integer or all."
+        quantity = stack.quantity
+    if quantity <= 0:
+        return "Quantity must be positive."
     if quantity > stack.quantity:
         return f"Only {stack.quantity} units available."
     unit = local_price(state, stack.item_id)
+    if unit is None:
+        return "Must be docked at a station market to sell."
     total = unit * quantity
     stack.quantity -= quantity
     if stack.quantity <= 0:
@@ -123,11 +175,7 @@ def sell_item(state: GameState, item_ref: str, quantity: int) -> str | None:
     if station:
         station.inventory[stack.item_id] = station.inventory.get(stack.item_id, 0) + quantity
     state.log(f"Sold {quantity}x {stack.name} for {total:.0f} cr ({unit:.0f}/ea).")
-    if stack.item_id == TUTORIAL_CARGO_ID and not any(
-        c.item_id == TUTORIAL_CARGO_ID and c.quantity > 0 for c in state.player.cargo
-    ):
-        state.tutorial_sell_done = True
-    state.station_view = "inventory"
+    state.station_view = "market"
     return None
 
 
@@ -163,6 +211,8 @@ def buy_item(state: GameState, item_ref: str, quantity: int) -> str | None:
     if quantity > available:
         return f"Only {available} units in stock."
     total = local_price(state, item_id) * quantity
+    if sum(cargo.quantity for cargo in state.player.cargo) + quantity > state.player.max_cargo:
+        return f"Not enough cargo space (hold {state.player.max_cargo} units)."
     if state.player.credits < total:
         return f"Need {total:.0f} cr (have {state.player.credits:.0f})."
     station.inventory[item_id] -= quantity
@@ -175,7 +225,7 @@ def buy_item(state: GameState, item_ref: str, quantity: int) -> str | None:
 
         state.player.cargo.append(CargoStack(item_id, ITEM_NAMES[item_id], quantity))
     state.log(f"Bought {quantity}x {ITEM_NAMES[item_id]} for {total:.0f} cr.")
-    state.station_view = "inventory"
+    state.station_view = "market"
     return None
 
 
@@ -202,61 +252,85 @@ def upgrade_component(state: GameState, kind: str) -> str | None:
     comp.health = comp.max_health
     state.log(f"Upgraded {comp.kind}: +{UPGRADE_HP_BONUS:.0f} max hp ({cost:.0f} cr).")
     if key == "reactor":
-        state.tutorial_upgraded_reactor = True
         state.player.ship.max_power += 15.0
         state.player.ship.power = min(state.player.ship.max_power, state.player.ship.power + 15.0)
-    elif key == "weapons":
-        state.tutorial_upgraded_weapons = True
     return None
 
 
-def render_inventory_view(state: GameState, width: int, height: int) -> Text:
-    ship = state.player.ship
-    sys = state.galaxy.get_system(ship.location.system_id)
-    st_name = "station"
-    station = None
-    if sys and ship.location.station_id:
-        station = next((s for s in sys.stations if s.id == ship.location.station_id), None)
-        if station:
-            st_name = station.name
-
-    inner_w = max(20, width - 2)
-    slug_w, market_w, hold_w, price_w = 16, 7, 5, 9
-    name_w = max(12, inner_w - slug_w - market_w - hold_w - price_w - 4)
-    table_w = name_w + slug_w + market_w + hold_w + price_w + 4
-    header = Text()
-    header.append(f" {ascii_only(st_name)} MARKET ", style=Style(color="#c9a86a", bold=True))
-    header.append(f"| credits {state.player.credits:.0f} cr\n", style=Style(color="#88ccaa"))
-    rule = "-" * min(inner_w, table_w)
-    header.append(rule + "\n", style=Style(color="#556677"))
-    header.append(
-        f" {'item name':<{name_w}}{'id/slug':<{slug_w}}{'stock':>{market_w}}{'hold':>{hold_w}}{'price':>{price_w}}\n",
+def _append_table_section(
+    out: Text,
+    title: str,
+    item_ids: list[str],
+    quantities: dict[str, int],
+    state: GameState,
+    width: int,
+    row_limit: int,
+) -> None:
+    name_width = max(8, width - 27)
+    out.append(f" {title}\n", style=Style(color="#e8b84a", bold=True))
+    out.append(
+        f" {'item':<{name_width}}{'qty':>6}{'local':>9}{'global':>9}\n",
         style=Style(color="#aaccee", bold=True),
     )
-    header.append(rule + "\n", style=Style(color="#556677"))
-
-    cargo = {stack.item_id: stack for stack in state.player.cargo if stack.quantity > 0}
-    inventory = station.inventory if station else {}
-    item_ids = sorted(set(cargo) | {item_id for item_id, qty in inventory.items() if qty > 0})
     if not item_ids:
-        header.append(" (no stock or cargo)\n", style=Style(color="#778899"))
-    for item_id in item_ids:
-        stack = cargo.get(item_id)
-        name = stack.name if stack else ITEM_NAMES.get(item_id, item_id.replace("_", " ").title())
-        nm = ascii_only(name)[:name_w]
-        slug = ascii_only(item_id)[:slug_w]
-        stock = inventory.get(item_id, 0)
-        hold = stack.quantity if stack else 0
-        price = local_price(state, item_id)
-        header.append(f" {nm:<{name_w}}", style=Style(color="#ddeeff"))
-        header.append(f"{slug:<{slug_w}}", style=Style(color="#99aabb"))
-        header.append(f"{stock:>{market_w}}", style=Style(color="#ffee88"))
-        header.append(f"{hold:>{hold_w}}", style=Style(color="#ffee88"))
-        header.append(f"{price:>{price_w}.0f}\n", style=Style(color="#88ffaa"))
+        out.append(" (empty)\n", style=Style(color="#778899"))
+        return
+    for item_id in item_ids[:row_limit]:
+        name = ascii_only(ITEM_NAMES.get(item_id, item_id.replace("_", " ").title()))[:name_width]
+        local = local_price(state, item_id)
+        local_text = f"{local:.0f}" if local is not None else "--"
+        global_value = global_price(state, item_id)
+        out.append(f" {name:<{name_width}}", style=Style(color="#ddeeff"))
+        out.append(f"{quantities[item_id]:>6}", style=Style(color="#ffee88"))
+        out.append(f"{local_text:>9}", style=Style(color="#88ffaa"))
+        out.append(f"{global_value:>9.0f}\n", style=Style(color="#99bbdd"))
+    if len(item_ids) > row_limit:
+        out.append(f" ... {len(item_ids) - row_limit} more\n", style=Style(color="#778899"))
 
-    header.append(rule + "\n", style=Style(color="#556677"))
-    header.append(
-        " commands: buy <item> <qty>  |  sell <item> <qty>  |  upgrade reactor|weapons\n",
-        style=Style(color="#668899"),
+
+def render_market_view(state: GameState, width: int, height: int) -> Text:
+    station = _current_station(state)
+    if not station:
+        return Text("No station market available.", style=Style(color="#ff6666"))
+    inner_width = max(20, width - 2)
+    row_limit = max(1, (height - 5) // 2)
+    out = Text()
+    out.append(f" {ascii_only(station.name)} MARKET ", style=Style(color="#c9a86a", bold=True))
+    out.append(f"| credits {state.player.credits:.0f} cr\n", style=Style(color="#88ccaa"))
+    market_items = sorted(item_id for item_id, quantity in station.inventory.items() if quantity > 0)
+    _append_table_section(
+        out,
+        "MARKET INVENTORY",
+        market_items,
+        station.inventory,
+        state,
+        inner_width,
+        row_limit,
     )
-    return header
+    cargo = {stack.item_id: stack.quantity for stack in state.player.cargo if stack.quantity > 0}
+    _append_table_section(
+        out,
+        "YOUR CARGO",
+        sorted(cargo),
+        cargo,
+        state,
+        inner_width,
+        row_limit,
+    )
+    out.append(" buy <item> <qty> | sell <item> <qty|all> | system\n", style=Style(color="#668899"))
+    return out
+
+
+def render_cargo_view(state: GameState, width: int, height: int) -> Text:
+    inner_width = max(20, width - 2)
+    row_limit = max(1, height - 3)
+    out = Text(" CARGO HOLD ", style=Style(color="#c9a86a", bold=True))
+    out.append(f"| {sum(stack.quantity for stack in state.player.cargo)} / {state.player.max_cargo} units\n")
+    cargo = {stack.item_id: stack.quantity for stack in state.player.cargo if stack.quantity > 0}
+    _append_table_section(out, "CARGO", sorted(cargo), cargo, state, inner_width, row_limit)
+    return out
+
+
+def render_inventory_view(state: GameState, width: int, height: int) -> Text:
+    """Compatibility alias for the standalone cargo inventory view."""
+    return render_cargo_view(state, width, height)

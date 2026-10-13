@@ -46,7 +46,6 @@ COMP_STYLE = Style(color="#ffee00", bold=True, bgcolor="#223344")
 COMP_HIT = Style(color="#ff4400", bold=True, bgcolor="#442200")
 COMP_DAMAGED = Style(color="#ffaa33", bold=True, bgcolor="#332200")
 COMP_DEAD = Style(color="#664444", bgcolor="#221111")
-COMP_DESTROYED = Style(color="#555555", bold=False)
 ID_STYLE = Style(color="#ffffff", bold=True)
 LASER_STYLE = Style(color="#66ff66", bold=True)
 ENEMY_LASER_STYLE = Style(color="#ff4466", bold=True)
@@ -57,6 +56,8 @@ PARTICLE_STYLES = (
     Style(color="#6688aa"),
     Style(color="#8866cc"),
 )
+HYPERLANE_ACTIVE = Style(color="#6688aa")
+HYPERLANE_INACTIVE = Style(color="#50677f")
 
 # 01=reactor 02=thrusters 03=shields 04=weapons (embedded in art)
 PLAYER_SHIP = [
@@ -73,18 +74,6 @@ ENEMY_SHIP = [
     "  <====|02||03|====   ",
     "       \\  04  /       ",
     "        ------        ",
-]
-
-PLAYER_SHIP_ZOOM = [
-    "              ______________              ",
-    "             /              \\             ",
-    "            /      01        \\            ",
-    "           /    REACTOR       \\           ",
-    "   >======|  02          03    |======>   ",
-    "          | THRUST     SHIELD  |          ",
-    "           \\      04          /           ",
-    "            \\   WEAPONS      /            ",
-    "             \\______________/             ",
 ]
 
 STATION_MARKER = [
@@ -211,8 +200,14 @@ class SpaceCanvas:
     def to_text(self) -> Text:
         out = Text()
         for y, row in enumerate(self.cells):
-            for cell in row:
-                out.append(cell.ch, style=cell.style)
+            start = 0
+            while start < len(row):
+                style = row[start].style
+                end = start + 1
+                while end < len(row) and row[end].style is style:
+                    end += 1
+                out.append("".join(cell.ch for cell in row[start:end]), style=style)
+                start = end
             if y < self.height - 1:
                 out.append("\n")
         return out
@@ -256,7 +251,7 @@ def _show_stations_on_map(state: GameState) -> bool:
         return False
     if state.tutorial_step == TutorialStep.DONE:
         return True
-    return state.tutorial_step in (TutorialStep.JUMP_STATION, TutorialStep.DOCK)
+    return state.tutorial_step == TutorialStep.JUMP
 
 
 def _draw_drifting_stars(
@@ -542,62 +537,6 @@ def render_open_space(
     return header
 
 
-def render_ship_inspect(state: GameState) -> Text:
-    from eve_ascii.ascii_ui import box_wrap
-
-    ship = state.player.ship
-    width = 78
-    height = 11
-    canvas = SpaceCanvas(width, height, width // 2, height // 2)
-    canvas.stamp_art(
-        width // 2,
-        height // 2,
-        PLAYER_SHIP_ZOOM,
-        HULL_PLAYER,
-        components=ship.components,
-    )
-    inner = Text()
-    inner.append(f"{ship.name}  fit {len(ship.components)}/{ship.max_slots}\n", style=Style(color="#aaccee"))
-    inner.append(canvas.to_text())
-    inner.append("\n")
-    pwr_style = Style(color="#ff5566", bold=True) if is_powerless(ship) else Style(color="#88ffaa")
-    inner.append(
-        f" POWER {ship.power:.0f}/{ship.max_power:.0f}   SHIELD {ship.shield:.0f}/{ship.max_shield:.0f}  "
-        f"gen {shield_gen_per_sec(ship):.1f}/s\n",
-        style=pwr_style,
-    )
-    if is_powerless(ship):
-        inner.append(" REACTOR DESTROYED - SHIP POWERLESS\n", style=Style(color="#ff3344", bold=True))
-    for c in ship.components:
-        mark = "X" if c.destroyed else ("!" if c.integrity < 0.5 else " ")
-        extra = ""
-        if c.kind == "reactor":
-            extra = f"  power {c.integrity * 100:.0f}%"
-        elif c.kind == "shields":
-            extra = "  gen none" if c.destroyed else f"  gen {BASE_SHIELD_GEN * c.integrity:.1f}/s"
-        elif c.kind == "weapons":
-            extra = "  OFFLINE" if c.destroyed else f"  charge {weapon_charge_seconds(ship):.2f}s"
-        elif c.kind == "thrusters":
-            extra = "  (idle)"
-        st = COMP_DEAD if c.destroyed else (COMP_DAMAGED if c.integrity < 0.5 else Style(color="#ddeeff"))
-        inner.append(
-            f" {c.slot_id} {c.kind.upper():<10}  hp {c.health:5.0f}/{c.max_health:.0f}  {mark}{extra}\n",
-            style=st,
-        )
-    inner.append(" Esc close   command: ship\n", style=Style(color="#6688aa"))
-
-    frame_style = Style(color="#e8b84a")
-    body_style = Style(color="#c9d6e3")
-    boxed_lines = box_wrap(width, "SHIP", inner.plain.splitlines()).split("\n")
-    out = Text()
-    for line in boxed_lines:
-        if line.startswith("+"):
-            out.append(line + "\n", style=frame_style)
-        else:
-            out.append(line + "\n", style=body_style)
-    return out
-
-
 def render_galaxy_map(state: GameState, width: int, height: int, zoom: float = 1.0) -> Text:
     width = max(1, width)
     height = max(5, height)
@@ -613,10 +552,32 @@ def render_galaxy_map(state: GameState, width: int, height: int, zoom: float = 1
         for system_id in (current.neighbors if current else [])
     ]
     linked = [system for system in linked if system]
-    link_names = ", ".join(ascii_only(system.name) for system in linked) or "none"
-    link_lines = textwrap.wrap(f"LINKS: {link_names}", width=max(1, width), break_long_words=True)
-    deltas = [(system.position.x - center.x, system.position.y - center.y) for system in linked]
-    map_height = max(1, height - 2 - len(link_lines))
+    gate_prefix = "GATES: "
+    separator_width = 2
+    name_width = max(
+        3,
+        min(
+            18,
+            (width - len(gate_prefix) - separator_width * max(0, len(linked) - 1))
+            // max(1, len(linked)),
+        ),
+    )
+    gate_names = [
+        ascii_only(system.name)
+        if len(ascii_only(system.name)) <= name_width
+        else ascii_only(system.name)[:name_width - 1] + "~"
+        for system in linked
+    ]
+    gate_lines = textwrap.wrap(
+        gate_prefix + ", ".join(gate_names or ["none"]),
+        width=max(1, width),
+        break_long_words=True,
+    )
+    deltas = [
+        (system.position.x - center.x, system.position.y - center.y)
+        for system in state.galaxy.systems.values()
+    ]
+    map_height = max(1, height - 2 - len(gate_lines))
     available_x = max(1, width // 2 - 2)
     available_y = max(1, map_height // 2 - 1)
     reach_x = max((abs(dx) for dx, _ in deltas), default=1.0)
@@ -628,26 +589,111 @@ def render_galaxy_map(state: GameState, width: int, height: int, zoom: float = 1
     for _ in range(width // 3):
         canvas.put(rng.randint(0, width - 1), rng.randint(0, map_height - 1), ".", STAR_STYLE)
 
-    screen_positions = {
+    raw_positions = {
         system.id: (
             canvas.anchor_x + round((system.position.x - center.x) * scale),
             canvas.anchor_y + round((system.position.y - center.y) * scale),
         )
         for system in state.galaxy.systems.values()
     }
-    if current:
-        x0, y0 = screen_positions[current.id]
-        for system in linked:
-            x1, y1 = screen_positions[system.id]
-            steps = max(abs(x1 - x0), abs(y1 - y0))
-            for step in range(1, steps):
-                ratio = step / steps
-                canvas.put(
-                    round(x0 + (x1 - x0) * ratio),
-                    round(y0 + (y1 - y0) * ratio),
-                    ".",
-                    Style(color="#6688aa"),
+    screen_positions: dict[str, tuple[int, int]] = {}
+    occupied: set[tuple[int, int]] = set()
+
+    def lane_cells_between(
+        first: tuple[int, int],
+        second: tuple[int, int],
+    ) -> list[tuple[int, int]]:
+        x0, y0 = first
+        x1, y1 = second
+        steps = max(abs(x1 - x0), abs(y1 - y0))
+        if steps < 2:
+            return []
+        return [
+            (
+                round(x0 + (x1 - x0) * (step / steps)),
+                round(y0 + (y1 - y0) * (step / steps)),
+            )
+            for step in range(1, steps)
+        ]
+
+    placement_order = sorted(
+        state.galaxy.systems.values(),
+        key=lambda system: (
+            0 if current and system.id == current.id else
+            1 if current and system.id in current.neighbors else 2,
+            system.position.distance_to(center),
+        ),
+    )
+    candidate_cells = [
+        (x, y)
+        for y in range(map_height)
+        for x in range(width)
+    ]
+    for system in placement_order:
+        target_x, target_y = raw_positions[system.id]
+        candidate = None
+        target_x = min(width - 1, max(0, target_x))
+        target_y = min(map_height - 1, max(0, target_y))
+        for radius in range(min(max(width, map_height), 5)):
+            left, right = max(0, target_x - radius), min(width - 1, target_x + radius)
+            top, bottom = max(0, target_y - radius), min(map_height - 1, target_y + radius)
+            perimeter = (
+                [(x, top) for x in range(left, right + 1)]
+                + ([(x, bottom) for x in range(left, right + 1)] if bottom != top else [])
+                + [(left, y) for y in range(top + 1, bottom)]
+                + ([(right, y) for y in range(top + 1, bottom)] if right != left else [])
+            )
+            for x, y in perimeter:
+                if (x, y) in occupied:
+                    continue
+                neighbor_positions = [
+                    screen_positions[neighbor_id]
+                    for neighbor_id in system.neighbors
+                    if neighbor_id in screen_positions
+                ]
+                if any(max(abs(x - px), abs(y - py)) < 2 for px, py in neighbor_positions):
+                    continue
+                lane_cells = [
+                    cell
+                    for position in neighbor_positions
+                    for cell in lane_cells_between((x, y), position)
+                ]
+                if any(cell in occupied for cell in lane_cells):
+                    continue
+                candidate = (x, y)
+                break
+            if candidate:
+                break
+        if candidate is None:
+            for radius in range(max(width, map_height)):
+                left, right = max(0, target_x - radius), min(width - 1, target_x + radius)
+                top, bottom = max(0, target_y - radius), min(map_height - 1, target_y + radius)
+                perimeter = (
+                    [(x, top) for x in range(left, right + 1)]
+                    + ([(x, bottom) for x in range(left, right + 1)] if bottom != top else [])
+                    + [(left, y) for y in range(top + 1, bottom)]
+                    + ([(right, y) for y in range(top + 1, bottom)] if right != left else [])
                 )
+                candidate = next((cell for cell in perimeter if cell not in occupied), None)
+                if candidate:
+                    break
+        if candidate is None:
+            candidate = next((cell for cell in candidate_cells if cell not in occupied), (target_x, target_y))
+        screen_positions[system.id] = candidate
+        occupied.add(candidate)
+    lane_cells: dict[tuple[int, int], bool] = {}
+    for system in state.galaxy.systems.values():
+        x0, y0 = screen_positions[system.id]
+        for neighbor_id in system.neighbors:
+            if neighbor_id <= system.id:
+                continue
+            neighbor = state.galaxy.get_system(neighbor_id)
+            if not neighbor:
+                continue
+            x1, y1 = screen_positions[neighbor.id]
+            active = current and (system.id == current.id or neighbor.id == current.id)
+            for cell in lane_cells_between((x0, y0), (x1, y1)):
+                lane_cells[cell] = lane_cells.get(cell, False) or bool(active)
 
     for system in state.galaxy.systems.values():
         gx, gy = screen_positions[system.id]
@@ -662,16 +708,74 @@ def render_galaxy_map(state: GameState, width: int, height: int, zoom: float = 1
         else:
             canvas.put(gx, gy, ".", Style(color="#667788"))
 
+    for (x, y), active in lane_cells.items():
+        existing = canvas.cells[y][x]
+        if existing.ch != " ":
+            if existing.ch != "@":
+                canvas.put(
+                    x,
+                    y,
+                    existing.ch,
+                    HYPERLANE_ACTIVE if active else HYPERLANE_INACTIVE,
+                )
+        else:
+            canvas.put(
+                x,
+                y,
+                ".",
+                HYPERLANE_ACTIVE if active else HYPERLANE_INACTIVE,
+            )
+
     if state.galaxy.black_hole:
         hole = state.galaxy.black_hole.position
-        gx = canvas.anchor_x + round((hole.x - center.x) * scale)
-        gy = canvas.anchor_y + round((hole.y - center.y) * scale)
+        target_x = canvas.anchor_x + round((hole.x - center.x) * scale)
+        target_y = canvas.anchor_y + round((hole.y - center.y) * scale)
+        open_cells = [
+            cell
+            for cell in candidate_cells
+            if cell not in occupied and cell not in lane_cells
+        ]
+        gx, gy = min(
+            open_cells or candidate_cells,
+            key=lambda cell: (cell[0] - target_x) ** 2 + (cell[1] - target_y) ** 2,
+        )
         canvas.put(gx, gy, "O", Style(color="#ff6677", bold=True))
+        occupied.add((gx, gy))
+
+    label_cells = set(occupied)
+    for system in linked:
+        marker_x, marker_y = screen_positions[system.id]
+        slots: list[tuple[int, int, int]] = []
+        for row in (marker_y, marker_y - 1, marker_y + 1):
+            if not 0 <= row < map_height:
+                continue
+            for direction in (1, -1):
+                available = 0
+                x = marker_x + direction
+                while 0 <= x < width and (x, row) not in label_cells:
+                    available += 1
+                    x += direction
+                slots.append((available, direction, row))
+        available, direction, label_y = max(slots, default=(0, 1, marker_y))
+        label_width = min(10, available)
+        if label_width < 3:
+            continue
+        name = ascii_only(system.name)
+        if len(name) > label_width:
+            name = name[:label_width - 1] + "~"
+        start_x = marker_x + 1 if direction > 0 else marker_x - len(name)
+        for offset, character in enumerate(name):
+            x = start_x + offset
+            canvas.put(x, label_y, character, Style(color="#aaddaa"))
+            label_cells.add((x, label_y))
 
     header = Text(" GALAXY MAP ", style=Style(color="#e8b84a", bold=True))
     header.append(f"{current_name}  zoom {zoom:.2f}x\n", style=Style(color="#aaccee"))
-    header.append(f"@=here +=linked *=other O={hole_name} N=nebula\n", style=Style(color="#668899"))
-    for line in link_lines:
+    header.append(
+        f"@=here +=open gate .=hyperlane O={hole_name} N=nebula\n",
+        style=Style(color="#668899"),
+    )
+    for line in gate_lines:
         header.append(line + "\n", style=Style(color="#88ffaa", bold=True))
     header.append(canvas.to_text())
     return header
