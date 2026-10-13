@@ -7,6 +7,7 @@ from typing import Any, Callable
 
 ENTERED_SYSTEM = "entered_system"
 QUIT_APP = "quit_app"
+OPEN_SCRIPT_EDITOR = "open_script_editor"
 
 Listener = Callable[..., None]
 

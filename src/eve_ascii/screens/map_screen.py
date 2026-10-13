@@ -35,7 +35,7 @@ class MapScreen(Screen):
         with Horizontal(id="cmd_row"):
             yield Static("> ", id="cmd_prefix")
             yield Input(
-                placeholder="travel station ... | jump ... | dock",
+                placeholder=": focus | help | galaxy | script | travel | jump | dock",
                 id="cmd_input",
                 classes="-textual-compact",
             )
@@ -61,7 +61,7 @@ class MapScreen(Screen):
         self.query_one("#footer_bar", Static).update(
             box_line(
                 w,
-                " : command  galaxy/system  zoom in/out  quit ",
+                " : cmd line  up/down history  galaxy|system  zoom  script  help  quit ",
             )
         )
 
@@ -164,5 +164,8 @@ class MapScreen(Screen):
                 self._command_history = self._command_history[-100:]
             self._history_index = None
             self._history_draft = ""
+            from eve_ascii.audio import request_sound
+
+            request_sound(self.game_state, "blip")
             self.run_command(line)
         self._update_completion_hint("")

@@ -100,8 +100,13 @@ class HelpCommand(Command):
 
     def execute(self, state: GameState, parts: list[str]) -> str | None:
         state.log(
-            "travel, jump, galaxy, system, zoom in|out, dock, market, cargo, buy/sell <item> <qty|all>, "
-            "upgrade reactor|weapons, repair, lock, mine, cease, fire, radar, comms, quests, skip, quit"
+            "Keys: : focus command line, up/down = command history. "
+            "Maps: galaxy, system, zoom in|out. "
+            "Travel: travel, jump, dock, undock. "
+            "Trade: market, cargo, buy/sell, upgrade, repair, "
+            "script (edit), script run, script enable (60s cron), script status. "
+            "Combat: lock, fire, cease. Mining: lock R#, mine, cease mine, radar. "
+            "comms, quests, skip, quit"
         )
         return None
 

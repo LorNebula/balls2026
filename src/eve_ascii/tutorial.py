@@ -62,7 +62,7 @@ def init_tutorial(state: GameState) -> None:
     state.player.ship.status = ShipStatus.JUMPING
     state.player.ship.fuel = state.player.ship.max_fuel
     trigger_flash(state)
-    state.log("TUTORIAL: entering hyperspace lane...")
+    state.log("TUTORIAL: entering hyperspace lane... (: = command line, help = commands)")
 
 
 def tick(state: GameState, dt: float) -> None:
@@ -78,7 +78,8 @@ def tick(state: GameState, dt: float) -> None:
             state,
             "CMDR Crosshair",
             "Pilot, this is Crosshair. That cargo is flagged. Pirate cells are "
-            "tracking your signature. Stay alert. Acknowledge.",
+            "tracking your signature. Stay alert. Crosshair messages appear in the "
+            "event log (right pane). Type comms to review.",
         )
 
     elif step == TutorialStep.WARNING and state.tutorial_step_elapsed >= PAUSE_WARNING:
@@ -89,8 +90,13 @@ def tick(state: GameState, dt: float) -> None:
         combat.spawn_pirates(state, 2)
         _set_step(state, TutorialStep.COMBAT)
         state.combat_time = 0.0
-        state.log("Two hostiles (A, B). lock A | lock A 01 | fire | lock B | fire")
-        push_message(state, "CMDR Crosshair", "Engage hostiles. Weapons free.")
+        state.log("Combat: lock A | fire | cease (stop firing) | lock B | fire")
+        push_message(
+            state,
+            "CMDR Crosshair",
+            "Engage hostiles. Press : for commands. lock <target>, fire to shoot, "
+            "cease to stop. Hostiles hold fire ~9s — use that window.",
+        )
 
     elif step == TutorialStep.COMBAT:
         if combat.all_hostiles_dead(state) and not state.tutorial_post_combat:
@@ -109,14 +115,15 @@ def tick(state: GameState, dt: float) -> None:
                 push_message(
                     state,
                     "CMDR Crosshair",
-                    f"Good work. Jump to a station system. Open the command line and type: {cmd}",
+                    f"Good work. Press : then type: {cmd}  "
+                    "(jump only works to linked stargate systems).",
                 )
             else:
                 state.log("Next: jump <system>  (pick a linked system with a station)")
                 push_message(
                     state,
                     "CMDR Crosshair",
-                    "Good work. Jump to a linked system with a station. Command: jump <system name>",
+                    "Good work. Press : then jump <system name> to a linked system with a station.",
                 )
 
     elif step == TutorialStep.JUMP_STATION:
@@ -132,12 +139,12 @@ def tick(state: GameState, dt: float) -> None:
 
             _set_step(state, TutorialStep.MINE)
             mining.fill_tutorial_mining_field(state)
-            state.log("Next: lock R1  then  mine  (cease mine when done)")
+            state.log("Next: lock R1  then  mine  (cease mine to stop laser)")
             push_message(
                 state,
                 "CMDR Crosshair",
-                "Local belt on scope. Lock an asteroid (lock R1) and run the mining laser (mine). "
-                f"Pull at least {TUTORIAL_MINE_UNITS} units before we sell at the station.",
+                "Local belt on scope. lock R1, then mine. cease mine when switching targets. "
+                f"Pull at least {TUTORIAL_MINE_UNITS} units into your hold before we dock.",
             )
 
     elif step == TutorialStep.MINE:
@@ -155,7 +162,7 @@ def tick(state: GameState, dt: float) -> None:
                 push_message(
                     state,
                     "CMDR Crosshair",
-                    f"Good haul. Dock and sell. Type: {travel_cmd}  then when in range: {dock_cmd}",
+                    f"Good haul. Burn to the station: {travel_cmd}  then {dock_cmd} when in range.",
                 )
             else:
                 state.log("Next: travel station <name>  then  dock")
@@ -170,14 +177,18 @@ def tick(state: GameState, dt: float) -> None:
             state.player.ship.status == ShipStatus.DOCKED
             and state.tutorial_step_elapsed >= PAUSE_AFTER_DOCK
         ):
+            from eve_ascii.automation import TUTORIAL_TRADE_TEMPLATE
+
             _set_step(state, TutorialStep.SELL)
-            state.station_view = "inventory"
-            sell_cmd = f"sell {TUTORIAL_CARGO_ID} 10"
-            state.log(f"Next: inventory  then  {sell_cmd}")
+            state.trade_script_source = TUTORIAL_TRADE_TEMPLATE
+            state.trade_script_enabled = False
+            state.log("Next: script | set SELL_QTY=10 | Ctrl+S | script run")
             push_message(
                 state,
                 "CMDR Crosshair",
-                f"Unload that flagged cargo. Type: inventory  then  {sell_cmd}",
+                "Automation bay online. script opens your trade bot (Python). "
+                "Set SELL_QTY from 0 to 10, Ctrl+S to save, script run to sell flagged cargo now. "
+                "Later: script enable runs the bot every 60s; script status shows couriers.",
             )
 
     elif step == TutorialStep.SELL:
@@ -187,8 +198,8 @@ def tick(state: GameState, dt: float) -> None:
             push_message(
                 state,
                 "CMDR Crosshair",
-                "Credits on account. Upgrade reactor and weapons: "
-                "upgrade reactor  then  upgrade weapons",
+                "Credits on account. market shows prices. upgrade reactor  then  upgrade weapons. "
+                "repair restores hull for credits if you took damage.",
             )
 
     elif step == TutorialStep.UPGRADE:
@@ -198,19 +209,22 @@ def tick(state: GameState, dt: float) -> None:
             push_message(
                 state,
                 "CMDR Crosshair",
-                "Solid execution, pilot. The sector is yours. Find your destiny.",
+                "Solid execution, pilot. Galaxy chart is on screen. "
+                "Commands: system (local map), galaxy (star chart), zoom in|out.",
             )
-            state.log("Press g for galaxy map.")
+            state.log("Galaxy map shown. Type system to return to local view.")
 
     elif step == TutorialStep.GALAXY and state.tutorial_step_elapsed >= PAUSE_GALAXY:
         _set_step(state, TutorialStep.QUESTS)
         unlock_quests(state)
-        state.log("Type: quests")
+        state.log("Type: quests  (quest <name> to start one)")
 
     elif step == TutorialStep.QUESTS and state.tutorial_step_elapsed >= PAUSE_QUESTS:
         _set_step(state, TutorialStep.DONE)
         state.tutorial_force_galaxy = False
-        state.log("Tutorial complete. Free play.")
+        state.log(
+            "Tutorial complete. help = all commands. script enable = auto-trade every 60s."
+        )
 
 
 def _station_jump_target_name(state: GameState) -> str | None:
@@ -249,23 +263,23 @@ def _tutorial_place_near_station(state: GameState) -> None:
 def tutorial_objective(state: GameState) -> str:
     step = state.tutorial_step
     if step == TutorialStep.HYPERSPACE:
-        return "Hold course in hyperspace"
+        return "Hyperspace transit (automatic)"
     if step == TutorialStep.WARNING:
-        return "Read CMDR Crosshair comms"
+        return "Read Crosshair in event log (comms)"
     if step == TutorialStep.COMBAT:
-        return "Destroy hostiles (lock, fire)"
+        return "Destroy hostiles: lock, fire, cease"
     if step == TutorialStep.JUMP_STATION:
-        return "Jump to a system with a station"
+        return "Jump to a linked system with a station"
     if step == TutorialStep.MINE:
-        return f"Mine ore into hold ({state.tutorial_mined_units}/{TUTORIAL_MINE_UNITS})"
+        return f"lock R1, mine ({state.tutorial_mined_units}/{TUTORIAL_MINE_UNITS} units)"
     if step == TutorialStep.DOCK:
-        return "Travel to station and dock"
+        return "travel station, then dock"
     if step == TutorialStep.SELL:
-        return f"Sell flagged cargo (sell {TUTORIAL_CARGO_ID})"
+        return "script: SELL_QTY=10, save, script run"
     if step == TutorialStep.UPGRADE:
-        return "Upgrade reactor and weapons at station"
+        return "upgrade reactor and weapons"
     if step == TutorialStep.GALAXY:
-        return "Open galaxy map (g)"
+        return "Review galaxy map (system / galaxy / zoom)"
     if step == TutorialStep.QUESTS:
         return "Type: quests"
     return ""
