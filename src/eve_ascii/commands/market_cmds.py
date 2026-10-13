@@ -14,7 +14,7 @@ class InventoryCommand(Command):
         return market.show_cargo(state)
 
     def completions(self, state: GameState) -> list[str]:
-        return ["cargo", "inventory"]
+        return ["cargo"]
 
     def palette_items(self, state: GameState) -> list[tuple[str, str]]:
         return [("Cargo", "cargo")]
@@ -135,12 +135,37 @@ class BuyCommand(Command):
     def execute(self, state: GameState, parts: list[str]) -> str | None:
         args = parts[1:]
         if len(args) < 2:
-            return "Usage: buy <item|reactor|weapons> <quantity>"
-        try:
-            quantity = int(args[-1])
-        except ValueError:
-            return "Quantity must be an integer."
-        return market.buy_item(state, " ".join(args[:-1]), quantity)
+            return "Usage: buy <item|reactor|weapons> <quantity|all>"
+        quantity_arg = args[-1].lower()
+        item_ref = " ".join(args[:-1])
+        if quantity_arg == "all":
+            station = market._current_station(state)
+            if not station:
+                return "No market at this station."
+            key = item_ref.strip().casefold()
+            item_id = next(
+                (
+                    item
+                    for item, label in market.ITEM_NAMES.items()
+                    if item == key or label.casefold() == key
+                ),
+                None,
+            )
+            if not item_id or item_id not in station.inventory:
+                return f"Item not sold here: {item_ref}."
+            used = sum(c.quantity for c in state.player.cargo)
+            space = state.player.max_cargo - used
+            quantity = market.max_affordable_quantity(
+                state, station, item_id, station.inventory[item_id], space
+            )
+            if quantity <= 0:
+                return "Cannot buy any (stock, cargo space, or credits)."
+        else:
+            try:
+                quantity = int(quantity_arg)
+            except ValueError:
+                return "Quantity must be an integer or all."
+        return market.buy_item(state, item_ref, quantity)
 
     def completions(self, state: GameState) -> list[str]:
         cmds = ["buy "]
@@ -157,6 +182,7 @@ class BuyCommand(Command):
             for item_id, quantity in station.inventory.items():
                 if quantity > 0:
                     cmds.append(f"buy {item_id} ")
+                    cmds.append(f"buy {item_id} all")
         return cmds
 
 

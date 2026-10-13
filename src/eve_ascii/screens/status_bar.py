@@ -11,8 +11,10 @@ def format_status(state: GameState) -> str:
     if state.game_over:
         return " GAME OVER | type quit to exit "
     hp, hp_max = hull_totals(ship)
+    cargo_used = sum(s.quantity for s in state.player.cargo)
     line = (
         f" {sys_name} | {state.mode.value} | {ship.status.value} | "
+        f"cargo {cargo_used}/{state.player.max_cargo} | "
         f"nrg {ship.power:.0f}/{ship.max_power:.0f} | "
         f"hp {hp:.0f}/{hp_max:.0f} | "
         f"shd {ship.shield:.0f}/{ship.max_shield:.0f} | "

@@ -18,7 +18,7 @@ from eve_ascii.models import (
 )
 
 
-DOCK_RANGE = 120.0
+DOCK_RANGE = 200.0
 ORBIT_OFFSET = 15.0
 
 
@@ -130,7 +130,19 @@ def travel_station(state: GameState, station_name: str) -> str | None:
     return _set_warp(state, target, approach)
 
 
-def jump_system(state: GameState, system_name: str) -> str | None:
+def _sync_nav_path_after_jump(state: GameState, dest_id: str) -> None:
+    if not state.nav_path:
+        return
+    if state.nav_path[0] == dest_id:
+        state.nav_path.pop(0)
+    elif dest_id in state.nav_path:
+        idx = state.nav_path.index(dest_id)
+        state.nav_path = state.nav_path[idx + 1 :]
+    if not state.nav_path:
+        state.nav_path_goal = None
+
+
+def jump_system(state: GameState, system_name: str | None = None) -> str | None:
     from eve_ascii.models import GameMode
     from eve_ascii.vfx import trigger_flash
 
@@ -138,12 +150,23 @@ def jump_system(state: GameState, system_name: str) -> str | None:
     if state.mode == GameMode.HYPERSPACE and ship.status != ShipStatus.IDLE:
         return "Cannot jump manually during hyperspace transit."
     if ship.status == ShipStatus.DOCKED:
-        return "Undock first."
+        err = undock(state)
+        if err:
+            return err
     if ship.status in (ShipStatus.WARPING, ShipStatus.JUMPING):
         return "Already in transit."
     sys = state.galaxy.get_system(ship.location.system_id)
     if not sys:
         return "Unknown current system."
+    if not system_name or not system_name.strip():
+        if not state.nav_path:
+            return "Usage: jump <system> (or path <system> then jump)"
+        next_sys = state.galaxy.get_system(state.nav_path[0])
+        if not next_sys:
+            state.nav_path.clear()
+            state.nav_path_goal = None
+            return "Navigation path invalid — replot with path <system>."
+        system_name = next_sys.name
     dest = find_system_by_name(state.galaxy, system_name)
     if not dest:
         return f"System not found: {system_name}"
@@ -152,6 +175,9 @@ def jump_system(state: GameState, system_name: str) -> str | None:
     if ship.fuel < ship.fuel_per_jump:
         return f"Not enough fuel (need {ship.fuel_per_jump:.0f}, have {ship.fuel:.0f})."
     ship.fuel -= ship.fuel_per_jump
+    _sync_nav_path_after_jump(state, dest.id)
+    state.map_view = "system"
+    state.station_view = "system"
     dist = sys.position.distance_to(dest.position)
     target = TravelTarget(
         kind="system",
@@ -344,7 +370,11 @@ def new_game(galaxy, *, with_tutorial: bool = True) -> GameState:
     from eve_ascii.event_handlers import bootstrap_events
 
     bootstrap_events(state)
+    from eve_ascii.market import ensure_station_wallets, ensure_tutorial_station_credits
+
+    ensure_station_wallets(state)
     if with_tutorial:
+        ensure_tutorial_station_credits(state)
         init_tutorial(state)
     else:
         skip_tutorial(state)

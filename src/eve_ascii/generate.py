@@ -208,6 +208,7 @@ def build_galaxy(seed: int, num_systems: int = 72) -> Galaxy:
                 hull_id: 1
                 for hull_id in available_hulls[:rng.randint(1, min(3, len(available_hulls)))]
             }
+            credits_max = float(rng.randint(8_000, 25_000))
             stations.append(
                 Station(
                     id=f"{sid}_st0",
@@ -220,6 +221,9 @@ def build_galaxy(seed: int, num_systems: int = 72) -> Galaxy:
                         item_id: round(price * rng.uniform(0.9, 1.1), 0)
                         for item_id, price in BASE_PRICES.items()
                     },
+                    credits=credits_max * rng.uniform(0.5, 0.85),
+                    credits_max=credits_max,
+                    income_per_tick=credits_max * rng.uniform(0.012, 0.028),
                 )
             )
         asteroids = []
@@ -313,6 +317,9 @@ def galaxy_to_dict(galaxy: Galaxy) -> dict:
                         "inventory": st.inventory,
                         "prices": st.prices,
                         "hangar_inventory": st.hangar_inventory,
+                        "credits": st.credits,
+                        "credits_max": st.credits_max,
+                        "income_per_tick": st.income_per_tick,
                     }
                     for st in s.stations
                 ],
@@ -387,22 +394,30 @@ def dict_to_galaxy(data: dict) -> Galaxy:
             )
             for p in raw["planets"]
         ]
-        stations = [
-            Station(
-                id=st["id"],
-                name=st["name"],
-                planet_id=st.get("planet_id"),
-                offset=Vec3(
-                    st["offset"]["x"],
-                    st["offset"]["y"],
-                    st["offset"].get("z", 0.0),
-                ),
-                inventory=dict(st.get("inventory", {})),
-                prices=dict(st.get("prices", {})),
-                hangar_inventory=dict(st.get("hangar_inventory", {})),
+        stations = []
+        for st in raw["stations"]:
+            wallet_rng = random.Random(data.get("seed", 0) ^ hash(st["id"]) & 0xFFFFFFFF)
+            credits_max = float(st.get("credits_max", wallet_rng.randint(8_000, 25_000)))
+            stations.append(
+                Station(
+                    id=st["id"],
+                    name=st["name"],
+                    planet_id=st.get("planet_id"),
+                    offset=Vec3(
+                        st["offset"]["x"],
+                        st["offset"]["y"],
+                        st["offset"].get("z", 0.0),
+                    ),
+                    inventory=dict(st.get("inventory", {})),
+                    prices=dict(st.get("prices", {})),
+                    hangar_inventory=dict(st.get("hangar_inventory", {})),
+                    credits=float(st.get("credits", credits_max * wallet_rng.uniform(0.5, 0.85))),
+                    credits_max=credits_max,
+                    income_per_tick=float(
+                        st.get("income_per_tick", credits_max * wallet_rng.uniform(0.012, 0.028))
+                    ),
+                )
             )
-            for st in raw["stations"]
-        ]
         asteroids = [
             SystemAsteroid(
                 id=asteroid["id"],

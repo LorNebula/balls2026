@@ -22,7 +22,7 @@ TUTORIAL_CARGO_NAME = "Flagged Military Cargo"
 BASE_PRICES: dict[str, float] = {
     TUTORIAL_CARGO_ID: 1200.0,
     "scrap": 45.0,
-    "pirate_scrap": 110.0,
+    "pirate_salvage": 110.0,
     "ore": 80.0,
     "ice": 60.0,
     "reactor_upgrade": 2500.0,
@@ -33,7 +33,7 @@ BASE_PRICES: dict[str, float] = {
 ITEM_NAMES: dict[str, str] = {
     TUTORIAL_CARGO_ID: TUTORIAL_CARGO_NAME,
     "scrap": "Scrap",
-    "pirate_scrap": "Pirate salvage",
+    "pirate_salvage": "Pirate salvage",
     "ore": "Ore",
     "ice": "Ice",
     "reactor_upgrade": "Reactor upgrade",
@@ -50,6 +50,12 @@ UPGRADE_HP_BONUS = 30.0
 WEAPON_UPGRADE_DAMAGE = 10.0
 REPAIR_CREDITS_PER_HP = 4.0
 MARKET_RESTOCK_INTERVAL = 60.0
+TUTORIAL_MIN_STATION_CREDITS = 20_000.0
+BID_SPREAD = 0.72
+SUPPLY_MIN = 0.35
+SUPPLY_MAX = 2.0
+ROW_EVEN = Style(color="#ddeeff", bgcolor="#0a1520")
+ROW_ODD = Style(color="#ddeeff", bgcolor="#142030")
 
 
 def starter_cargo() -> list[CargoStack]:
@@ -58,23 +64,54 @@ def starter_cargo() -> list[CargoStack]:
     ]
 
 
-def _station_price(station, item_id: str) -> float:
+def _price_modifier(station, item_id: str) -> float:
+    return station.price_modifiers.get(item_id, 1.0)
+
+
+def ask_price(station, item_id: str) -> float:
     base = station.prices.get(item_id, BASE_PRICES.get(item_id, 100.0))
     stock = station.inventory.get(item_id, 0)
-    supply_factor = max(0.5, min(1.5, 1.0 + (20 - stock) / 50.0))
-    return round(base * supply_factor, 0)
+    supply_factor = max(SUPPLY_MIN, min(SUPPLY_MAX, 1.0 + (20 - stock) / 35.0))
+    return round(base * supply_factor * _price_modifier(station, item_id), 0)
+
+
+def bid_price(station, item_id: str) -> float:
+    return round(ask_price(station, item_id) * BID_SPREAD, 0)
+
+
+def _station_price(station, item_id: str) -> float:
+    return ask_price(station, item_id)
+
+
+def local_ask(state: GameState, item_id: str) -> float | None:
+    station = _current_station(state)
+    return ask_price(station, item_id) if station else None
+
+
+def local_bid(state: GameState, item_id: str) -> float | None:
+    station = _current_station(state)
+    return bid_price(station, item_id) if station else None
 
 
 def local_price(state: GameState, item_id: str) -> float | None:
-    station = _current_station(state)
-    return _station_price(station, item_id) if station else None
+    return local_ask(state, item_id)
 
 
 def global_price(state: GameState, item_id: str) -> float:
     stations = [station for system in state.galaxy.systems.values() for station in system.stations]
     if not stations:
         return round(BASE_PRICES.get(item_id, 100.0), 0)
-    return round(sum(_station_price(station, item_id) for station in stations) / len(stations), 0)
+    return round(sum(bid_price(station, item_id) for station in stations) / len(stations), 0)
+
+
+def _apply_station_payout(station, total: float) -> str | None:
+    if station.credits < total:
+        return (
+            f"Station treasury: need {total:.0f} cr, has {station.credits:.0f} cr "
+            f"(max {station.credits_max:.0f})."
+        )
+    station.credits -= total
+    return None
 
 
 def price_map_for_galaxy(state: GameState) -> dict[str, dict[str, float]]:
@@ -105,10 +142,14 @@ def complete_station_sale(
     item_id: str,
     item_name: str,
     quantity: int,
-) -> float:
+) -> str | None:
     """Credit player for a sale without touching cargo (courier delivery)."""
-    unit = _station_price(station, item_id)
+    unit = bid_price(station, item_id)
     total = unit * quantity
+    err = _apply_station_payout(station, total)
+    if err:
+        state.log(f"Courier sale failed at {station.name}: {err}")
+        return err
     state.player.credits += total
     station.inventory[item_id] = station.inventory.get(item_id, 0) + quantity
     _mark_tutorial_sell(state, item_id)
@@ -116,7 +157,7 @@ def complete_station_sale(
     from eve_ascii.audio import request_sound
 
     request_sound(state, "sell")
-    return total
+    return None
 
 
 def sell_at_station(
@@ -133,8 +174,11 @@ def sell_at_station(
         return "Quantity must be positive."
     if quantity > stack.quantity:
         return f"Only {stack.quantity} units available."
-    unit = _station_price(station, stack.item_id)
+    unit = bid_price(station, stack.item_id)
     total = unit * quantity
+    err = _apply_station_payout(station, total)
+    if err:
+        return err
     stack.quantity -= quantity
     if stack.quantity <= 0:
         state.player.cargo = [c for c in state.player.cargo if c.quantity > 0]
@@ -150,6 +194,29 @@ def sell_at_station(
 
 def primary_station(system):
     return system.stations[0] if system and system.stations else None
+
+
+def ensure_station_wallets(state: GameState) -> None:
+    """Backfill treasury fields for stations loaded from older galaxy JSON."""
+    rng = random.Random(state.galaxy.seed)
+    for system in state.galaxy.systems.values():
+        for station in system.stations:
+            if station.credits_max > 0 and station.income_per_tick > 0:
+                station.credits = min(station.credits, station.credits_max)
+                continue
+            station_rng = random.Random(state.galaxy.seed ^ hash(station.id) & 0xFFFFFFFF)
+            station.credits_max = float(station_rng.randint(8_000, 25_000))
+            station.credits = station.credits_max * station_rng.uniform(0.5, 0.85)
+            station.income_per_tick = station.credits_max * station_rng.uniform(0.012, 0.028)
+
+
+def ensure_tutorial_station_credits(state: GameState) -> None:
+    """Tutorial sell (10x flagged cargo) needs a station treasury that can pay bid prices."""
+    floor = TUTORIAL_MIN_STATION_CREDITS
+    for system in state.galaxy.systems.values():
+        for station in system.stations:
+            station.credits_max = max(station.credits_max, floor)
+            station.credits = max(station.credits, floor)
 
 
 def _current_station(state: GameState):
@@ -345,6 +412,10 @@ def tick(state: GameState, dt: float) -> None:
         state.market_restock_count += 1
         rng = random.Random(state.galaxy.seed + state.market_restock_count * 1_000_003)
         for station in markets:
+            station.credits = min(
+                station.credits_max,
+                station.credits + station.income_per_tick * rng.uniform(0.9, 1.1),
+            )
             trade_items = [item_id for item_id in station.prices if not item_id.endswith("_upgrade")]
             if not trade_items:
                 trade_items = [item_id for item_id in BASE_PRICES if not item_id.endswith("_upgrade")]
@@ -353,6 +424,12 @@ def tick(state: GameState, dt: float) -> None:
                 station.inventory[item_id] = min(
                     500,
                     station.inventory.get(item_id, 0) + rng.randint(2, 8),
+                )
+            for item_id in trade_items:
+                drift = rng.uniform(0.92, 1.08)
+                station.price_modifiers[item_id] = max(
+                    0.5,
+                    min(2.5, station.price_modifiers.get(item_id, 1.0) * drift),
                 )
 
 
@@ -373,6 +450,18 @@ def sell_item(state: GameState, item_ref: str, quantity: int | str) -> str | Non
     if err is None:
         state.station_view = "market"
     return err
+
+
+def max_affordable_quantity(
+    state: GameState, station, item_id: str, stock: int, space: int
+) -> int:
+    if stock <= 0 or space <= 0:
+        return 0
+    unit = ask_price(station, item_id)
+    if unit <= 0:
+        return min(stock, space)
+    by_credits = int(state.player.credits // unit)
+    return max(0, min(stock, space, by_credits))
 
 
 def buy_item(state: GameState, item_ref: str, quantity: int) -> str | None:
@@ -406,20 +495,31 @@ def buy_item(state: GameState, item_ref: str, quantity: int) -> str | None:
     available = station.inventory[item_id]
     if quantity > available:
         return f"Only {available} units in stock."
-    total = local_price(state, item_id) * quantity
-    if sum(cargo.quantity for cargo in state.player.cargo) + quantity > state.player.max_cargo:
+    used = sum(cargo.quantity for cargo in state.player.cargo)
+    space = state.player.max_cargo - used
+    if quantity > space:
         return f"Not enough cargo space (hold {state.player.max_cargo} units)."
+    unit = ask_price(station, item_id)
+    total = unit * quantity
     if state.player.credits < total:
         return f"Need {total:.0f} cr (have {state.player.credits:.0f})."
     station.inventory[item_id] -= quantity
     state.player.credits -= total
     stack = next((cargo for cargo in state.player.cargo if cargo.item_id == item_id), None)
     if stack:
+        prev_qty = stack.quantity
         stack.quantity += quantity
+        stack.avg_unit_cost = (
+            (stack.avg_unit_cost * prev_qty + unit * quantity) / stack.quantity
+            if stack.quantity
+            else unit
+        )
     else:
         from eve_ascii.models import CargoStack
 
-        state.player.cargo.append(CargoStack(item_id, ITEM_NAMES[item_id], quantity))
+        state.player.cargo.append(
+            CargoStack(item_id, ITEM_NAMES[item_id], quantity, avg_unit_cost=unit)
+        )
     state.log(f"Bought {quantity}x {ITEM_NAMES[item_id]} for {total:.0f} cr.")
     state.station_view = "market"
     return None
@@ -487,6 +587,18 @@ def repair_ship(state: GameState) -> str | None:
     return None
 
 
+def _cargo_profit_suffix(state: GameState, item_id: str) -> str:
+    stack = find_cargo(state.player, item_id)
+    station = _current_station(state)
+    if not stack or stack.avg_unit_cost <= 0 or not station:
+        return ""
+    bid = bid_price(station, item_id)
+    mult = bid / stack.avg_unit_cost if stack.avg_unit_cost > 0 else 0.0
+    if mult <= 0:
+        return ""
+    return f" x{mult:.1f}"
+
+
 def _append_table_section(
     out: Text,
     title: str,
@@ -495,6 +607,8 @@ def _append_table_section(
     state: GameState,
     width: int,
     row_limit: int,
+    *,
+    cargo_rows: bool = False,
 ) -> None:
     name_width = max(8, width - 27)
     out.append(f" {title}\n", style=Style(color="#e8b84a", bold=True))
@@ -505,15 +619,22 @@ def _append_table_section(
     if not item_ids:
         out.append(" (empty)\n", style=Style(color="#778899"))
         return
-    for item_id in item_ids[:row_limit]:
-        name = ascii_only(ITEM_NAMES.get(item_id, item_id.replace("_", " ").title()))[:name_width]
-        local = local_price(state, item_id)
+    for row_index, item_id in enumerate(item_ids[:row_limit]):
+        base_name = ascii_only(ITEM_NAMES.get(item_id, item_id.replace("_", " ").title()))
+        if cargo_rows:
+            base_name = (base_name + _cargo_profit_suffix(state, item_id))[:name_width]
+        name = base_name[:name_width]
+        if cargo_rows:
+            local = local_bid(state, item_id)
+        else:
+            local = local_ask(state, item_id)
         local_text = f"{local:.0f}" if local is not None else "--"
         global_value = global_price(state, item_id)
-        out.append(f" {name:<{name_width}}", style=Style(color="#ddeeff"))
-        out.append(f"{quantities[item_id]:>6}", style=Style(color="#ffee88"))
-        out.append(f"{local_text:>9}", style=Style(color="#88ffaa"))
-        out.append(f"{global_value:>9.0f}\n", style=Style(color="#99bbdd"))
+        row_style = ROW_EVEN if row_index % 2 == 0 else ROW_ODD
+        out.append(f" {name:<{name_width}}", style=row_style)
+        out.append(f"{quantities[item_id]:>6}", style=Style(color="#ffee88", bgcolor=row_style.bgcolor))
+        out.append(f"{local_text:>9}", style=Style(color="#88ffaa", bgcolor=row_style.bgcolor))
+        out.append(f"{global_value:>9.0f}\n", style=Style(color="#99bbdd", bgcolor=row_style.bgcolor))
     if len(item_ids) > row_limit:
         out.append(f" ... {len(item_ids) - row_limit} more\n", style=Style(color="#778899"))
 
@@ -526,7 +647,10 @@ def render_market_view(state: GameState, width: int, height: int) -> Text:
     row_limit = max(1, (height - 5) // 2)
     out = Text()
     out.append(f" {ascii_only(station.name)} MARKET ", style=Style(color="#c9a86a", bold=True))
-    out.append(f"| credits {state.player.credits:.0f} cr\n", style=Style(color="#88ccaa"))
+    out.append(
+        f"| you {state.player.credits:.0f} cr | treasury {station.credits:.0f}/{station.credits_max:.0f}\n",
+        style=Style(color="#88ccaa"),
+    )
     market_items = sorted(item_id for item_id, quantity in station.inventory.items() if quantity > 0)
     _append_table_section(
         out,
@@ -546,9 +670,10 @@ def render_market_view(state: GameState, width: int, height: int) -> Text:
         state,
         inner_width,
         row_limit,
+        cargo_rows=True,
     )
     out.append(
-        " buy <item> <qty> | sell <item> <qty|all> | repair | system\n",
+        " buy <item> <qty|all> | sell <item> <qty|all> | repair | system\n",
         style=Style(color="#668899"),
     )
     return out

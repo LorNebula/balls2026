@@ -34,23 +34,26 @@ class JumpCommand(Command):
         return bool(parts) and parts[0].lower() in ("jump", "gate")
 
     def execute(self, state: GameState, parts: list[str]) -> str | None:
-        state.map_view = "system"
-        if state.player.ship.status.value == "docked":
-            state.station_view = "system"
         args = parts[1:]
         if not args:
-            return "Usage: jump <system>"
+            return travel.jump_system(state, None)
         return travel.jump_system(state, " ".join(args))
 
     def completions(self, state: GameState) -> list[str]:
-        cmds = ["jump "]
+        cmds = ["jump"]
         ship = state.player.ship
         sys = state.galaxy.get_system(ship.location.system_id)
-        if sys:
-            for nid in sys.neighbors:
-                other = state.galaxy.get_system(nid)
-                if other:
-                    cmds.append(f"jump {ascii_only(other.name)}")
+        neighbor_ids = set(sys.neighbors) if sys else set()
+        neighbors: list[str] = []
+        others: list[str] = []
+        for system in state.galaxy.systems.values():
+            line = f"jump {ascii_only(system.name)}"
+            if system.id in neighbor_ids:
+                neighbors.append(line)
+            else:
+                others.append(line)
+        cmds.extend(sorted(neighbors, key=str.casefold))
+        cmds.extend(sorted(others, key=str.casefold)[:12])
         return cmds
 
     def palette_items(self, state: GameState) -> list[tuple[str, str]]:
@@ -74,9 +77,7 @@ class TravelCommand(Command):
         if not args:
             return "Usage: travel <x> <y> | travel up|right|down|left <units> | travel planet|station <name>"
         if args[0].lower() == "planet":
-            if len(args) < 2:
-                return "Usage: travel planet <name>"
-            return travel.travel_planet(state, " ".join(args[1:]))
+            return "Planets removed from the map. Use travel station <name> instead."
         if args[0].lower() == "station":
             if len(args) < 2:
                 return "Usage: travel station <name>"

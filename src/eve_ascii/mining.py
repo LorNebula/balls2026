@@ -58,7 +58,7 @@ def _spawn_group(
     count: int | None = None,
 ) -> int:
     spawned = 0
-    group_count = count if count is not None else rng.randint(2, 3)
+    group_count = count if count is not None else rng.randint(1, 4)
     cx = rng.uniform(-WORLD_SPAN, WORLD_SPAN)
     cy = rng.uniform(-WORLD_SPAN, WORLD_SPAN)
     for _ in range(group_count):
@@ -68,7 +68,7 @@ def _spawn_group(
         if not code:
             break
         mat = rng.choice(materials)
-        max_yield = rng.randint(5, 20)
+        max_yield = rng.randint(3, 12) + rng.randint(0, 23)
         state.asteroids.append(
             Asteroid(
                 code=code,

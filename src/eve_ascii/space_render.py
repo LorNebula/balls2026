@@ -125,13 +125,19 @@ ASTEROID_ART = [
     " (@) ",
     "/###\\",
 ]
-ASTEROID_STYLE = Style(color="#cc8844", bold=True)
-
-COMBAT_WARN = [
-    " /\\ ",
-    "/ !!\\",
+ASTEROID_MED = [
+    " [o] ",
+    "/=#=\\",
 ]
-WARN_STYLE = Style(color="#ff8800", bold=True)
+ASTEROID_LARGE = [
+    " OOO ",
+    "/#####\\",
+    "\\#####/",
+]
+ASTEROID_STYLE = Style(color="#cc8844", bold=True)
+STATION_DOCKABLE = Style(color="#88ffaa", bold=True)
+STATION_OUT_OF_RANGE = Style(color="#556677")
+
 NRG_BAR_STYLE = Style(color="#44ddff", bold=True)
 NRG_LOW_STYLE = Style(color="#ff5555", bold=True)
 HP_BAR_STYLE = Style(color="#66ff88", bold=True)
@@ -365,8 +371,12 @@ def _draw_station_markers(
     ship_x: float,
     ship_y: float,
     scale: float,
+    *,
+    ship_coords,
 ) -> None:
     """One marker per screen cluster (systems often have two stations on one planet)."""
+    from eve_ascii.travel import DOCK_RANGE
+
     placed: list[tuple[int, int]] = []
     min_dx, min_dy = 9, 4
     for st in sys.stations:
@@ -375,7 +385,11 @@ def _draw_station_markers(
         if any(abs(px - qx) < min_dx and abs(py - qy) < min_dy for qx, qy in placed):
             continue
         placed.append((px, py))
-        canvas.stamp_art(px, py, STATION_MARKER, STATION_STYLE)
+        in_range = ship_coords.distance_to(pos) <= DOCK_RANGE
+        style = STATION_DOCKABLE if in_range else STATION_OUT_OF_RANGE
+        canvas.stamp_art(px, py, STATION_MARKER, style)
+        if in_range:
+            _put_text(canvas, max(0, px - 2), py + 3, "dock", style)
 
 
 def _put_text(canvas: SpaceCanvas, x: int, y: int, text: str, style: Style) -> None:
@@ -420,16 +434,13 @@ def _draw_game_over_overlay(canvas: SpaceCanvas) -> None:
 
 def _draw_combat_hud(canvas: SpaceCanvas, state: GameState) -> None:
     w, h = canvas.width, canvas.height
-    cx = w // 2
-    canvas.stamp_art(cx, 1, COMBAT_WARN, WARN_STYLE)
-
     ship = state.player.ship
     bar_w = min(12, max(8, w // 8))
     hp, hp_max = hull_totals(ship)
     nrg_frac = ship.power / ship.max_power if ship.max_power > 0 else 0.0
     hp_frac = hp / hp_max if hp_max > 0 else 0.0
-    nrg_line = f"NRG{meter(ship.power, ship.max_power, bar_w)}"
-    hp_line = f"HP {meter(hp, hp_max, bar_w)}"
+    nrg_line = f"NRG {meter(ship.power, ship.max_power, bar_w)}"
+    hp_line = f"HP  {meter(hp, hp_max, bar_w)}"
     y_nrg = max(0, h - 2)
     y_hp = max(0, h - 1)
     _put_text(canvas, 1, y_nrg, nrg_line, _resource_style(nrg_frac, energy=True))
@@ -445,13 +456,12 @@ def _draw_combat_hud(canvas: SpaceCanvas, state: GameState) -> None:
     if not target:
         return
     thp, thp_max = hull_totals(target)
-    tnrg_frac = target.power / target.max_power if target.max_power > 0 else 0.0
-    thp_frac = thp / thp_max if thp_max > 0 else 0.0
-    tr_nrg = f"{target.letter} NRG{meter(target.power, target.max_power, bar_w)}"
-    tr_hp = f"{target.letter} HP {meter(thp, thp_max, bar_w)}"
+    tr_nrg = f"{target.letter} NRG {meter(target.power, target.max_power, bar_w)}"
+    tr_hp = f"{target.letter} HP  {meter(thp, thp_max, bar_w)}"
+    enemy_bar = Style(color="#ff5544", bold=True)
     right = w - 2
-    _put_text_right(canvas, y_nrg, tr_nrg, _resource_style(tnrg_frac, energy=True), right)
-    _put_text_right(canvas, y_hp, tr_hp, _resource_style(thp_frac, energy=False), right)
+    _put_text_right(canvas, y_nrg, tr_nrg, enemy_bar, right)
+    _put_text_right(canvas, y_hp, tr_hp, enemy_bar, right)
 
 
 def _draw_explosion(canvas: SpaceCanvas, ex: Explosion, px: int, py: int) -> None:
@@ -464,12 +474,18 @@ def _draw_explosion(canvas: SpaceCanvas, ex: Explosion, px: int, py: int) -> Non
 def asteroid_art_for_yield(asteroid: Asteroid) -> list[str]:
     if asteroid.max_yield <= 0:
         return ["*"]
+    if asteroid.max_yield >= 28:
+        base = ASTEROID_LARGE
+    elif asteroid.max_yield >= 14:
+        base = ASTEROID_MED
+    else:
+        base = ASTEROID_ART
     remaining = max(0.0, min(1.0, asteroid.yield_left / asteroid.max_yield))
-    if remaining > 0.66:
-        return ASTEROID_ART
-    if remaining > 0.33:
-        return ["[o]"]
-    return ["."]
+    if remaining <= 0.33:
+        return ["."]
+    if remaining <= 0.66 and base is ASTEROID_LARGE:
+        return ASTEROID_MED
+    return base
 
 
 def _draw_mining_beam(
@@ -509,30 +525,60 @@ def _draw_mining_beam(
         )
 
 
+def _system_in_nebula(state: GameState, system_id: str) -> bool:
+    return any(system_id in nebula.system_ids for nebula in state.galaxy.nebulae)
+
+
+def _contact_label(state: GameState, name: str, world_x: float, world_y: float, ship_x: float, ship_y: float) -> str:
+    if _system_in_nebula(state, state.player.ship.location.system_id):
+        name = "???"
+    else:
+        name = ascii_only(name)
+    dist = math.hypot(world_x - ship_x, world_y - ship_y)
+    short = name if len(name) <= 10 else name[:9] + "~"
+    return f"{short} {dist:.0f}u"
+
+
 def _draw_offscreen_indicators(
     canvas: SpaceCanvas,
+    state: GameState,
     objects: list[tuple[str, float, float]],
     ship: Ship,
     ship_x: float,
     ship_y: float,
     scale: float,
 ) -> None:
-    contacts: list[tuple[float, int, int, str]] = []
+    if state.radar_active and state.radar_contacts:
+        objects = [(c.label, c.x, c.y) for c in state.radar_contacts]
+
+    contacts: list[tuple[float, int, int, str, bool]] = []
     nearby_range = max(canvas.width, canvas.height) * 1.5
     for name, world_x, world_y in objects:
         px, py = canvas.world_to_screen(world_x, world_y, ship_x, ship_y, scale)
-        if 0 <= px < canvas.width and 0 <= py < canvas.height:
+        on_screen = 0 <= px < canvas.width and 0 <= py < canvas.height
+        if on_screen and not state.radar_active:
             continue
-        distance = math.hypot(px - canvas.anchor_x, py - canvas.anchor_y)
-        if distance <= nearby_range:
-            contacts.append((distance, px, py, ascii_only(name)))
+        screen_dist = math.hypot(px - canvas.anchor_x, py - canvas.anchor_y)
+        if not state.radar_active and screen_dist > nearby_range:
+            continue
+        label = _contact_label(state, name, world_x, world_y, ship_x, ship_y)
+        contacts.append((screen_dist, px, py, label, on_screen))
 
-    max_indicators = min(6, max(1, canvas.height // 3))
+    max_indicators = min(12 if state.radar_active else 6, max(1, canvas.height // 3))
     ship_art = player_ship_art(ship)
     ship_top = canvas.anchor_y - len(ship_art) // 2
     ship_bottom = ship_top + len(ship_art) - 1
     label_cells: set[tuple[int, int]] = set()
-    for _, px, py, name in sorted(contacts)[:max_indicators]:
+    for _, px, py, label, on_screen in sorted(contacts)[:max_indicators]:
+        if on_screen and state.radar_active:
+            _put_text(
+                canvas,
+                min(canvas.width - len(label), max(0, px)),
+                max(0, py - 2),
+                label[: min(16, canvas.width)],
+                Style(color="#aaccff", bold=True),
+            )
+            continue
         dx, dy = px - canvas.anchor_x, py - canvas.anchor_y
         if abs(dx) >= abs(dy):
             arrow = ">" if dx > 0 else "<"
@@ -544,8 +590,8 @@ def _draw_offscreen_indicators(
         style = Style(color="#ffdd77", bold=True)
         canvas.put(edge_x, edge_y, arrow, style)
 
-        label_width = max(1, min(14, canvas.width - 4))
-        label = name if len(name) <= label_width else name[:label_width - 1] + "~"
+        label_width = max(1, min(18, canvas.width - 4))
+        label = label if len(label) <= label_width else label[: label_width - 1] + "~"
         if arrow == "<":
             label_x = 1
         elif arrow == ">":
@@ -602,7 +648,9 @@ def render_docked_view(state: GameState, width: int, height: int) -> Text:
     )
     _apply_screen_flash(canvas, state)
     header = Text(f" DOCKED @ {st_name} ", style=Style(color="#c9a86a", bold=True))
-    header.append("| type undock to leave\n", style=Style(color="#8899aa"))
+    header.append("\n", style=Style())
+    menu = " market | hangar | cargo | repair | system | undock "
+    header.append(menu + "\n", style=Style(color="#88ccaa", bold=True))
     header.append(canvas.to_text())
     return header
 
@@ -663,13 +711,10 @@ def render_open_space(
         sx, sy = canvas.world_to_screen(0, 0, ship_x, ship_y, scale)
         canvas.stamp_art(sx, sy, SUN_ART, SUN_STYLE)
 
-        for planet in sys.planets:
-            pos = planet_position(planet)
-            px, py = canvas.world_to_screen(pos.x, pos.y, ship_x, ship_y, scale)
-            canvas.stamp_art(px, py, PLANET_ART, PLANET_STYLE)
-
         if show_stations:
-            _draw_station_markers(canvas, sys, ship_x, ship_y, scale)
+            _draw_station_markers(
+                canvas, sys, ship_x, ship_y, scale, ship_coords=sc
+            )
 
         if not tutorial_arena(state):
             lock_ast = ship.target_letter or ""
@@ -692,10 +737,6 @@ def render_open_space(
                     mining_target = ast
 
         offscreen_objects: list[tuple[str, float, float]] = [("Sun", 0.0, 0.0)]
-        offscreen_objects.extend(
-            (f"Planet {planet.name}", planet_position(planet).x, planet_position(planet).y)
-            for planet in sys.planets
-        )
         if show_stations:
             offscreen_objects.extend(
                 (f"Station {station.name}", station_position(sys, station).x, station_position(sys, station).y)
@@ -772,15 +813,23 @@ def render_open_space(
         subtarget=ship.subtarget,
     )
     if sys and not tutorial_arena(state):
-        _draw_offscreen_indicators(canvas, offscreen_objects, ship, ship_x, ship_y, scale)
+        _draw_offscreen_indicators(
+            canvas, state, offscreen_objects, ship, ship_x, ship_y, scale
+        )
 
     wpn = "ON" if ship.weapons_active else "off"
     mine = "ON" if state.mining_active else "off"
     title = sys.name if sys else "?"
     header = Text(f" {title} ", style=Style(color="#e8b84a", bold=True))
+    cargo_used = sum(s.quantity for s in ship.cargo)
+    combat_header = state.mode == GameMode.COMBAT and any(
+        n.alive for n in state.npc_ships
+    )
+    header_style = Style(color="#ff6644", bold=True) if combat_header else Style(color="#aaccee")
     header.append(
-        f"| {state.mode.value} lock={lock or '-'} wpn={wpn} mine={mine} ",
-        style=Style(color="#aaccee"),
+        f"| {state.mode.value} lock={lock or '-'} wpn={wpn} mine={mine} "
+        f"cargo {cargo_used}/{ship.cargo_capacity} ",
+        style=header_style,
     )
     header.append("01-04 components ", style=Style(color="#ffee66"))
     from eve_ascii.quests import current_objective
@@ -791,11 +840,11 @@ def render_open_space(
     if ship.eta_seconds > 0:
         header.append(f"eta {ship.eta_seconds:.1f}s ", style=Style(color="#88ccff"))
     header.append("\n", style=Style())
-    if state.mode == GameMode.COMBAT:
-        _draw_combat_hud(canvas, state)
     if state.game_over:
         _draw_game_over_overlay(canvas)
     _apply_screen_flash(canvas, state)
+    if state.mode == GameMode.COMBAT and any(n.alive for n in state.npc_ships):
+        _draw_combat_hud(canvas, state)
     header.append(canvas.to_text())
     return header
 
@@ -958,9 +1007,15 @@ def render_galaxy_map(state: GameState, width: int, height: int, zoom: float = 1
             for cell in lane_cells_between((x0, y0), (x1, y1)):
                 lane_cells[cell] = lane_cells.get(cell, False) or bool(active)
 
+    from eve_ascii.commands.nav_cmds import MARK_COLORS
+
     for system in state.galaxy.systems.values():
         gx, gy = screen_positions[system.id]
-        if current and system.id == current.id:
+        user = state.user_markers.get(system.id)
+        if user:
+            ch, color_key = user
+            canvas.put(gx, gy, ch, Style(color=MARK_COLORS.get(color_key, "#ffffff"), bold=True))
+        elif current and system.id == current.id:
             canvas.put(gx, gy, "@", Style(color="#00e5ff", bold=True))
         elif current and system.id in current.neighbors:
             canvas.put(gx, gy, "+", Style(color="#88ffaa", bold=True))
@@ -970,6 +1025,8 @@ def render_galaxy_map(state: GameState, width: int, height: int, zoom: float = 1
             canvas.put(gx, gy, "*", Style(color="#88aaff"))
         else:
             canvas.put(gx, gy, ".", Style(color="#667788"))
+        if system.stations and 0 <= gy + 1 < map_height:
+            canvas.put(gx, gy + 1, "S", STATION_STYLE)
 
     for (x, y), active in lane_cells.items():
         existing = canvas.cells[y][x]
