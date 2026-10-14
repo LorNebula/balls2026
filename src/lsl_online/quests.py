@@ -10,6 +10,8 @@ from lsl_online.market import ITEM_NAMES
 from lsl_online.materials import MATERIALS
 from lsl_online.models import GameState, Quest, QuestStatus, TutorialStep
 
+from lsl_online import mining
+
 MAX_QUEST_TRAVEL_HOPS = 5
 
 QUEST_REWARDS: dict[str, float] = {
@@ -73,7 +75,7 @@ def generate_quest_board(state: GameState) -> list[Quest]:
     )
 
     mine_sys = systems[1 % len(systems)]
-    mat = rng.choice(MATERIALS)
+    mat = _pick_mine_material_for_system(state, mine_sys.id, rng)
     mine_qty = rng.randint(6, 12)
     quests.append(
         Quest(
@@ -91,49 +93,43 @@ def generate_quest_board(state: GameState) -> list[Quest]:
     )
 
     trade_sys = systems[2 % len(systems)]
-    station = trade_sys.stations[0]
-    trade_items = [
-        item_id
-        for item_id, qty in station.inventory.items()
-        if qty > 0 and not item_id.endswith("_upgrade") and item_id != "flagged_cargo"
-    ]
-    if not trade_items:
-        trade_items = [m.id for m in MATERIALS[:4]]
-    buy_item = rng.choice(trade_items)
-    buy_qty = rng.randint(3, 8)
-    buy_name = ITEM_NAMES.get(buy_item, buy_item)
-    quests.append(
-        Quest(
-            id="q_buy_contract",
-            title=f"Procurement run",
-            summary=(
-                f"Buy {buy_qty}x {ascii_only(buy_name)} at a station in "
-                f"{ascii_only(trade_sys.name)}."
-            ),
-            kind="buy",
-            target_system_id=trade_sys.id,
-            target_item_id=buy_item,
-            target_count=buy_qty,
+    buy_pick = _pick_buy_item_for_system(trade_sys, rng)
+    if buy_pick:
+        buy_item, buy_qty = buy_pick
+        buy_name = ITEM_NAMES.get(buy_item, buy_item)
+        quests.append(
+            Quest(
+                id="q_buy_contract",
+                title=f"Procurement run",
+                summary=(
+                    f"Buy {buy_qty}x {ascii_only(buy_name)} at a station in "
+                    f"{ascii_only(trade_sys.name)}."
+                ),
+                kind="buy",
+                target_system_id=trade_sys.id,
+                target_item_id=buy_item,
+                target_count=buy_qty,
+            )
         )
-    )
 
     sell_sys = systems[3 % len(systems)]
-    sell_mat = rng.choice(MATERIALS)
-    sell_qty = rng.randint(4, 10)
-    quests.append(
-        Quest(
-            id="q_sell_contract",
-            title=f"Market offload",
-            summary=(
-                f"Sell {sell_qty}x {ascii_only(sell_mat.name)} at a station in "
-                f"{ascii_only(sell_sys.name)}."
-            ),
-            kind="sell",
-            target_system_id=sell_sys.id,
-            target_item_id=sell_mat.id,
-            target_count=sell_qty,
+    sell_pick = _pick_sell_item_for_system(sell_sys, rng)
+    if sell_pick:
+        sell_mat, sell_qty = sell_pick
+        quests.append(
+            Quest(
+                id="q_sell_contract",
+                title=f"Market offload",
+                summary=(
+                    f"Sell {sell_qty}x {ascii_only(sell_mat.name)} at a station in "
+                    f"{ascii_only(sell_sys.name)}."
+                ),
+                kind="sell",
+                target_system_id=sell_sys.id,
+                target_item_id=sell_mat.id,
+                target_count=sell_qty,
+            )
         )
-    )
 
     return quests
 
@@ -202,12 +198,45 @@ def _next_count(previous: Quest | None, kind: str, fallback: int) -> int:
 
 
 def _station_trade_items(station) -> list[str]:
-    trade_items = [
+    return [
         item_id
         for item_id, qty in station.inventory.items()
         if qty > 0 and not item_id.endswith("_upgrade") and item_id != "flagged_cargo"
     ]
-    return trade_items or [m.id for m in MATERIALS[:4]]
+
+
+def _station_market_items(station) -> list[str]:
+    keys = set(station.inventory) | set(station.prices)
+    return [
+        item_id
+        for item_id in keys
+        if not item_id.endswith("_upgrade") and item_id != "flagged_cargo"
+    ]
+
+
+def _pick_buy_item_for_system(system, rng: random.Random) -> tuple[str, int] | None:
+    if not system.stations:
+        return None
+    station = system.stations[0]
+    trade_items = _station_trade_items(station)
+    if not trade_items:
+        return None
+    buy_item = rng.choice(trade_items)
+    buy_qty = rng.randint(3, min(8, station.inventory.get(buy_item, 8)))
+    buy_qty = max(3, buy_qty)
+    return buy_item, buy_qty
+
+
+def _pick_sell_item_for_system(system, rng: random.Random) -> tuple[str, int] | None:
+    if not system.stations:
+        return None
+    station = system.stations[0]
+    sell_items = _station_market_items(station)
+    if not sell_items:
+        return None
+    sell_item = rng.choice(sell_items)
+    sell_qty = rng.randint(4, 10)
+    return sell_item, sell_qty
 
 
 def generate_followup_quest(
@@ -239,8 +268,7 @@ def generate_followup_quest(
         mine_sys = _pick_quest_system(state, rng)
         if not mine_sys:
             return None
-        weights = [max(1, m.rarity * (1 + tier * 0.15)) for m in MATERIALS]
-        mat = rng.choices(list(MATERIALS), weights=weights, k=1)[0]
+        mat = _pick_mine_material_for_system(state, mine_sys.id, rng, tier=tier)
         mine_qty = _next_count(previous, "mine", 10)
         return Quest(
             id=_new_quest_id("mine", tier, rng),
@@ -258,10 +286,12 @@ def generate_followup_quest(
 
     if kind == "buy":
         trade_sys = _pick_quest_system(state, rng)
-        if not trade_sys or not trade_sys.stations:
+        if not trade_sys:
             return None
-        station = trade_sys.stations[0]
-        buy_item = rng.choice(_station_trade_items(station))
+        buy_pick = _pick_buy_item_for_system(trade_sys, rng)
+        if not buy_pick:
+            return None
+        buy_item, _ = buy_pick
         buy_qty = _next_count(previous, "buy", 5)
         buy_name = ITEM_NAMES.get(buy_item, buy_item)
         return Quest(
@@ -282,19 +312,22 @@ def generate_followup_quest(
         sell_sys = _pick_quest_system(state, rng)
         if not sell_sys:
             return None
-        rare_pool = [m for m in MATERIALS if m.rarity >= min(5, 2 + tier // 3)]
-        sell_mat = rng.choice(rare_pool or list(MATERIALS))
+        sell_pick = _pick_sell_item_for_system(sell_sys, rng)
+        if not sell_pick:
+            return None
+        sell_item, _ = sell_pick
         sell_qty = _next_count(previous, "sell", 6)
+        sell_name = ITEM_NAMES.get(sell_item, sell_item)
         return Quest(
             id=_new_quest_id("sell", tier, rng),
             title=f"Market offload tier {tier}",
             summary=(
-                f"Sell {sell_qty}x {ascii_only(sell_mat.name)} at a station in "
+                f"Sell {sell_qty}x {ascii_only(sell_name)} at a station in "
                 f"{ascii_only(sell_sys.name)}."
             ),
             kind="sell",
             target_system_id=sell_sys.id,
-            target_item_id=sell_mat.id,
+            target_item_id=sell_item,
             target_count=sell_qty,
             tier=tier,
         )
@@ -344,6 +377,57 @@ def _replace_completed_quest(state: GameState, completed: Quest) -> None:
 
 def _active_quests(state: GameState) -> list[Quest]:
     return [q for q in state.quests if q.status == QuestStatus.ACTIVE]
+
+
+def _pick_mine_material_for_system(
+    state: GameState,
+    system_id: str,
+    rng: random.Random,
+    *,
+    tier: int = 0,
+):
+    pool = mining.system_materials(state, system_id)
+    if not pool:
+        return MATERIALS[0]
+    if tier > 0:
+        weights = [max(1, m.rarity * (1 + tier * 0.15)) for m in pool]
+        return rng.choices(pool, weights=weights, k=1)[0]
+    return rng.choice(pool)
+
+
+def active_buy_quantities_needed(state: GameState, system_id: str) -> dict[str, int]:
+    """Item id -> minimum stock needed for active buy quests in this system."""
+    needed: dict[str, int] = {}
+    for quest in _active_quests(state):
+        if quest.kind != "buy":
+            continue
+        if quest.target_system_id != system_id:
+            continue
+        if not quest.target_item_id:
+            continue
+        remaining = max(0, quest.target_count - quest.progress)
+        if remaining <= 0:
+            continue
+        needed[quest.target_item_id] = max(
+            needed.get(quest.target_item_id, 0),
+            remaining + 5,
+        )
+    return needed
+
+
+def active_mine_materials_needed(state: GameState, system_id: str) -> set[str]:
+    """Material ids still required by active mine quests in this system."""
+    needed: set[str] = set()
+    for quest in _active_quests(state):
+        if quest.kind != "mine":
+            continue
+        if quest.target_system_id != system_id:
+            continue
+        if quest.progress >= quest.target_count:
+            continue
+        if quest.target_material_id:
+            needed.add(quest.target_material_id)
+    return needed
 
 
 def bounty_kills_remaining_in_system(state: GameState, system_id: str) -> int:
@@ -525,6 +609,17 @@ def start_quest(state: GameState, quest_ref: str) -> str | None:
             quest.progress = 0
             state.log(f"Quest started: {quest.title}")
             state.log(quest_progress_label(quest))
+            if (
+                quest.target_system_id
+                and quest.target_system_id == state.player.system_id
+                and state.tutorial_step == TutorialStep.DONE
+            ):
+                if quest.kind == "mine":
+                    mining.ensure_mine_quest_asteroids(state, quest.target_system_id)
+                elif quest.kind == "buy":
+                    from lsl_online.market import ensure_buy_quest_stock
+
+                    ensure_buy_quest_stock(state, quest.target_system_id)
             return None
     return f"Quest not found: {quest_ref}"
 

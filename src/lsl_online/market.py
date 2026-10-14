@@ -87,9 +87,15 @@ def bid_price(station, item_id: str) -> float:
     return round(base * supply_factor * bid_mod * BID_SPREAD, 0)
 
 
-def effective_sell_unit(station, item_id: str, avg_unit_cost: float = 0.0) -> float:
+def effective_sell_unit(
+    station,
+    item_id: str,
+    avg_unit_cost: float = 0.0,
+    *,
+    same_station_as_purchase: bool = False,
+) -> float:
     unit = bid_price(station, item_id)
-    if avg_unit_cost > 0:
+    if same_station_as_purchase and avg_unit_cost > 0:
         unit = min(unit, avg_unit_cost * SAME_STATION_SELL_CAP)
     return unit
 
@@ -189,7 +195,15 @@ def sell_at_station(
         return "Quantity must be positive."
     if quantity > stack.quantity:
         return f"Only {stack.quantity} units available."
-    unit = effective_sell_unit(station, stack.item_id, stack.avg_unit_cost)
+    same_station = (
+        stack.last_buy_station_id is not None and stack.last_buy_station_id == station.id
+    )
+    unit = effective_sell_unit(
+        station,
+        stack.item_id,
+        stack.avg_unit_cost,
+        same_station_as_purchase=same_station,
+    )
     total = unit * quantity
     err = _apply_station_payout(station, total)
     if err:
@@ -216,20 +230,48 @@ def primary_station(system):
 
 def ensure_station_wallets(state: GameState) -> None:
     """Backfill treasury fields for stations loaded from older galaxy JSON."""
-    rng = random.Random(state.galaxy.seed)
     for system in state.galaxy.systems.values():
         for station in system.stations:
+            station_rng = random.Random(state.galaxy.seed ^ hash(station.id) & 0xFFFFFFFF)
             if station.credits_max > 0 and station.income_per_tick > 0:
                 station.credits = min(station.credits, station.credits_max)
-                continue
-            station_rng = random.Random(state.galaxy.seed ^ hash(station.id) & 0xFFFFFFFF)
-            station.credits_max = float(station_rng.randint(8_000, 25_000))
-            station.credits = station.credits_max * station_rng.uniform(0.5, 0.85)
-            station.income_per_tick = station.credits_max * station_rng.uniform(0.012, 0.028)
+            else:
+                station.credits_max = float(station_rng.randint(8_000, 25_000))
+                station.credits = station.credits_max * station_rng.uniform(0.5, 0.85)
+                station.income_per_tick = station.credits_max * station_rng.uniform(0.012, 0.028)
             for item_id in BASE_PRICES:
                 if item_id.endswith("_upgrade"):
                     continue
-                station.price_modifiers[item_id] = station_rng.uniform(0.55, 1.65)
+                if item_id not in station.price_modifiers:
+                    station.price_modifiers[item_id] = station_rng.uniform(0.55, 1.65)
+
+
+def ensure_buy_quest_stock(state: GameState, system_id: str) -> None:
+    """Restock stations for active buy contracts in this system."""
+    from lsl_online.quests import active_buy_quantities_needed
+
+    needed = active_buy_quantities_needed(state, system_id)
+    if not needed:
+        return
+    system = state.galaxy.get_system(system_id)
+    if not system or not system.stations:
+        return
+    restocked: list[str] = []
+    for station in system.stations:
+        for item_id, min_qty in needed.items():
+            have = station.inventory.get(item_id, 0)
+            if have >= min_qty:
+                continue
+            if item_id not in station.inventory:
+                station.inventory[item_id] = 0
+            if item_id not in station.prices:
+                station.prices[item_id] = BASE_PRICES.get(item_id, 100.0)
+            station.inventory[item_id] = min_qty + 10
+            if item_id not in restocked:
+                restocked.append(item_id)
+    if restocked:
+        names = ", ".join(ITEM_NAMES.get(i, i) for i in restocked[:3])
+        state.log(f"CONTRACT: market restocked for buy quest ({names}).")
 
 
 def ensure_tutorial_station_credits(state: GameState) -> None:
@@ -555,6 +597,10 @@ def buy_item(state: GameState, item_ref: str, quantity: int) -> str | None:
     stack = next((cargo for cargo in state.player.cargo if cargo.item_id == item_id), None)
     if stack:
         prev_qty = stack.quantity
+        if stack.last_buy_station_id and stack.last_buy_station_id != station.id:
+            stack.last_buy_station_id = None
+        else:
+            stack.last_buy_station_id = station.id
         stack.quantity += quantity
         stack.avg_unit_cost = (
             (stack.avg_unit_cost * prev_qty + unit * quantity) / stack.quantity
@@ -565,7 +611,13 @@ def buy_item(state: GameState, item_ref: str, quantity: int) -> str | None:
         from lsl_online.models import CargoStack
 
         state.player.cargo.append(
-            CargoStack(item_id, ITEM_NAMES[item_id], quantity, avg_unit_cost=unit)
+            CargoStack(
+                item_id,
+                ITEM_NAMES[item_id],
+                quantity,
+                avg_unit_cost=unit,
+                last_buy_station_id=station.id,
+            )
         )
     state.log(f"Bought {quantity}x {ITEM_NAMES[item_id]} for {total:.0f} cr ({unit:.0f}/ea).")
     from lsl_online.quests import note_market_buy
@@ -664,7 +716,15 @@ def _cargo_profit_suffix(state: GameState, item_id: str) -> str:
     station = _current_station(state)
     if not stack or stack.avg_unit_cost <= 0 or not station:
         return ""
-    unit = effective_sell_unit(station, item_id, stack.avg_unit_cost)
+    same_station = (
+        stack.last_buy_station_id is not None and stack.last_buy_station_id == station.id
+    )
+    unit = effective_sell_unit(
+        station,
+        item_id,
+        stack.avg_unit_cost,
+        same_station_as_purchase=same_station,
+    )
     mult = unit / stack.avg_unit_cost
     if mult <= 0:
         return ""
@@ -700,7 +760,16 @@ def _append_table_section(
             stack = find_cargo(state.player, item_id)
             station = _current_station(state)
             if stack and station:
-                local = effective_sell_unit(station, item_id, stack.avg_unit_cost)
+                same_station = (
+                    stack.last_buy_station_id is not None
+                    and stack.last_buy_station_id == station.id
+                )
+                local = effective_sell_unit(
+                    station,
+                    item_id,
+                    stack.avg_unit_cost,
+                    same_station_as_purchase=same_station,
+                )
             else:
                 local = local_bid(state, item_id)
         else:

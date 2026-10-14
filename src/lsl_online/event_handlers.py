@@ -14,6 +14,10 @@ from lsl_online.quests import bounty_kills_remaining_in_system
 def _on_entered_system(state: GameState, *, system_id: str, system_name: str) -> None:
     if state.tutorial_step == TutorialStep.DONE:
         mining.fill_asteroid_field(state)
+        mining.ensure_mine_quest_asteroids(state, system_id)
+        from lsl_online.market import ensure_buy_quest_stock
+
+        ensure_buy_quest_stock(state, system_id)
     if state.tutorial_step != TutorialStep.DONE:
         return
     ship = state.player.ship
