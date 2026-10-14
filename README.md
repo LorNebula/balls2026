@@ -1,6 +1,8 @@
 # LSL ONLINE
 
-LSL ONLINE — ASCII terminal space trading: tutorial, combat, travel, quests. Finnish-inspired galaxy, Python + Textual.
+LSL ONLINE is an ASCII terminal space trading with, combat, travel, quests and most imporatantly: trading and scripts. 
+Plays in Finnish-inspired galaxy where you play as an LSL driver (now a spaceship driver).
+Uses Python + Textual.
 
 ## Play
 
@@ -33,20 +35,9 @@ textual run --dev src/lsl_online/app.py
 
 ## Controls
 
-- `:` — focus command line (always visible at bottom)
 - `Tab` / `Right` — accept inline completion ghost text
 - `Up` / `Down` — browse command history and restore the current draft
-- Enter commands at the prompt: `galaxy`, `system`, `zoom in`, `zoom out`, `help`, `quit`
-
-## UI (ASCII)
-
-The game UI uses **7-bit ASCII** characters only (`+`, `-`, `|`, letters, digits). ANSI colors (Rich) add contrast; there are no Unicode box-drawing characters.
-
-- **Top and bottom bars** — single-line `| ... |` chrome (title + footer).
-- **Playfield** — map and event log share one `+---|` frame (map ~2/3, log ~1/3).
-- **Status, command input, completions** — plain ASCII lines (no extra `| ... |` bars).
-
-Open-space view: your ship stays left-center; world scrolls around it with ASCII ship shapes and colors.
+- Enter commands at the prompt (look below)
 
 ## Commands (`:` line)
 
@@ -74,7 +65,3 @@ Open-space view: your ship stays left-center; world scrolls around it with ASCII
 | `fire` / `cease` | Start / stop lasers |
 | `comms` | Show inbox (Commander Crosshair) |
 | `quests` / `quest start <id>` / `quest status` | Quest board |
-
-New games start the **tutorial** (hyperspace → pirate fight → jump → galaxy → quests). During combat try: `lock A`, `fire`.
-
-The default galaxy has 72 systems arranged in a central ring and spiral arms, with each arm connecting only to the ring. Every generated station has a hangar with a small ship selection. Station markets stock a rotating selection of pirate salvage and asteroid minerals; prices respond to supply. Use `skip` to bypass the opening tutorial. Asteroid fields appear in some systems without stations. Lock an asteroid and fire to mine ore; mined asteroids stay depleted for the current game session. Galaxy generation is deterministic for a seed; regenerate with `python scripts/generate_galaxy.py --seed <seed>`.
