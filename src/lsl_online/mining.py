@@ -237,6 +237,9 @@ def _tick_mining(state: GameState, dt: float) -> None:
     ship.mine_cooldown = MINE_INTERVAL
     if state.tutorial_step == TutorialStep.MINE:
         state.tutorial_mined_units += added
+    from lsl_online.quests import note_mined
+
+    note_mined(state, ast.material_id, added)
     state.log(f"Mined 1x {ast.material_id} -> hold ({ast.yield_left} left on {ast.code})")
     if added > 0 and _pickup_sound_timer <= 0:
         from lsl_online.audio import request_sound

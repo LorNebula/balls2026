@@ -186,6 +186,9 @@ def sell_at_station(
     station.inventory[stack.item_id] = station.inventory.get(stack.item_id, 0) + quantity
     state.log(f"Sold {quantity}x {stack.name} for {total:.0f} cr ({unit:.0f}/ea).")
     _mark_tutorial_sell(state, stack.item_id)
+    from lsl_online.quests import note_market_sell
+
+    note_market_sell(state, stack.item_id, quantity)
     from lsl_online.audio import request_sound
 
     request_sound(state, "sell")
@@ -521,6 +524,9 @@ def buy_item(state: GameState, item_ref: str, quantity: int) -> str | None:
             CargoStack(item_id, ITEM_NAMES[item_id], quantity, avg_unit_cost=unit)
         )
     state.log(f"Bought {quantity}x {ITEM_NAMES[item_id]} for {total:.0f} cr.")
+    from lsl_online.quests import note_market_buy
+
+    note_market_buy(state, item_id, quantity)
     state.station_view = "market"
     return None
 

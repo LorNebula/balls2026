@@ -345,6 +345,10 @@ def _destroy_npc(state: GameState, npc: NpcShip, *, reason: str) -> None:
 
     request_sound(state, "explosion")
     state.log(reason)
+    if npc.hostile and not npc.asteroid:
+        from lsl_online.quests import note_hostile_kill
+
+        note_hostile_kill(state)
     if npc.asteroid and npc.asteroid_id:
         from lsl_online.models import CargoStack
 

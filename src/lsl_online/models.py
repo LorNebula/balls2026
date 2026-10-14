@@ -326,6 +326,12 @@ class Quest:
     title: str
     summary: str
     status: QuestStatus = QuestStatus.AVAILABLE
+    kind: str = "generic"
+    target_system_id: str | None = None
+    target_material_id: str | None = None
+    target_item_id: str | None = None
+    target_count: int = 1
+    progress: int = 0
 
 
 @dataclass
@@ -430,6 +436,7 @@ class GameState:
     galaxy_zoom: float = 1.0
     nav_path: list[str] = field(default_factory=list)
     nav_path_goal: str | None = None
+    pending_jump_from_id: str | None = None
     user_markers: dict[str, tuple[str, str]] = field(default_factory=dict)
     radar_contacts: list[RadarContact] = field(default_factory=list)
     star_scroll: float = 0.0

@@ -175,6 +175,7 @@ def jump_system(state: GameState, system_name: str | None = None) -> str | None:
     if ship.fuel < ship.fuel_per_jump:
         return f"Not enough fuel (need {ship.fuel_per_jump:.0f}, have {ship.fuel:.0f})."
     ship.fuel -= ship.fuel_per_jump
+    state.pending_jump_from_id = sys.id
     _sync_nav_path_after_jump(state, dest.id)
     state.map_view = "system"
     state.station_view = "system"
@@ -228,6 +229,9 @@ def dock(state: GameState) -> str | None:
     ship.eta_seconds = 0.0
     state.station_view = "hangar"
     state.log(f"Docked at {best.name}")
+    from lsl_online.quests import note_docked
+
+    note_docked(state)
     return None
 
 
@@ -282,6 +286,10 @@ def _arrive_at_target(state: GameState, target: TravelTarget, dest: Vec3) -> Non
                 system_id=dest_sys.id,
                 system_name=dest_sys.name,
             )
+            from lsl_online.quests import note_jump_arrived
+
+            note_jump_arrived(state, dest_sys.id, state.pending_jump_from_id)
+            state.pending_jump_from_id = None
     elif target.kind == "planet" and target.planet_id:
         system = state.galaxy.get_system(target.system_id)
         planet = next(
