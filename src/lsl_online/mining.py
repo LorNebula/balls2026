@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import random
 import re
 
@@ -142,6 +143,64 @@ def fill_asteroid_field(state: GameState) -> None:
         _spawn_group(state, system_id, materials, rng, rim_tier=rim)
         if _alive_count(state) == before:
             break
+
+
+def ensure_mine_quest_asteroids(state: GameState, system_id: str) -> None:
+    """Spawn asteroids for active mine-contract materials missing from the field."""
+    from lsl_online.materials import MATERIALS
+    from lsl_online.quests import active_mine_materials_needed
+    from lsl_online.travel import current_ship_coords
+
+    needed = active_mine_materials_needed(state, system_id)
+    if not needed:
+        return
+    present = {a.material_id for a in state.asteroids if a.alive}
+    missing = needed - present
+    if not missing:
+        return
+    mat_by_id = {m.id: m for m in MATERIALS}
+    sc = current_ship_coords(state)
+    rng = _system_rng(state, system_id + ":mine_quest")
+    from lsl_online.galaxy import system_rim_tier
+
+    rim = system_rim_tier(state.galaxy, system_id)
+    logged: set[str] = set()
+    for material_id in sorted(missing):
+        mat = mat_by_id.get(material_id)
+        if not mat:
+            continue
+        spawn_count = min(3, ASTEROID_CAP - _alive_count(state))
+        if spawn_count <= 0:
+            break
+        for index in range(spawn_count):
+            if _alive_count(state) >= ASTEROID_CAP:
+                break
+            code = _next_code(state)
+            if not code:
+                break
+            angle = rng.uniform(0, 6.283)
+            dist = rng.uniform(140.0, 220.0) + index * 25.0
+            max_yield = rng.randint(8, 16) + int(rim * 10)
+            state.asteroids.append(
+                Asteroid(
+                    code=code,
+                    material_id=mat.id,
+                    material_name=mat.name,
+                    position=Vec3(
+                        sc.x + dist * math.cos(angle),
+                        sc.y + dist * math.sin(angle),
+                        0.0,
+                    ),
+                    yield_left=max_yield,
+                    max_yield=max_yield,
+                )
+            )
+        if material_id not in logged:
+            logged.add(material_id)
+            state.log(
+                f"CONTRACT: {mat.name} asteroids on scope for mining quest "
+                f"({spawn_count} contact(s))."
+            )
 
 
 def distance_to_asteroid(state: GameState, ast: Asteroid) -> float:

@@ -354,6 +354,7 @@ class CargoStack:
     name: str
     quantity: int
     avg_unit_cost: float = 0.0
+    last_buy_station_id: str | None = None
 
 
 @dataclass
