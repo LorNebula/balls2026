@@ -43,6 +43,9 @@ PLAYER_HIT_RADIUS = 35.0
 PIRATE_HIT_DAMAGE = 22.0 * 0.7  # laser damage only; hull/shields unchanged
 PIRATE_ENGAGE_DELAY = 9.0
 PROJECTILE_TTL = 2.0
+# World units: hostiles only fire inside this radius; combat drops when none are this close.
+COMBAT_WEAPON_RANGE = 420.0
+COMBAT_ENGAGE_RANGE = 420.0
 
 
 
@@ -189,6 +192,41 @@ def all_hostiles_dead(state: GameState) -> bool:
     return not any(n.alive and n.hostile for n in state.npc_ships)
 
 
+def _distance_to_player(state: GameState, npc: NpcShip) -> float:
+    px, py = current_ship_xy(state)
+    return math.hypot(npc.position.x - px, npc.position.y - py)
+
+
+def _any_hostile_in_range(state: GameState, weapon_range: float) -> bool:
+    return any(
+        n.alive and n.hostile and not n.asteroid
+        and _distance_to_player(state, n) <= weapon_range
+        for n in state.npc_ships
+    )
+
+
+def _leave_combat(state: GameState, message: str | None = None) -> None:
+    state.mode = GameMode.SPACE
+    ship = state.player.ship
+    ship.weapons_active = False
+    if message:
+        state.log(message)
+
+
+def _update_combat_engagement(state: GameState) -> None:
+    has_hostiles = any(
+        n.alive and n.hostile and not n.asteroid for n in state.npc_ships
+    )
+    in_range = _any_hostile_in_range(state, COMBAT_ENGAGE_RANGE)
+    if state.mode == GameMode.COMBAT:
+        if not has_hostiles or all_hostiles_dead(state):
+            _leave_combat(state)
+        elif not in_range:
+            _leave_combat(state, "Combat ended — hostiles out of range.")
+    elif has_hostiles and in_range:
+        state.mode = GameMode.COMBAT
+
+
 def tick_projectiles(state: GameState, dt: float) -> None:
     """Move lasers and expire by TTL (runs outside combat too while shots are in flight)."""
     if not state.projectiles:
@@ -222,6 +260,7 @@ def tick(state: GameState, dt: float) -> None:
     tick_projectiles(state, dt)
     if state.game_over:
         return
+    _update_combat_engagement(state)
     if state.mode != GameMode.COMBAT:
         return
     state.combat_time += dt
@@ -242,7 +281,11 @@ def tick(state: GameState, dt: float) -> None:
                 state.log("Weapons destroyed.")
         elif ship.fire_cooldown <= 0 and ship.target_letter:
             npc = _npc_by_letter(state, ship.target_letter)
-            if npc and try_fire_shot(ship):
+            if (
+                npc
+                and _distance_to_player(state, npc) <= COMBAT_WEAPON_RANGE
+                and try_fire_shot(ship)
+            ):
                 ship.fire_cooldown = weapon_charge_seconds(ship)
                 ship.power_starve_logged = False
                 _spawn_laser(state, npc.position.x, npc.position.y, npc.letter)
@@ -255,11 +298,6 @@ def tick(state: GameState, dt: float) -> None:
     if _player_ship_destroyed(state.player.ship):
         _handle_player_game_over(state)
         return
-    if state.npc_ships and all_hostiles_dead(state):
-        state.mode = GameMode.SPACE
-        state.player.ship.weapons_active = False
-
-
 def _alive_components(vessel: Ship | NpcShip) -> list:
     return [c for c in vessel.components if not c.destroyed]
 
@@ -350,6 +388,8 @@ def _tick_hostile_fire(state: GameState, dt: float) -> None:
             tick_weapon_recharge(npc, dt)
             continue
         if not weapons_online(npc) or is_powerless(npc):
+            continue
+        if _distance_to_player(state, npc) > COMBAT_WEAPON_RANGE:
             continue
         if try_fire_shot(npc):
             npc.fire_cooldown = weapon_charge_seconds(npc) * 0.9
