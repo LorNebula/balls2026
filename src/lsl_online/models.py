@@ -428,12 +428,12 @@ class GameState:
     tutorial_upgraded_reactor: bool = False
     tutorial_upgraded_weapons: bool = False
     screen_flash: float = 0.0
-    station_view: str = "hangar"
+    station_view: str = "market"
     market_restock_timer: float = 0.0
     market_restock_count: int = 0
     map_view: Literal["system", "galaxy"] = "system"
     system_zoom: float = 4.0
-    galaxy_zoom: float = 1.0
+    galaxy_zoom: float = 5.0
     nav_path: list[str] = field(default_factory=list)
     nav_path_goal: str | None = None
     pending_jump_from_id: str | None = None

@@ -3,11 +3,20 @@
 from __future__ import annotations
 
 from lsl_online.commands.registry import completion_candidates as _completion_candidates
-from lsl_online.models import GameState
+from lsl_online.models import GameState, ShipStatus
 
 
 def completion_candidates(state: GameState) -> list[str]:
     return _completion_candidates(state)
+
+
+def _contextual_empty_completions(state: GameState, limit: int = 5) -> list[str]:
+    ship = state.player.ship
+    if ship.status == ShipStatus.DOCKED:
+        return ["market", "hangar", "cargo", "repair", "system"][:limit]
+    if state.map_view == "galaxy":
+        return ["galaxy", "system", "path ", "mark ", "zoom in"][:limit]
+    return ["travel", "radar", "lock", "mine", "jump"][:limit]
 
 
 def _sort_jump_completions(state: GameState, hits: list[str]) -> list[str]:
@@ -36,7 +45,7 @@ def _sort_jump_completions(state: GameState, hits: list[str]) -> list[str]:
 def matching_completions(state: GameState, partial: str, limit: int = 5) -> list[str]:
     text = partial.strip()
     if not text:
-        return completion_candidates(state)[:limit]
+        return _contextual_empty_completions(state, limit)
     key = text.casefold()
     hits = [c for c in completion_candidates(state) if c.casefold().startswith(key)]
     if hits:

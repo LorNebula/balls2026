@@ -12,6 +12,7 @@ from lsl_online.space_render import tutorial_arena
 ASTEROID_CAP = 9
 RESPAWN_INTERVAL = 8.0
 MINE_INTERVAL = 1.0
+MINE_RANGE = 150.0
 PICKUP_SOUND_COOLDOWN = 0.3
 WORLD_SPAN = 600.0
 _pickup_sound_timer = 0.0
@@ -132,6 +133,13 @@ def fill_asteroid_field(state: GameState) -> None:
             break
 
 
+def distance_to_asteroid(state: GameState, ast: Asteroid) -> float:
+    from lsl_online.travel import current_ship_coords
+
+    here = current_ship_coords(state)
+    return here.distance_to(ast.position)
+
+
 def asteroid_by_code(state: GameState, code: str) -> Asteroid | None:
     key = code.upper()
     return next((a for a in state.asteroids if a.alive and a.code.upper() == key), None)
@@ -174,6 +182,8 @@ def start_mining(state: GameState) -> str | None:
     ast = asteroid_by_code(state, ship.target_letter)
     if not ast:
         return "Locked asteroid is gone."
+    if distance_to_asteroid(state, ast) > MINE_RANGE:
+        return f"Too far to mine (max {MINE_RANGE:.0f}u). Travel closer."
     state.mining_active = True
     state.log(f"Mining laser on {ast.code} ({ast.material_id}).")
     return None
@@ -225,6 +235,13 @@ def _tick_mining(state: GameState, dt: float) -> None:
     if not ast:
         state.mining_active = False
         state.log("Mining target lost.")
+        return
+    if distance_to_asteroid(state, ast) > MINE_RANGE:
+        state.mining_active = False
+        state.log("Mining target out of range.")
+        from lsl_online.audio import stop_all_loops
+
+        stop_all_loops()
         return
     if ship.mine_cooldown > 0:
         return

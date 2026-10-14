@@ -131,7 +131,10 @@ class MarkCommand(Command):
         return None
 
     def completions(self, state: GameState) -> list[str]:
-        cmds = ["mark list", "mark clear "]
+        cmds = ["mark ", "mark list", "mark clear "]
+        for system in list(state.galaxy.systems.values())[:8]:
+            name = ascii_only(system.name)
+            cmds.append(f"mark {name} * red")
         for color in sorted(MARK_COLORS):
             cmds.append(f"mark * {color}")
         return cmds

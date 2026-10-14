@@ -53,9 +53,14 @@ def _set_warp(state: GameState, target: TravelTarget, dest: Vec3) -> str | None:
     if dist < 1.0:
         _arrive_at_target(state, target, dest)
         return None
+    from lsl_online import mining
+    from lsl_online.vfx import trigger_flash
+
+    mining.cease_mining(state)
     ship.destination = target
     ship.eta_seconds = dist / ship.warp_speed
     ship.status = ShipStatus.WARPING
+    trigger_flash(state)
     state.log(f"Warping to {target.label} ({ship.eta_seconds:.1f}s)")
     from lsl_online.audio import request_sound
 
@@ -174,6 +179,9 @@ def jump_system(state: GameState, system_name: str | None = None) -> str | None:
         return f"No stargate link to {dest.name}."
     if ship.fuel < ship.fuel_per_jump:
         return f"Not enough fuel (need {ship.fuel_per_jump:.0f}, have {ship.fuel:.0f})."
+    from lsl_online import mining
+
+    mining.cease_mining(state)
     ship.fuel -= ship.fuel_per_jump
     state.pending_jump_from_id = sys.id
     _sync_nav_path_after_jump(state, dest.id)
@@ -227,7 +235,7 @@ def dock(state: GameState) -> str | None:
     ship.status = ShipStatus.DOCKED
     ship.destination = None
     ship.eta_seconds = 0.0
-    state.station_view = "hangar"
+    state.station_view = "market"
     state.log(f"Docked at {best.name}")
     from lsl_online.quests import note_docked
 

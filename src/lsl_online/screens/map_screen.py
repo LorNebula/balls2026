@@ -6,7 +6,7 @@ from textual.widgets import Input, Static
 from lsl_online.ascii_ui import ascii_only, box_line
 from lsl_online.command_completions import matching_completions
 from lsl_online.models import GameState
-from lsl_online.playfield import render_playfield
+from lsl_online.playfield import render_playfield, _combat_border_active
 from lsl_online.screens.status_bar import format_status
 from lsl_online.widgets.command_suggester import GameCommandSuggester
 
@@ -24,6 +24,7 @@ class MapScreen(Screen):
         super().__init__(**kwargs)
         self.game_state = state
         self._chrome_view: str | None = None
+        self._last_title_text: str | None = None
         self._command_history: list[str] = []
         self._history_index: int | None = None
         self._history_draft = ""
@@ -49,21 +50,32 @@ class MapScreen(Screen):
         self.refresh_ui()
         inp.focus()
 
+    def _title_bar_text(self) -> str:
+        view = self.game_state.map_view.upper()
+        if _combat_border_active(self.game_state):
+            return f" LSL ONLINE | map={view} | IN DANGER "
+        return f" LSL ONLINE | map={view} "
+
     def _refresh_chrome(self) -> None:
         w = self.TITLE_WIDTH
         view = self.game_state.map_view.upper()
-        if view == self._chrome_view:
-            return
-        self._chrome_view = view
-        self.query_one("#title_bar", Static).update(
-            box_line(w, f" LSL ONLINE | map={view} | space trading terminal ")
-        )
-        self.query_one("#footer_bar", Static).update(
-            box_line(
-                w,
-                " : cmd line  up/down history  galaxy|system  zoom  script  help  quit ",
+        if view != self._chrome_view:
+            self._chrome_view = view
+            self.query_one("#footer_bar", Static).update(
+                box_line(
+                    w,
+                    " : cmd line  up/down history  galaxy|system  zoom in|out  script  help  quit ",
+                )
             )
-        )
+        self._update_title_bar()
+
+    def _update_title_bar(self) -> None:
+        text = self._title_bar_text()
+        if text == self._last_title_text:
+            return
+        self._last_title_text = text
+        w = self.TITLE_WIDTH
+        self.query_one("#title_bar", Static).update(box_line(w, text))
 
     def _playfield_size(self) -> tuple[int, int]:
         pf = self.query_one("#playfield", Static)
@@ -73,8 +85,8 @@ class MapScreen(Screen):
 
     def refresh_ui(self, *, refresh_command_line: bool = True) -> None:
         st = self.game_state
-        if st.map_view.upper() != self._chrome_view:
-            self._refresh_chrome()
+        self._refresh_chrome()
+        self._update_title_bar()
         pw, ph = self._playfield_size()
         self.query_one("#playfield", Static).update(
             render_playfield(

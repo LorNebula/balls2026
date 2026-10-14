@@ -529,14 +529,20 @@ def _system_in_nebula(state: GameState, system_id: str) -> bool:
     return any(system_id in nebula.system_ids for nebula in state.galaxy.nebulae)
 
 
-def _contact_label(state: GameState, name: str, world_x: float, world_y: float, ship_x: float, ship_y: float) -> str:
-    if _system_in_nebula(state, state.player.ship.location.system_id):
+def _contact_label(
+    state: GameState,
+    name: str,
+    world_x: float,
+    world_y: float,
+    ship_x: float,
+    ship_y: float,
+) -> str:
+    if _system_in_nebula(state, state.player.ship.location.system_id) and not state.radar_active:
         name = "???"
     else:
         name = ascii_only(name)
     dist = math.hypot(world_x - ship_x, world_y - ship_y)
-    short = name if len(name) <= 10 else name[:9] + "~"
-    return f"{short} {dist:.0f}u"
+    return f"{name} ({world_x:.0f},{world_y:.0f}) {dist:.0f}u"
 
 
 def _draw_offscreen_indicators(
@@ -571,11 +577,15 @@ def _draw_offscreen_indicators(
     label_cells: set[tuple[int, int]] = set()
     for _, px, py, label, on_screen in sorted(contacts)[:max_indicators]:
         if on_screen and state.radar_active:
+            draw = label
+            if len(draw) > canvas.width:
+                draw = draw[-canvas.width :]
+            label_x = max(0, min(px - len(draw) // 2, canvas.width - len(draw)))
             _put_text(
                 canvas,
-                min(canvas.width - len(label), max(0, px)),
+                label_x,
                 max(0, py - 2),
-                label[: min(16, canvas.width)],
+                draw,
                 Style(color="#aaccff", bold=True),
             )
             continue
@@ -590,8 +600,9 @@ def _draw_offscreen_indicators(
         style = Style(color="#ffdd77", bold=True)
         canvas.put(edge_x, edge_y, arrow, style)
 
-        label_width = max(1, min(18, canvas.width - 4))
-        label = label if len(label) <= label_width else label[: label_width - 1] + "~"
+        label_width = max(1, canvas.width - 4)
+        if len(label) > label_width:
+            label = label[:label_width]
         if arrow == "<":
             label_x = 1
         elif arrow == ">":
@@ -804,6 +815,18 @@ def render_open_space(
             id_letter=mining_target.code,
         )
 
+    if ship.status == ShipStatus.WARPING and ship.destination and ship.destination.coords:
+        dest = ship.destination.coords
+        dx = dest.x - ship_x
+        dy = dest.y - ship_y
+        trail_char = ">" if abs(dx) >= abs(dy) else "v"
+        trail_style = Style(color="#66ccff", bold=True)
+        for step in range(1, 5):
+            tx = canvas.anchor_x - round((dx / max(abs(dx), abs(dy), 1)) * step * 2)
+            ty = canvas.anchor_y - round((dy / max(abs(dx), abs(dy), 1)) * step * 2)
+            if 0 <= tx < canvas.width and 0 <= ty < canvas.height:
+                canvas.put(tx, ty, trail_char if step % 2 else "-", trail_style)
+
     canvas.stamp_art(
         canvas.anchor_x,
         canvas.anchor_y,
@@ -826,12 +849,12 @@ def render_open_space(
         n.alive for n in state.npc_ships
     )
     header_style = Style(color="#ff6644", bold=True) if combat_header else Style(color="#aaccee")
+    danger = "IN DANGER | " if combat_header else ""
     header.append(
-        f"| {state.mode.value} lock={lock or '-'} wpn={wpn} mine={mine} "
+        f"| {danger}{state.mode.value} lock={lock or '-'} wpn={wpn} mine={mine} "
         f"cargo {cargo_used}/{ship.cargo_capacity} ",
         style=header_style,
     )
-    header.append("01-04 components ", style=Style(color="#ffee66"))
     from lsl_online.quests import current_objective
 
     objective = ascii_only(current_objective(state))

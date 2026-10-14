@@ -436,6 +436,31 @@ def tick(state: GameState, dt: float) -> None:
                 )
 
 
+def sell_inventory(state: GameState) -> str | None:
+    if state.player.ship.status != ShipStatus.DOCKED:
+        return "Must be docked to sell."
+    station = _current_station(state)
+    if not station:
+        return "Must be docked at a station market to sell."
+    stacks = [s for s in state.player.cargo if s.quantity > 0]
+    if not stacks:
+        return "Cargo hold is empty."
+    credits_before = state.player.credits
+    sold_lines = 0
+    for stack in list(stacks):
+        qty = stack.quantity
+        if qty <= 0:
+            continue
+        err = sell_at_station(state, station, stack.item_id, qty)
+        if err:
+            return err
+        sold_lines += 1
+    gained = state.player.credits - credits_before
+    state.log(f"Sold entire cargo ({sold_lines} line(s)) for {gained:.0f} cr total.")
+    state.station_view = "market"
+    return None
+
+
 def sell_item(state: GameState, item_ref: str, quantity: int | str) -> str | None:
     if state.player.ship.status != ShipStatus.DOCKED:
         return "Must be docked to sell."
@@ -679,7 +704,7 @@ def render_market_view(state: GameState, width: int, height: int) -> Text:
         cargo_rows=True,
     )
     out.append(
-        " buy <item> <qty|all> | sell <item> <qty|all> | repair | system\n",
+        " buy <item> <qty|all> | sell <item> <qty|all> | sell inventory | repair | system | hangar\n",
         style=Style(color="#668899"),
     )
     return out
@@ -739,7 +764,7 @@ def render_hangar_view(state: GameState, width: int, height: int) -> Text:
     if len(state.player.fleet) > row_limit:
         out.append(f" ... {len(state.player.fleet) - row_limit} more ships\n", style=Style(color="#778899"))
     out.append(
-        " buy ship <hull> | switch ship <id> | sell ship <id> | hangar\n",
+        " buy ship <hull> | switch ship <id> | sell ship <id> | market\n",
         style=Style(color="#668899"),
     )
     return out

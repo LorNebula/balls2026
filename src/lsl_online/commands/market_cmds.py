@@ -208,8 +208,10 @@ class SellCommand(Command):
 
     def execute(self, state: GameState, parts: list[str]) -> str | None:
         args = parts[1:]
+        if len(args) == 1 and args[0].lower() == "inventory":
+            return market.sell_inventory(state)
         if len(args) < 2:
-            return "Usage: sell <item> <quantity>"
+            return "Usage: sell <item> <quantity|all> | sell inventory"
         quantity_arg = args[-1].lower()
         if quantity_arg != "all":
             try:
@@ -224,6 +226,8 @@ class SellCommand(Command):
     def completions(self, state: GameState) -> list[str]:
         cmds = ["sell "]
         if state.player.ship.status.value == "docked":
+            if any(s.quantity > 0 for s in state.player.cargo):
+                cmds.append("sell inventory")
             for stack in state.player.cargo:
                 if stack.quantity > 0:
                     cmds.append(f"sell {stack.item_id} ")

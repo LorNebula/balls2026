@@ -18,7 +18,7 @@ def _radar_interval(state: GameState) -> float:
 
 
 def _display_label(state: GameState, label: str) -> str:
-    if _in_nebula(state, state.player.ship.location.system_id):
+    if _in_nebula(state, state.player.ship.location.system_id) and not state.radar_active:
         return "???"
     return ascii_only(label)
 
@@ -29,7 +29,6 @@ def refresh_radar_contacts(state: GameState) -> None:
     if not sys:
         state.radar_contacts = []
         return
-    coords = current_ship_coords(state)
     contacts: list[RadarContact] = []
     contacts.append(
         RadarContact(
@@ -54,7 +53,7 @@ def refresh_radar_contacts(state: GameState) -> None:
             continue
         contacts.append(
             RadarContact(
-                label=_display_label(state, f"{ast.code}"),
+                label=_display_label(state, f"{ast.code} {ast.material_name}"),
                 x=ast.position.x,
                 y=ast.position.y,
                 kind="asteroid",
@@ -72,7 +71,7 @@ def refresh_radar_contacts(state: GameState) -> None:
             )
         )
     state.radar_contacts = contacts
-    _ = coords
+    _ = current_ship_coords(state)
 
 
 def set_radar(state: GameState, active: bool) -> str | None:
