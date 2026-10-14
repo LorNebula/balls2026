@@ -49,6 +49,7 @@ UPGRADE_COST: dict[str, float] = {
 UPGRADE_HP_BONUS = 30.0
 WEAPON_UPGRADE_DAMAGE = 10.0
 REPAIR_CREDITS_PER_HP = 4.0
+FUEL_CREDITS_PER_UNIT = 2.5
 MARKET_RESTOCK_INTERVAL = 60.0
 TUTORIAL_MIN_STATION_CREDITS = 20_000.0
 BID_SPREAD = 0.72
@@ -636,6 +637,28 @@ def repair_ship(state: GameState) -> str | None:
     return None
 
 
+def refuel_ship(state: GameState) -> str | None:
+    if state.player.ship.status != ShipStatus.DOCKED:
+        return "Must be docked to refuel."
+    if not _current_station(state):
+        return "No fuel service at this station."
+    ship = state.player.ship
+    missing = max(0.0, ship.max_fuel - ship.fuel)
+    if missing <= 0:
+        return "Fuel tanks already full."
+    cost = round(missing * FUEL_CREDITS_PER_UNIT, 0)
+    if state.player.credits < cost:
+        return f"Need {cost:.0f} cr to refuel ({missing:.0f} units short)."
+    state.player.credits -= cost
+    ship.fuel = ship.max_fuel
+    state.log(
+        f"Refueled {missing:.0f} units for {cost:.0f} cr "
+        f"({ship.fuel:.0f}/{ship.max_fuel:.0f} full)."
+    )
+    state.station_view = "hangar"
+    return None
+
+
 def _cargo_profit_suffix(state: GameState, item_id: str) -> str:
     stack = find_cargo(state.player, item_id)
     station = _current_station(state)
@@ -727,7 +750,7 @@ def render_market_view(state: GameState, width: int, height: int) -> Text:
         cargo_rows=True,
     )
     out.append(
-        " buy <item> <qty|all> | sell <item> <qty|all> | sell inventory | repair | system | hangar\n",
+        " buy <item> <qty|all> | sell <item> <qty|all> | sell inventory | repair | refuel | system | hangar\n",
         style=Style(color="#668899"),
     )
     return out

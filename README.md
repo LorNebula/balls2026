@@ -2,6 +2,15 @@
 
 LSL ONLINE — ASCII terminal space trading: tutorial, combat, travel, quests. Finnish-inspired galaxy, Python + Textual.
 
+## Play
+
+```bash
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e .
+python -m lsl_online
+```
+
 ## Setup
 
 ```bash

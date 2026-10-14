@@ -666,7 +666,7 @@ def render_docked_view(state: GameState, width: int, height: int) -> Text:
     _apply_screen_flash(canvas, state)
     header = Text(f" DOCKED @ {st_name} ", style=Style(color="#c9a86a", bold=True))
     header.append("\n", style=Style())
-    menu = " market | hangar | cargo | repair | system | undock "
+    menu = " market | hangar | cargo | repair | refuel | system | undock "
     header.append(menu + "\n", style=Style(color="#88ccaa", bold=True))
     header.append(canvas.to_text())
     return header

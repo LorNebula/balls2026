@@ -21,6 +21,7 @@ COMBAT_BORDER_RED = Style(color="#ff3333", bold=True)
 DEFAULT_BORDER = Style(color="#8899aa")
 DEFAULT_TITLE = Style(color="#e8b84a", bold=True)
 COMBAT_BORDER_FLASH_PERIOD = 0.55
+CMD_STYLE = Style(color="#ffe066", bold=True)
 
 
 def _combat_border_active(state: GameState) -> bool:
@@ -46,24 +47,103 @@ def _log_style(line: str) -> Style:
     return Style(color="#c9d6e3")
 
 
-def _wrap_event_lines(events: list[str], width: int) -> list[tuple[str, Style]]:
-    rows: list[tuple[str, Style]] = []
-    for ev in events:
-        plain = ascii_only(ev)
-        style = _log_style(ev)
-        if not plain:
-            rows.append(("", style))
+def _styled_log_line(plain: str, base_style: Style) -> Text:
+    if "`" not in plain:
+        return Text(plain, style=base_style)
+    out = Text()
+    for index, part in enumerate(plain.split("`")):
+        if not part:
             continue
+        out.append(part, style=CMD_STYLE if index % 2 == 1 else base_style)
+    return out
+
+
+def _styled_tokens(plain: str, base_style: Style) -> list[tuple[str, Style]]:
+    tokens: list[tuple[str, Style]] = []
+    for index, part in enumerate(plain.split("`")):
+        if not part:
+            continue
+        style = CMD_STYLE if index % 2 == 1 else base_style
+        words = part.split(" ")
+        for word_index, word in enumerate(words):
+            if not word:
+                continue
+            if word_index > 0:
+                prefix = " "
+            elif tokens and not tokens[-1][0].endswith(" "):
+                prefix = " "
+            else:
+                prefix = ""
+            tokens.append((prefix + word, style))
+    return tokens
+
+
+def _wrap_styled_event(plain: str, base_style: Style, width: int) -> list[Text]:
+    if not plain:
+        return [Text("")]
+    if "`" not in plain:
         parts = textwrap.wrap(
             plain,
             width=width,
             break_long_words=True,
             break_on_hyphens=False,
         )
-        if not parts:
-            parts = [plain[:width]]
-        for part in parts:
-            rows.append((part, style))
+        return [Text(part, style=base_style) for part in (parts or [plain[:width]])]
+
+    tokens = _styled_tokens(plain, base_style)
+    rows: list[Text] = []
+    line = Text()
+    line_len = 0
+
+    def flush() -> None:
+        nonlocal line, line_len
+        if line.plain:
+            rows.append(line)
+        line = Text()
+        line_len = 0
+
+    for piece, style in tokens:
+        while piece:
+            if line_len == 0 and piece.startswith(" "):
+                piece = piece[1:]
+                if not piece:
+                    break
+            room = width - line_len
+            if room <= 0:
+                flush()
+                continue
+            if len(piece) <= room:
+                line.append(piece, style=style)
+                line_len += len(piece)
+                piece = ""
+            elif line_len > 0:
+                flush()
+            else:
+                line.append(piece[:room], style=style)
+                piece = piece[room:]
+                flush()
+    flush()
+    return rows or [Text("")]
+
+
+def _pad_rich_line(line: Text, width: int) -> Text:
+    out = line.copy()
+    plain_len = len(out.plain)
+    if plain_len < width:
+        out.append(" " * (width - plain_len), style=Style())
+    return out
+
+
+def _wrap_event_lines(events: list[str], width: int) -> list[Text]:
+    rows: list[Text] = []
+    for ev in events:
+        plain = ascii_only(ev)
+        base = _log_style(ev)
+        if not plain:
+            rows.append(Text(""))
+            continue
+        for line in _wrap_styled_event(plain, base, width):
+            rows.append(_pad_rich_line(line, width))
     return rows
 
 
@@ -75,8 +155,8 @@ def render_log_pane(state: GameState, width: int, height: int) -> Text:
     out = Text()
     for i in range(inner_h):
         if i < len(visible):
-            line, style = visible[i]
-            out.append(pad_line(line, inner_w) + "\n", style=style)
+            out.append(_pad_rich_line(visible[i], inner_w))
+            out.append("\n")
         else:
             out.append(" " * inner_w + "\n", style=Style(color="#c9d6e3"))
     return out

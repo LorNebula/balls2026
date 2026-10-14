@@ -23,6 +23,24 @@ class QuitCommand(Command):
         return ["quit"]
 
 
+class ReadyCommand(Command):
+    def matches(self, parts: list[str]) -> bool:
+        return bool(parts) and parts[0].lower() in ("ready", "continue")
+
+    def execute(self, state: GameState, parts: list[str]) -> str | None:
+        return tutorial.ack_ready(state)
+
+    def completions(self, state: GameState) -> list[str]:
+        if tutorial.tutorial_awaiting_ready(state):
+            return ["ready", "continue"]
+        return []
+
+    def palette_items(self, state: GameState) -> list[tuple[str, str]]:
+        if tutorial.tutorial_awaiting_ready(state):
+            return [("I'm ready", "ready")]
+        return []
+
+
 class SkipTutorialCommand(Command):
     def matches(self, parts: list[str]) -> bool:
         return bool(parts) and parts[0].lower() == "skip"
@@ -99,16 +117,19 @@ class HelpCommand(Command):
         return bool(parts) and parts[0].lower() == "help"
 
     def execute(self, state: GameState, parts: list[str]) -> str | None:
-        state.log(
-            "Keys: : focus command line, up/down = command history. "
+        lines = [
+            "Keys: up/down = command history on the command line. "
             "Maps: galaxy, system, zoom in|out, path <system>, mark <system> <char> <color>. "
             "Travel: travel, jump (next hop if path set), dock, undock. "
-            "Docked: market, hangar, cargo, repair, system, undock. "
-            "Trade: buy <item> all, sell <item> all, upgrade, repair, "
+            "Docked: market, hangar, cargo, repair, refuel, system, undock. "
+            "Trade: buy <item> all, sell <item> all, upgrade, repair, refuel, "
             "script (edit), script run, script enable (60s cron), script status. "
             "Combat: lock, fire, cease. Mining: lock R#, mine, cease mine, radar. "
-            "comms, quests, skip, quit"
-        )
+            "comms, quests, skip, quit",
+        ]
+        if tutorial.tutorial_awaiting_ready(state):
+            lines.append("Tutorial: type ready (or continue) when you've read the briefing.")
+        state.log(" ".join(lines))
         return None
 
     def completions(self, state: GameState) -> list[str]:

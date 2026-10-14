@@ -31,12 +31,12 @@ class MapScreen(Screen):
 
     def compose(self):
         yield Static("", id="title_bar")
-        yield Static("", id="playfield", markup=True)
+        yield Static("", id="playfield")
         yield Static("", id="status_line")
         with Horizontal(id="cmd_row"):
             yield Static("> ", id="cmd_prefix")
             yield Input(
-                placeholder=": focus | help | galaxy | script | travel | jump | dock",
+                placeholder="help | galaxy | script | travel | jump | dock | ready",
                 id="cmd_input",
                 classes="-textual-compact",
             )
@@ -64,7 +64,7 @@ class MapScreen(Screen):
             self.query_one("#footer_bar", Static).update(
                 box_line(
                     w,
-                    " : cmd line  up/down history  galaxy|system  zoom in|out  script  help  quit ",
+                    " type commands below  up/down history  galaxy|system  zoom in|out  script  help  quit ",
                 )
             )
         self._update_title_bar()

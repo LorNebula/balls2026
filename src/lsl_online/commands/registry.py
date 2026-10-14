@@ -20,6 +20,7 @@ from lsl_online.commands.market_cmds import (
     SwitchShipCommand,
     SystemViewCommand,
     RepairCommand,
+    RefuelCommand,
     UpgradeCommand,
 )
 from lsl_online.commands.misc_cmds import (
@@ -28,6 +29,7 @@ from lsl_online.commands.misc_cmds import (
     QuitCommand,
     QuestCommand,
     QuestsCommand,
+    ReadyCommand,
     SkipTutorialCommand,
 )
 from lsl_online.commands.script_cmds import ScriptCommand
@@ -38,6 +40,7 @@ from lsl_online.models import GameState
 COMMANDS: list[Command] = [
     HelpCommand(),
     QuitCommand(),
+    ReadyCommand(),
     SkipTutorialCommand(),
     DockCommand(),
     UndockCommand(),
@@ -55,6 +58,7 @@ COMMANDS: list[Command] = [
     HangarCommand(),
     SellCommand(),
     RepairCommand(),
+    RefuelCommand(),
     UpgradeCommand(),
     ScriptCommand(),
     JumpCommand(),

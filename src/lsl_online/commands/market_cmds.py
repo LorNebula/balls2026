@@ -262,6 +262,22 @@ class RepairCommand(Command):
         return []
 
 
+class RefuelCommand(Command):
+    def matches(self, parts: list[str]) -> bool:
+        return bool(parts) and parts[0].lower() == "refuel"
+
+    def execute(self, state: GameState, parts: list[str]) -> str | None:
+        return market.refuel_ship(state)
+
+    def completions(self, state: GameState) -> list[str]:
+        return ["refuel"]
+
+    def palette_items(self, state: GameState) -> list[tuple[str, str]]:
+        if state.player.ship.status.value == "docked":
+            return [("Refuel ship", "refuel")]
+        return []
+
+
 class UpgradeCommand(Command):
     def matches(self, parts: list[str]) -> bool:
         return bool(parts) and parts[0].lower() == "upgrade"

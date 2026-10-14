@@ -31,6 +31,7 @@ class GameMode(str, Enum):
 
 
 class TutorialStep(str, Enum):
+    BRIEFING = "briefing"
     HYPERSPACE = "hyperspace"
     WARNING = "warning"
     INTERDICT = "interdict"
