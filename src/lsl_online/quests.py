@@ -115,18 +115,19 @@ def generate_quest_board(state: GameState) -> list[Quest]:
     sell_sys = systems[3 % len(systems)]
     sell_pick = _pick_sell_item_for_system(sell_sys, rng)
     if sell_pick:
-        sell_mat, sell_qty = sell_pick
+        sell_item, sell_qty = sell_pick
+        sell_name = ITEM_NAMES.get(sell_item, sell_item)
         quests.append(
             Quest(
                 id="q_sell_contract",
                 title=f"Market offload",
                 summary=(
-                    f"Sell {sell_qty}x {ascii_only(sell_mat.name)} at a station in "
+                    f"Sell {sell_qty}x {ascii_only(sell_name)} at a station in "
                     f"{ascii_only(sell_sys.name)}."
                 ),
                 kind="sell",
                 target_system_id=sell_sys.id,
-                target_item_id=sell_mat.id,
+                target_item_id=sell_item,
                 target_count=sell_qty,
             )
         )

@@ -71,6 +71,14 @@ def _price_modifier(station, item_id: str) -> float:
     return station.price_modifiers.get(item_id, 1.0)
 
 
+def _bid_modifier(station, item_id: str) -> float:
+    bid_modifiers = getattr(station, "bid_modifiers", None)
+    if bid_modifiers and item_id in bid_modifiers:
+        return bid_modifiers[item_id]
+    mod = _price_modifier(station, item_id)
+    return 1.0 + (mod - 1.0) * BID_MODIFIER_DAMP
+
+
 def ask_price(station, item_id: str) -> float:
     base = station.prices.get(item_id, BASE_PRICES.get(item_id, 100.0))
     stock = station.inventory.get(item_id, 0)
@@ -82,8 +90,7 @@ def bid_price(station, item_id: str) -> float:
     base = station.prices.get(item_id, BASE_PRICES.get(item_id, 100.0))
     stock = station.inventory.get(item_id, 0)
     supply_factor = max(SUPPLY_MIN, min(SUPPLY_MAX, 1.0 + (20 - stock) / 35.0))
-    mod = _price_modifier(station, item_id)
-    bid_mod = 1.0 + (mod - 1.0) * BID_MODIFIER_DAMP
+    bid_mod = _bid_modifier(station, item_id)
     return round(base * supply_factor * bid_mod * BID_SPREAD, 0)
 
 
@@ -123,6 +130,102 @@ def global_price(state: GameState, item_id: str) -> float:
     if not stations:
         return round(BASE_PRICES.get(item_id, 100.0), 0)
     return round(sum(bid_price(station, item_id) for station in stations) / len(stations), 0)
+
+
+def _sell_bid_for_stack(station, stack: CargoStack | None, item_id: str) -> float:
+    cost = stack.avg_unit_cost if stack else 0.0
+    same_station = bool(
+        stack and stack.last_buy_station_id and stack.last_buy_station_id == station.id
+    )
+    return effective_sell_unit(
+        station,
+        item_id,
+        cost,
+        same_station_as_purchase=same_station,
+    )
+
+
+def sell_quotes_for_item(
+    state: GameState, item_id: str
+) -> list[tuple[str, str, float]]:
+    """(system_name, system_id, effective bid per unit) sorted high to low."""
+    stack = find_cargo(state.player, item_id)
+    quotes: list[tuple[str, str, float]] = []
+    for system in state.galaxy.systems.values():
+        if not system.stations:
+            continue
+        station = system.stations[0]
+        unit = _sell_bid_for_stack(station, stack, item_id)
+        quotes.append((system.name, system.id, unit))
+    quotes.sort(key=lambda row: row[2], reverse=True)
+    return quotes
+
+
+def best_sell_for_item(state: GameState, item_id: str) -> tuple[str, str, float] | None:
+    quotes = sell_quotes_for_item(state, item_id)
+    return quotes[0] if quotes else None
+
+
+def best_profitable_sell_for_item(
+    state: GameState, item_id: str
+) -> tuple[str, str, float] | None:
+    stack = find_cargo(state.player, item_id)
+    quotes = sell_quotes_for_item(state, item_id)
+    if not quotes:
+        return None
+    if stack and stack.avg_unit_cost > 0:
+        for row in quotes:
+            if row[2] > stack.avg_unit_cost:
+                return row
+        return None
+    return quotes[0]
+
+
+def show_trade_routes(state: GameState, *, top_systems: int = 3) -> str | None:
+    stacks = [s for s in state.player.cargo if s.quantity > 0]
+    if not stacks:
+        return "Cargo hold is empty."
+    here_id = state.player.ship.location.system_id
+    state.log("── Best sell routes (profitable bids first) ──")
+    for stack in sorted(stacks, key=lambda s: s.name):
+        all_quotes = sell_quotes_for_item(state, stack.item_id)
+        if not all_quotes:
+            continue
+        cost = stack.avg_unit_cost
+        if cost > 0:
+            profitable = [q for q in all_quotes if q[2] > cost]
+            quotes = (profitable or all_quotes)[:top_systems]
+        else:
+            profitable = all_quotes
+            quotes = all_quotes[:top_systems]
+        cost_line = f" (paid {cost:.0f}/ea)" if cost > 0 else " (mined)"
+        state.log(f"{stack.name} x{stack.quantity}{cost_line}")
+        if cost > 0 and not profitable:
+            state.log(
+                f"  No profit vs {cost:.0f}/ea cost right now (best bid {all_quotes[0][2]:.0f}/ea). "
+                "Try routes after jumps or wait for market drift."
+            )
+        for sys_name, sys_id, unit in quotes:
+            here = " *" if sys_id == here_id else "  "
+            if cost > 0:
+                margin = unit - cost
+                extra = f" ({margin:+.0f}/ea)" if margin > 0 else f" ({margin:.0f}/ea loss)"
+            else:
+                extra = ""
+            state.log(f"{here} {ascii_only(sys_name)}: {unit:.0f}/ea{extra}")
+        if cost > 0 and profitable:
+            best_name, best_sys_id, best_unit = profitable[0]
+            margin = best_unit - cost
+            if best_sys_id != here_id:
+                state.log(
+                    f"   -> jump to {ascii_only(best_name)} (+{margin:.0f}/ea, {best_unit:.0f}/ea bid)"
+                )
+        elif cost <= 0 and quotes:
+            best_name, best_sys_id, best_unit = quotes[0]
+            if best_sys_id != here_id:
+                state.log(f"   -> jump to {ascii_only(best_name)} ({best_unit:.0f}/ea bid)")
+    state.log(" (* = current system)")
+    return None
 
 
 def _apply_station_payout(station, total: float) -> str | None:
@@ -243,7 +346,9 @@ def ensure_station_wallets(state: GameState) -> None:
                 if item_id.endswith("_upgrade"):
                     continue
                 if item_id not in station.price_modifiers:
-                    station.price_modifiers[item_id] = station_rng.uniform(0.55, 1.65)
+                    station.price_modifiers[item_id] = station_rng.uniform(0.50, 1.35)
+                if item_id not in station.bid_modifiers:
+                    station.bid_modifiers[item_id] = station_rng.uniform(0.85, 2.15)
 
 
 def ensure_buy_quest_stock(state: GameState, system_id: str) -> None:
@@ -742,10 +847,13 @@ def _append_table_section(
     *,
     cargo_rows: bool = False,
 ) -> None:
-    name_width = max(8, width - 27)
+    price_w = 25
+    qty_w = 5
+    name_width = max(6, width - qty_w - price_w - price_w - 4)
     out.append(f" {title}\n", style=Style(color="#e8b84a", bold=True))
+    second_col = "profit" if cargo_rows else "avg"
     out.append(
-        f" {'item':<{name_width}}{'qty':>6}{'local':>9}{'global':>9}\n",
+        f" {'item':<{name_width}}{'qty':>{qty_w}}{'here':>{price_w}}{second_col:>{price_w}}\n",
         style=Style(color="#aaccee", bold=True),
     )
     if not item_ids:
@@ -775,12 +883,48 @@ def _append_table_section(
         else:
             local = local_ask(state, item_id)
         local_text = f"{local:.0f}" if local is not None else "--"
-        global_value = global_price(state, item_id)
+        stack = find_cargo(state.player, item_id) if cargo_rows else None
+        cost = stack.avg_unit_cost if stack else 0.0
+        best = None
+        profitable = False
+        if cargo_rows:
+            best = best_profitable_sell_for_item(state, item_id)
+            profitable = best is not None
+            if not best:
+                best = best_sell_for_item(state, item_id)
+            if best:
+                sys_name, _, best_unit = best
+                short = ascii_only(sys_name)[: max(5, price_w - 8)]
+                if cost > 0 and profitable:
+                    margin = int(best_unit - cost)
+                    remote_text = f"+{margin}/ea @{short}"[:price_w]
+                elif cost > 0:
+                    remote_text = f"{best_unit:.0f}/ea @{short}"[:price_w]
+                else:
+                    remote_text = f"{best_unit:.0f}/ea @{short}"[:price_w]
+            else:
+                remote_text = "--"
+        else:
+            remote_text = f"{global_price(state, item_id):.0f}"[:price_w]
         row_style = ROW_EVEN if row_index % 2 == 0 else ROW_ODD
         out.append(f" {name:<{name_width}}", style=row_style)
-        out.append(f"{quantities[item_id]:>6}", style=Style(color="#ffee88", bgcolor=row_style.bgcolor))
-        out.append(f"{local_text:>9}", style=Style(color="#88ffaa", bgcolor=row_style.bgcolor))
-        out.append(f"{global_value:>9.0f}\n", style=Style(color="#99bbdd", bgcolor=row_style.bgcolor))
+        out.append(
+            f"{quantities[item_id]:>{qty_w}}",
+            style=Style(color="#ffee88", bgcolor=row_style.bgcolor),
+        )
+        out.append(
+            f"{local_text:>{price_w}}",
+            style=Style(color="#88ffaa", bgcolor=row_style.bgcolor),
+        )
+        if cargo_rows and cost > 0 and not profitable and best:
+            best_style = Style(color="#ff8888", bgcolor=row_style.bgcolor)
+        elif cargo_rows and profitable:
+            best_style = Style(color="#aaffaa", bold=True, bgcolor=row_style.bgcolor)
+        elif cargo_rows and best and local is not None and best[2] > local:
+            best_style = Style(color="#ffe066", bgcolor=row_style.bgcolor)
+        else:
+            best_style = Style(color="#99bbdd", bgcolor=row_style.bgcolor)
+        out.append(f"{remote_text:>{price_w}}\n", style=best_style)
     if len(item_ids) > row_limit:
         out.append(f" ... {len(item_ids) - row_limit} more\n", style=Style(color="#778899"))
 
@@ -818,6 +962,8 @@ def render_market_view(state: GameState, width: int, height: int) -> Text:
         row_limit,
         cargo_rows=True,
     )
+    if any(s.quantity > 0 for s in state.player.cargo):
+        out.append(" routes = best sell systems for your cargo\n", style=Style(color="#88ccaa"))
     out.append(
         " buy <item> <qty|all> | sell <item> <qty|all> | sell inventory | repair | refuel | system | hangar\n",
         style=Style(color="#668899"),
@@ -834,6 +980,11 @@ def render_cargo_view(state: GameState, width: int, height: int) -> Text:
     _append_table_section(
         out, "CARGO", sorted(cargo), cargo, state, inner_width, row_limit, cargo_rows=True
     )
+    if cargo:
+        out.append(
+            " here = sell bid | profit = +margin@system (green) or best bid if no profit (routes)\n",
+            style=Style(color="#668899"),
+        )
     return out
 
 

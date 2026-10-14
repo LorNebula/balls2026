@@ -6,6 +6,27 @@ from lsl_online.models import GameState
 from lsl_online.shipyard import SHIP_TYPES
 
 
+class RoutesCommand(Command):
+    def matches(self, parts: list[str]) -> bool:
+        if not parts:
+            return False
+        head = parts[0].lower()
+        if head in ("routes", "traderoutes", "sellroutes"):
+            return True
+        return len(parts) >= 2 and parts[0].lower() == "sell" and parts[1].lower() == "routes"
+
+    def execute(self, state: GameState, parts: list[str]) -> str | None:
+        return market.show_trade_routes(state)
+
+    def completions(self, state: GameState) -> list[str]:
+        return ["routes", "sell routes"]
+
+    def palette_items(self, state: GameState) -> list[tuple[str, str]]:
+        if any(s.quantity > 0 for s in state.player.cargo):
+            return [("Best sell routes", "routes")]
+        return []
+
+
 class InventoryCommand(Command):
     def matches(self, parts: list[str]) -> bool:
         return bool(parts) and parts[0].lower() in ("cargo", "inventory", "inv")

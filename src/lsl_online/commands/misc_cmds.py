@@ -122,7 +122,7 @@ class HelpCommand(Command):
             "Maps: galaxy, system, zoom in|out, path <system>, mark <system> <char> <color>. "
             "Travel: travel, jump (next hop if path set), dock, undock. "
             "Docked: market, hangar, cargo, repair, refuel, system, undock. "
-            "Trade: buy <item> all, sell <item> all, upgrade, repair, refuel, "
+            "Trade: buy <item> all, sell <item> all, routes (best sell systems), upgrade, repair, refuel, "
             "script (edit), script run, script enable (60s cron), script status. "
             "Combat: lock, fire, cease. Mining: lock R#, mine, cease mine, radar. "
             "comms, quests, skip, quit",

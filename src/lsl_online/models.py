@@ -97,6 +97,7 @@ class Station:
     credits_max: float = 20_000.0
     income_per_tick: float = 350.0
     price_modifiers: dict[str, float] = field(default_factory=dict)
+    bid_modifiers: dict[str, float] = field(default_factory=dict)
 
     def position(self, planets: dict[str, Planet]) -> Vec3:
         if self.planet_id and self.planet_id in planets:
