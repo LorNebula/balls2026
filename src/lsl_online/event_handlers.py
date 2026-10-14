@@ -6,9 +6,9 @@ import random
 
 from lsl_online import combat, mining
 from lsl_online.events import ENTERED_SYSTEM
+from lsl_online.galaxy import system_rim_tier
 from lsl_online.models import GameMode, GameState, ShipStatus, TutorialStep
-
-PIRATE_ENCOUNTER_CHANCE = 0.25
+from lsl_online.quests import bounty_kills_remaining_in_system
 
 
 def _on_entered_system(state: GameState, *, system_id: str, system_name: str) -> None:
@@ -21,12 +21,25 @@ def _on_entered_system(state: GameState, *, system_id: str, system_name: str) ->
         return
     if state.mode in (GameMode.COMBAT, GameMode.HYPERSPACE):
         return
-    if any(n.alive for n in state.npc_ships):
+    if any(n.alive and n.hostile for n in state.npc_ships):
         return
-    if random.random() >= PIRATE_ENCOUNTER_CHANCE:
+
+    bounty_remaining = bounty_kills_remaining_in_system(state, system_id)
+    if bounty_remaining > 0:
+        spawn_count = min(bounty_remaining, 4)
+        combat.spawn_pirates_for_system(state, system_id, min_count=spawn_count)
+        state.mode = GameMode.COMBAT
+        state.log(
+            f"BOUNTY: {spawn_count} hostile(s) on scope in {system_name} "
+            f"({bounty_remaining} kill(s) needed on contract)."
+        )
         return
-    count = random.choice((1, 2))
-    combat.spawn_pirates(state, count)
+
+    rim = system_rim_tier(state.galaxy, system_id)
+    encounter_chance = 0.25 + 0.40 * rim
+    if random.random() >= encounter_chance:
+        return
+    combat.spawn_pirates_for_system(state, system_id)
     state.mode = GameMode.COMBAT
     state.log(f"WARNING: hostile contact in {system_name}.")
 

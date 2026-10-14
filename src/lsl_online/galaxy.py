@@ -60,3 +60,25 @@ def station_position(system: StarSystem, station: Station) -> Vec3:
 
 def planet_position(planet: Planet) -> Vec3:
     return planet.position()
+
+
+def galaxy_core(galaxy: Galaxy) -> Vec3:
+    if galaxy.black_hole:
+        return galaxy.black_hole.position
+    return Vec3(0.0, 0.0, 0.0)
+
+
+def system_rim_tier(galaxy: Galaxy, system_id: str) -> float:
+    """0 = core-adjacent, 1 = outer rim (normalized by farthest system)."""
+    system = galaxy.get_system(system_id)
+    if not system or not galaxy.systems:
+        return 0.0
+    center = galaxy_core(galaxy)
+    dist = system.position.distance_to(center)
+    max_dist = max(
+        (s.position.distance_to(center) for s in galaxy.systems.values()),
+        default=1.0,
+    )
+    if max_dist <= 0:
+        return 0.0
+    return max(0.0, min(1.0, dist / max_dist))

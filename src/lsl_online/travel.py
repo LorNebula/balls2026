@@ -59,6 +59,7 @@ def _set_warp(state: GameState, target: TravelTarget, dest: Vec3) -> str | None:
     mining.cease_mining(state)
     ship.destination = target
     ship.eta_seconds = dist / ship.warp_speed
+    ship.transit_total_seconds = ship.eta_seconds
     ship.status = ShipStatus.WARPING
     trigger_flash(state)
     state.log(f"Warping to {target.label} ({ship.eta_seconds:.1f}s)")
@@ -195,6 +196,7 @@ def jump_system(state: GameState, system_name: str | None = None) -> str | None:
     )
     ship.destination = target
     ship.eta_seconds = dist / ship.jump_speed
+    ship.transit_total_seconds = max(ship.eta_seconds, 0.01)
     ship.status = ShipStatus.JUMPING
     state.mode = GameMode.HYPERSPACE
     state.hyperspace_particles.clear()
@@ -287,6 +289,10 @@ def _arrive_at_target(state: GameState, target: TravelTarget, dest: Vec3) -> Non
                 if dest_sys.id in nebula.system_ids:
                     state.log(f"Nebula {nebula.name} envelops this system.")
             state.hyperspace_particles.clear()
+            from lsl_online.vfx import trigger_flash
+
+            trigger_flash(state)
+            state.hyperspace_landing_timer = 0.45
             from lsl_online.events import ENTERED_SYSTEM
 
             state.bus.emit(

@@ -126,7 +126,11 @@ def render_map_pane(
         if state.station_view == "hangar":
             return render_hangar_view(state, w, h)
         return render_docked_view(state, w, h)
-    in_hyperspace = state.mode == GameMode.HYPERSPACE or ship.status == ShipStatus.JUMPING
+    in_hyperspace = (
+        state.mode == GameMode.HYPERSPACE
+        or ship.status == ShipStatus.JUMPING
+        or state.hyperspace_landing_timer > 0
+    )
     if in_hyperspace:
         body = render_open_space(state, w, h, scale, hyperspace=True)
     else:

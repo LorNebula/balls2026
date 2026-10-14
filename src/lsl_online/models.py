@@ -222,6 +222,7 @@ class Ship:
     status: ShipStatus = ShipStatus.IDLE
     destination: TravelTarget | None = None
     eta_seconds: float = 0.0
+    transit_total_seconds: float = 0.0
     warp_speed: float = 100.0
     jump_speed: float = 1.0
     fuel: float = 100.0
@@ -274,6 +275,8 @@ class NpcShip:
     loot_name: str | None = None
     loot_quantity: int = 0
     fire_cooldown: float = 0.0
+    visual_scale: float = 1.0
+    damage_scale: float = 1.0
 
 
 @dataclass
@@ -285,6 +288,7 @@ class Projectile:
     target_letter: str
     ttl: float = 2.0
     friendly: bool = True
+    damage_scale: float = 1.0
 
 
 @dataclass
@@ -332,6 +336,7 @@ class Quest:
     target_item_id: str | None = None
     target_count: int = 1
     progress: int = 0
+    tier: int = 1
 
 
 @dataclass
@@ -419,6 +424,8 @@ class GameState:
     quests: list[Quest] = field(default_factory=list)
     quests_unlocked: bool = False
     combat_time: float = 0.0
+    hostile_engage_hold: float = 0.0
+    hyperspace_landing_timer: float = 0.0
     tutorial_force_galaxy: bool = False
     tutorial_step_elapsed: float = 0.0
     tutorial_post_combat: bool = False
@@ -447,6 +454,7 @@ class GameState:
     trade_script_enabled: bool = False
     trade_script_timer: float = 0.0
     pending_shipments: list[PendingShipment] = field(default_factory=list)
+    quest_kind_tiers: dict[str, int] = field(default_factory=dict)
 
     def log(self, message: str) -> None:
         from lsl_online.ascii_ui import ascii_only

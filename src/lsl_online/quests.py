@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import random
+from collections import deque
 
 from lsl_online.ascii_ui import ascii_only
 from lsl_online.market import ITEM_NAMES
 from lsl_online.materials import MATERIALS
 from lsl_online.models import GameState, Quest, QuestStatus, TutorialStep
+
+MAX_QUEST_TRAVEL_HOPS = 5
 
 QUEST_REWARDS: dict[str, float] = {
     "kill": 1800.0,
@@ -56,14 +59,16 @@ def generate_quest_board(state: GameState) -> list[Quest]:
         return quests
 
     bounty_sys = systems[0]
+    kill_qty = rng.randint(2, 5)
+    bounty_name = ascii_only(bounty_sys.name)
     quests.append(
         Quest(
             id="q_bounty_contract",
-            title=f"Clear {ascii_only(bounty_sys.name)}",
-            summary=f"Destroy 2 hostile ships in {ascii_only(bounty_sys.name)}.",
+            title=f"Bounty: {kill_qty} hostiles @ {bounty_name}",
+            summary=f"Destroy {kill_qty} hostile ships in {bounty_name}.",
             kind="kill",
             target_system_id=bounty_sys.id,
-            target_count=2,
+            target_count=kill_qty,
         )
     )
 
@@ -133,15 +138,233 @@ def generate_quest_board(state: GameState) -> list[Quest]:
     return quests
 
 
+def _quest_rng(state: GameState, *parts: object) -> random.Random:
+    seed = state.galaxy.seed ^ hash(parts) & 0xFFFFFFFF
+    return random.Random(seed)
+
+
+def _new_quest_id(kind: str, tier: int, rng: random.Random) -> str:
+    return f"q_{kind}_t{tier}_{rng.randint(1000, 9999)}"
+
+
+def _reachable_systems(
+    state: GameState,
+    max_hops: int = MAX_QUEST_TRAVEL_HOPS,
+    *,
+    require_station: bool = True,
+) -> list:
+    start_id = state.player.ship.location.system_id
+    dist: dict[str, int] = {start_id: 0}
+    queue: deque[str] = deque([start_id])
+    while queue:
+        current = queue.popleft()
+        hop = dist[current]
+        if hop >= max_hops:
+            continue
+        sys = state.galaxy.get_system(current)
+        if not sys:
+            continue
+        for neighbor_id in sys.neighbors:
+            if neighbor_id in dist:
+                continue
+            dist[neighbor_id] = hop + 1
+            queue.append(neighbor_id)
+    systems = []
+    for system_id, hop in dist.items():
+        if hop == 0:
+            continue
+        system = state.galaxy.get_system(system_id)
+        if not system:
+            continue
+        if require_station and not system.stations:
+            continue
+        systems.append(system)
+    if not systems and require_station:
+        return _reachable_systems(state, max_hops, require_station=False)
+    return systems
+
+
+def _pick_quest_system(state: GameState, rng: random.Random):
+    pool = _reachable_systems(state, MAX_QUEST_TRAVEL_HOPS)
+    if pool:
+        return rng.choice(pool)
+    current = state.galaxy.get_system(state.player.ship.location.system_id)
+    if current and current.stations:
+        return current
+    with_stations = [s for s in state.galaxy.systems.values() if s.stations]
+    return rng.choice(with_stations) if with_stations else current
+
+
+def _next_count(previous: Quest | None, kind: str, fallback: int) -> int:
+    if previous and previous.kind == kind:
+        return previous.target_count + 1
+    return fallback
+
+
+def _station_trade_items(station) -> list[str]:
+    trade_items = [
+        item_id
+        for item_id, qty in station.inventory.items()
+        if qty > 0 and not item_id.endswith("_upgrade") and item_id != "flagged_cargo"
+    ]
+    return trade_items or [m.id for m in MATERIALS[:4]]
+
+
+def generate_followup_quest(
+    state: GameState,
+    kind: str,
+    tier: int,
+    previous: Quest | None = None,
+) -> Quest | None:
+    """New contract of the same kind, scaled by tier (higher = harder)."""
+    rng = _quest_rng(state, "followup", kind, tier, len(state.quests))
+
+    if kind == "kill":
+        bounty_sys = _pick_quest_system(state, rng)
+        if not bounty_sys:
+            return None
+        kill_qty = _next_count(previous, "kill", 2)
+        bounty_name = ascii_only(bounty_sys.name)
+        return Quest(
+            id=_new_quest_id("kill", tier, rng),
+            title=f"Bounty II-{tier}: {kill_qty} hostiles @ {bounty_name}",
+            summary=f"Destroy {kill_qty} hostile ships in {bounty_name}.",
+            kind="kill",
+            target_system_id=bounty_sys.id,
+            target_count=kill_qty,
+            tier=tier,
+        )
+
+    if kind == "mine":
+        mine_sys = _pick_quest_system(state, rng)
+        if not mine_sys:
+            return None
+        weights = [max(1, m.rarity * (1 + tier * 0.15)) for m in MATERIALS]
+        mat = rng.choices(list(MATERIALS), weights=weights, k=1)[0]
+        mine_qty = _next_count(previous, "mine", 10)
+        return Quest(
+            id=_new_quest_id("mine", tier, rng),
+            title=f"Extract {ascii_only(mat.name)} (tier {tier})",
+            summary=(
+                f"Mine {mine_qty} units of {ascii_only(mat.name)} "
+                f"in {ascii_only(mine_sys.name)}."
+            ),
+            kind="mine",
+            target_system_id=mine_sys.id,
+            target_material_id=mat.id,
+            target_count=mine_qty,
+            tier=tier,
+        )
+
+    if kind == "buy":
+        trade_sys = _pick_quest_system(state, rng)
+        if not trade_sys or not trade_sys.stations:
+            return None
+        station = trade_sys.stations[0]
+        buy_item = rng.choice(_station_trade_items(station))
+        buy_qty = _next_count(previous, "buy", 5)
+        buy_name = ITEM_NAMES.get(buy_item, buy_item)
+        return Quest(
+            id=_new_quest_id("buy", tier, rng),
+            title=f"Procurement tier {tier}",
+            summary=(
+                f"Buy {buy_qty}x {ascii_only(buy_name)} at a station in "
+                f"{ascii_only(trade_sys.name)}."
+            ),
+            kind="buy",
+            target_system_id=trade_sys.id,
+            target_item_id=buy_item,
+            target_count=buy_qty,
+            tier=tier,
+        )
+
+    if kind == "sell":
+        sell_sys = _pick_quest_system(state, rng)
+        if not sell_sys:
+            return None
+        rare_pool = [m for m in MATERIALS if m.rarity >= min(5, 2 + tier // 3)]
+        sell_mat = rng.choice(rare_pool or list(MATERIALS))
+        sell_qty = _next_count(previous, "sell", 6)
+        return Quest(
+            id=_new_quest_id("sell", tier, rng),
+            title=f"Market offload tier {tier}",
+            summary=(
+                f"Sell {sell_qty}x {ascii_only(sell_mat.name)} at a station in "
+                f"{ascii_only(sell_sys.name)}."
+            ),
+            kind="sell",
+            target_system_id=sell_sys.id,
+            target_item_id=sell_mat.id,
+            target_count=sell_qty,
+            tier=tier,
+        )
+
+    if kind == "scout":
+        jumps = _next_count(previous, "scout", 2)
+        jumps = min(jumps, 6)
+        return Quest(
+            id=_new_quest_id("scout", tier, rng),
+            title=f"Scout patrol tier {tier}",
+            summary=f"Complete {jumps} jump(s) to neighboring systems.",
+            kind="scout",
+            target_count=jumps,
+            tier=tier,
+        )
+
+    if kind == "dock":
+        dock_sys = _pick_quest_system(state, rng)
+        if not dock_sys:
+            return None
+        return Quest(
+            id=_new_quest_id("dock", tier, rng),
+            title=f"Station call: {ascii_only(dock_sys.name)}",
+            summary=f"Dock at any station in {ascii_only(dock_sys.name)}.",
+            kind="dock",
+            target_system_id=dock_sys.id,
+            tier=tier,
+        )
+
+    return None
+
+
+def _replace_completed_quest(state: GameState, completed: Quest) -> None:
+    kind = completed.kind
+    tier = state.quest_kind_tiers.get(kind, 1) + 1
+    state.quest_kind_tiers[kind] = tier
+    replacement = generate_followup_quest(state, kind, tier, completed)
+    if not replacement:
+        return
+    for index, quest in enumerate(state.quests):
+        if quest.id == completed.id:
+            state.quests[index] = replacement
+            break
+    state.log(f"New contract available in quests: {replacement.id} ({kind}, tier {tier}): {replacement.title}")
+    
+
+
 def _active_quests(state: GameState) -> list[Quest]:
     return [q for q in state.quests if q.status == QuestStatus.ACTIVE]
 
 
+def bounty_kills_remaining_in_system(state: GameState, system_id: str) -> int:
+    """Hostile kills still needed for active bounty/kill quests in this system."""
+    remaining = 0
+    for quest in _active_quests(state):
+        if quest.kind != "kill" or not quest.target_system_id:
+            continue
+        if quest.target_system_id != system_id:
+            continue
+        remaining += max(0, quest.target_count - quest.progress)
+    return remaining
+
+
 def _complete_quest(state: GameState, quest: Quest) -> None:
     quest.status = QuestStatus.DONE
-    reward = QUEST_REWARDS.get(quest.kind, QUEST_REWARDS["generic"])
+    base = QUEST_REWARDS.get(quest.kind, QUEST_REWARDS["generic"])
+    reward = base * (1.0 + 0.2 * max(0, quest.tier - 1))
     state.player.credits += reward
     state.log(f"QUEST COMPLETE: {quest.title} (+{reward:.0f} cr)")
+    _replace_completed_quest(state, quest)
 
 
 def _bump_progress(state: GameState, quest: Quest, amount: int = 1) -> None:
@@ -209,9 +432,13 @@ def note_market_sell(state: GameState, item_id: str, quantity: int) -> None:
 
 
 def note_docked(state: GameState) -> None:
+    system_id = state.player.ship.location.system_id
     for quest in _active_quests(state):
-        if quest.kind == "dock":
-            _complete_quest(state, quest)
+        if quest.kind != "dock":
+            continue
+        if quest.target_system_id and quest.target_system_id != system_id:
+            continue
+        _complete_quest(state, quest)
 
 
 def note_jump_arrived(
@@ -223,8 +450,9 @@ def note_jump_arrived(
     if not origin or dest_system_id not in origin.neighbors:
         return
     for quest in _active_quests(state):
-        if quest.kind == "scout":
-            _complete_quest(state, quest)
+        if quest.kind != "scout":
+            continue
+        _bump_progress(state, quest)
 
 
 def current_objective(state: GameState) -> str:
@@ -249,23 +477,33 @@ def unlock_quests(state: GameState) -> None:
     state.log("Quest board unlocked. Type: quests  then  quest start <id>")
 
 
+def _quest_kill_label(quest: Quest) -> str:
+    return f"{quest.progress}/{quest.target_count} hostiles destroyed"
+
+
 def list_quests(state: GameState) -> str | None:
     if not state.quests_unlocked:
         return "Quest board locked. Complete the tutorial first."
     if not state.quests:
         unlock_quests(state)
-    lines = ["QUESTS:"]
+    state.log("── Quest board ──")
     for quest in state.quests:
-        extra = ""
-        if quest.status == QuestStatus.ACTIVE and quest.kind in (
-            "kill",
+        state.log(f"[{quest.status.value}] {quest.id}")
+        state.log(f"  {quest.title}")
+        if quest.kind == "kill":
+            if quest.status == QuestStatus.ACTIVE:
+                state.log(f"  {_quest_kill_label(quest)}")
+            else:
+                state.log(f"  Target: {quest.target_count} hostile ship(s)")
+                state.log(f"  {quest.summary}")
+        elif quest.status == QuestStatus.ACTIVE and quest.kind in (
             "mine",
             "buy",
             "sell",
         ):
-            extra = f" ({quest.progress}/{quest.target_count})"
-        lines.append(f"  [{quest.status.value}] {quest.id}: {quest.title}{extra}")
-    state.log("\n".join(lines))
+            state.log(f"  {quest_progress_label(quest)}")
+        else:
+            state.log(f"  {quest.summary}")
     return None
 
 

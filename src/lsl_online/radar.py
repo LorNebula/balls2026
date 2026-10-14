@@ -5,7 +5,10 @@ from __future__ import annotations
 from lsl_online.ascii_ui import ascii_only
 from lsl_online.galaxy import station_position
 from lsl_online.models import GameState, RadarContact
+from lsl_online.ship import spend_power
 from lsl_online.travel import current_ship_coords
+
+RADAR_POWER_COST = 5.0
 
 
 def _in_nebula(state: GameState, system_id: str) -> bool:
@@ -23,7 +26,15 @@ def _display_label(state: GameState, label: str) -> str:
     return ascii_only(label)
 
 
-def refresh_radar_contacts(state: GameState) -> None:
+def _pay_radar_cost(state: GameState) -> bool:
+    ship = state.player.ship
+    if spend_power(ship, RADAR_POWER_COST):
+        return True
+    state.log(f"RADAR: need {RADAR_POWER_COST:.0f} power (have {ship.power:.0f}).")
+    return False
+
+
+def _build_radar_contacts(state: GameState) -> None:
     ship = state.player.ship
     sys = state.galaxy.get_system(ship.location.system_id)
     if not sys:
@@ -74,14 +85,25 @@ def refresh_radar_contacts(state: GameState) -> None:
     _ = current_ship_coords(state)
 
 
+def refresh_radar_contacts(state: GameState) -> None:
+    if not _pay_radar_cost(state):
+        state.radar_active = False
+        state.radar_contacts.clear()
+        return
+    _build_radar_contacts(state)
+
+
 def set_radar(state: GameState, active: bool) -> str | None:
-    state.radar_active = active
     if active:
+        if not _pay_radar_cost(state):
+            return f"Not enough power for radar ({RADAR_POWER_COST:.0f} required)."
+        state.radar_active = True
         state.radar_timer = 0.0
-        refresh_radar_contacts(state)
+        _build_radar_contacts(state)
         interval = _radar_interval(state)
-        state.log(f"RADAR: ON ({interval:.0f}s refresh, contacts on map)")
+        state.log(f"RADAR: ON ({interval:.0f}s refresh, -{RADAR_POWER_COST:.0f} nrg/pulse)")
     else:
+        state.radar_active = False
         state.radar_contacts.clear()
         state.log("RADAR: OFF")
     return None

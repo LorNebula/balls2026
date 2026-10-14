@@ -211,6 +211,10 @@ def ensure_station_wallets(state: GameState) -> None:
             station.credits_max = float(station_rng.randint(8_000, 25_000))
             station.credits = station.credits_max * station_rng.uniform(0.5, 0.85)
             station.income_per_tick = station.credits_max * station_rng.uniform(0.012, 0.028)
+            for item_id in BASE_PRICES:
+                if item_id.endswith("_upgrade"):
+                    continue
+                station.price_modifiers[item_id] = station_rng.uniform(0.55, 1.65)
 
 
 def ensure_tutorial_station_credits(state: GameState) -> None:
@@ -429,10 +433,10 @@ def tick(state: GameState, dt: float) -> None:
                     station.inventory.get(item_id, 0) + rng.randint(2, 8),
                 )
             for item_id in trade_items:
-                drift = rng.uniform(0.92, 1.08)
+                drift = rng.uniform(0.78, 1.22)
                 station.price_modifiers[item_id] = max(
-                    0.5,
-                    min(2.5, station.price_modifiers.get(item_id, 1.0) * drift),
+                    0.4,
+                    min(3.0, station.price_modifiers.get(item_id, 1.0) * drift),
                 )
 
 

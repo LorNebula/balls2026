@@ -60,6 +60,8 @@ PARTICLE_STYLES = (
 )
 HYPERLANE_ACTIVE = Style(color="#6688aa")
 HYPERLANE_INACTIVE = Style(color="#50677f")
+HYPERLANE_PATH = Style(color="#44ff88", bold=True)
+HYPERLANE_PATH_NEXT = Style(color="#88ffcc", bold=True)
 
 # 01=reactor 02=thrusters 03=shields 04=weapons (embedded in art)
 ENEMY_SHIP = [
@@ -300,7 +302,9 @@ def player_ship_art(ship: Ship) -> list[str]:
     width = max(20 + ship.visual_size * 4, max(len(row) for row in art))
     return [row.center(width) for row in art]
 def tick_star_scroll(state: GameState, dt: float) -> None:
-    state.star_scroll += dt
+    from lsl_online.combat import _hyperspace_speed_scale
+
+    state.star_scroll += dt * _hyperspace_speed_scale(state)
 
 
 def tutorial_arena(state: GameState) -> bool:
@@ -542,7 +546,9 @@ def _contact_label(
     else:
         name = ascii_only(name)
     dist = math.hypot(world_x - ship_x, world_y - ship_y)
-    return f"{name} ({world_x:.0f},{world_y:.0f}) {dist:.0f}u"
+    if state.radar_active:
+        return f"{name} ({world_x:.0f},{world_y:.0f}) {dist:.0f}u"
+    return f"{name} {dist:.0f}u"
 
 
 def _draw_offscreen_indicators(
@@ -826,6 +832,12 @@ def render_open_space(
             ty = canvas.anchor_y - round((dy / max(abs(dx), abs(dy), 1)) * step * 2)
             if 0 <= tx < canvas.width and 0 <= ty < canvas.height:
                 canvas.put(tx, ty, trail_char if step % 2 else "-", trail_style)
+        pulse = "O" if int(state.star_scroll * 4) % 2 else "o"
+        ring_style = Style(color="#44ddff", bold=True)
+        for ox, oy in ((-2, 0), (2, 0), (0, -1), (0, 1)):
+            rx, ry = canvas.anchor_x + ox, canvas.anchor_y + oy
+            if 0 <= rx < canvas.width and 0 <= ry < canvas.height:
+                canvas.put(rx, ry, pulse, ring_style)
 
     canvas.stamp_art(
         canvas.anchor_x,
@@ -1017,6 +1029,26 @@ def render_galaxy_map(state: GameState, width: int, height: int, zoom: float = 1
         screen_positions[system.id] = candidate
         occupied.add(candidate)
     lane_cells: dict[tuple[int, int], bool] = {}
+    path_lane_cells: dict[tuple[int, int], str] = {}
+    nav_edges: list[tuple[str, str]] = []
+    if state.nav_path:
+        hop_from = state.player.ship.location.system_id
+        for hop_to in state.nav_path:
+            nav_edges.append((hop_from, hop_to))
+            hop_from = hop_to
+    next_hop = state.nav_path[0] if state.nav_path else None
+    for edge_a, edge_b in nav_edges:
+        if edge_a not in screen_positions or edge_b not in screen_positions:
+            continue
+        x0, y0 = screen_positions[edge_a]
+        x1, y1 = screen_positions[edge_b]
+        tag = "next" if edge_b == next_hop else "path"
+        for cell in lane_cells_between((x0, y0), (x1, y1)):
+            if tag == "next":
+                path_lane_cells[cell] = "next"
+            elif cell not in path_lane_cells:
+                path_lane_cells[cell] = "path"
+
     for system in state.galaxy.systems.values():
         x0, y0 = screen_positions[system.id]
         for neighbor_id in system.neighbors:
@@ -1028,6 +1060,8 @@ def render_galaxy_map(state: GameState, width: int, height: int, zoom: float = 1
             x1, y1 = screen_positions[neighbor.id]
             active = current and (system.id == current.id or neighbor.id == current.id)
             for cell in lane_cells_between((x0, y0), (x1, y1)):
+                if cell in path_lane_cells:
+                    continue
                 lane_cells[cell] = lane_cells.get(cell, False) or bool(active)
 
     from lsl_online.commands.nav_cmds import MARK_COLORS
@@ -1051,7 +1085,17 @@ def render_galaxy_map(state: GameState, width: int, height: int, zoom: float = 1
         if system.stations and 0 <= gy + 1 < map_height:
             canvas.put(gx, gy + 1, "S", STATION_STYLE)
 
+    for (x, y), path_kind in path_lane_cells.items():
+        style = HYPERLANE_PATH_NEXT if path_kind == "next" else HYPERLANE_PATH
+        existing = canvas.cells[y][x]
+        ch = existing.ch if existing.ch not in (" ", ".") else "."
+        if ch == "@":
+            continue
+        canvas.put(x, y, ch if ch != " " else ".", style)
+
     for (x, y), active in lane_cells.items():
+        if (x, y) in path_lane_cells:
+            continue
         existing = canvas.cells[y][x]
         if existing.ch != " ":
             if existing.ch != "@":
@@ -1086,7 +1130,12 @@ def render_galaxy_map(state: GameState, width: int, height: int, zoom: float = 1
         occupied.add((gx, gy))
 
     label_cells = set(occupied)
-    for system in linked:
+    named_on_map: list = list(linked)
+    if state.nav_path_goal:
+        goal_sys = state.galaxy.get_system(state.nav_path_goal)
+        if goal_sys and goal_sys not in named_on_map:
+            named_on_map.append(goal_sys)
+    for system in named_on_map:
         marker_x, marker_y = screen_positions[system.id]
         slots: list[tuple[int, int, int]] = []
         for row in (marker_y, marker_y - 1, marker_y + 1):
@@ -1115,7 +1164,7 @@ def render_galaxy_map(state: GameState, width: int, height: int, zoom: float = 1
     header = Text(" GALAXY MAP ", style=Style(color="#e8b84a", bold=True))
     header.append(f"{current_name}  zoom {zoom:.2f}x\n", style=Style(color="#aaccee"))
     header.append(
-        f"@=here +=open gate .=hyperlane O={hole_name} N=nebula\n",
+        f"@=here +=gate .=lane green=path O={hole_name} N=nebula\n",
         style=Style(color="#668899"),
     )
     for line in gate_lines:

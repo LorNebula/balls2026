@@ -25,17 +25,21 @@ def _system_rng(state: GameState, system_id: str) -> random.Random:
 
 
 def system_materials(state: GameState, system_id: str) -> list[Material]:
+    from lsl_online.galaxy import system_rim_tier
     from lsl_online.materials import MATERIALS
 
+    rim = system_rim_tier(state.galaxy, system_id)
     rng = _system_rng(state, system_id)
     count = rng.randint(2, 4)
-    weights = [max(1, 6 - m.rarity) for m in MATERIALS]
     picked: list[Material] = []
     pool = list(MATERIALS)
     for _ in range(count):
         if not pool:
             break
-        m = rng.choices(pool, weights=[weights[MATERIALS.index(x)] for x in pool], k=1)[0]
+        weights = [
+            max(1, 6 - m.rarity) * (1.0 + rim * m.rarity * 0.35) for m in pool
+        ]
+        m = rng.choices(pool, weights=weights, k=1)[0]
         picked.append(m)
         pool = [x for x in pool if x.id != m.id]
     return picked or [MATERIALS[0]]
@@ -57,6 +61,7 @@ def _spawn_group(
     rng: random.Random,
     *,
     count: int | None = None,
+    rim_tier: float = 0.0,
 ) -> int:
     spawned = 0
     group_count = count if count is not None else rng.randint(1, 4)
@@ -68,8 +73,11 @@ def _spawn_group(
         code = _next_code(state)
         if not code:
             break
-        mat = rng.choice(materials)
-        max_yield = rng.randint(3, 12) + rng.randint(0, 23)
+        if rim_tier > 0.4 and rng.random() < rim_tier * 0.5:
+            mat = max(materials, key=lambda m: m.rarity)
+        else:
+            mat = rng.choice(materials)
+        max_yield = rng.randint(3, 12) + rng.randint(0, 23) + int(rim_tier * 15)
         state.asteroids.append(
             Asteroid(
                 code=code,
@@ -126,9 +134,12 @@ def fill_asteroid_field(state: GameState) -> None:
     state.asteroids.clear()
     materials = system_materials(state, system_id)
     rng = _system_rng(state, system_id + ":fill")
+    from lsl_online.galaxy import system_rim_tier
+
+    rim = system_rim_tier(state.galaxy, system_id)
     while _alive_count(state) < ASTEROID_CAP:
         before = _alive_count(state)
-        _spawn_group(state, system_id, materials, rng)
+        _spawn_group(state, system_id, materials, rng, rim_tier=rim)
         if _alive_count(state) == before:
             break
 
@@ -289,4 +300,9 @@ def tick(state: GameState, dt: float) -> None:
     system_id = state.player.ship.location.system_id
     materials = system_materials(state, system_id)
     rng = random.Random(int(state.star_scroll * 1000) + _alive_count(state))
-    _spawn_group(state, system_id, materials, rng, count=rng.randint(1, 3))
+    from lsl_online.galaxy import system_rim_tier
+
+    rim = system_rim_tier(state.galaxy, system_id)
+    _spawn_group(
+        state, system_id, materials, rng, count=rng.randint(1, 3), rim_tier=rim
+    )

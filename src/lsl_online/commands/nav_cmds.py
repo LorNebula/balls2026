@@ -76,6 +76,8 @@ class PathCommand(Command):
         ]
         state.log(f"Path to {dest.name}: {' -> '.join(names)} ({len(hops)} jump(s)).")
         state.log("Type jump to jump to the next system on this path.")
+        state.log("You can also see the path in the galaxy view.")
+        state.log("Clear route with: path clear")
         return None
 
     def completions(self, state: GameState) -> list[str]:
@@ -107,10 +109,14 @@ class MarkCommand(Command):
             return None
         if args[0].lower() == "clear":
             if len(args) < 2:
-                return "Usage: mark clear <system>"
-            dest = find_system_by_name(state.galaxy, " ".join(args[1:]))
+                return "Usage: mark clear <system|here>"
+            ref = " ".join(args[1:])
+            if ref.strip().lower() == "here":
+                dest = state.galaxy.get_system(state.player.ship.location.system_id)
+            else:
+                dest = find_system_by_name(state.galaxy, ref)
             if not dest:
-                return f"System not found: {' '.join(args[1:])}"
+                return f"System not found: {ref}"
             state.user_markers.pop(dest.id, None)
             state.log(f"Marker cleared for {dest.name}.")
             return None
@@ -123,7 +129,10 @@ class MarkCommand(Command):
         if color_key not in MARK_COLORS:
             return f"Unknown color. Use: {', '.join(sorted(MARK_COLORS))}"
         system_name = " ".join(args[:-2])
-        dest = find_system_by_name(state.galaxy, system_name)
+        if system_name.strip().lower() == "here":
+            dest = state.galaxy.get_system(state.player.ship.location.system_id)
+        else:
+            dest = find_system_by_name(state.galaxy, system_name)
         if not dest:
             return f"System not found: {system_name}"
         state.user_markers[dest.id] = (char, color_key)
@@ -131,7 +140,7 @@ class MarkCommand(Command):
         return None
 
     def completions(self, state: GameState) -> list[str]:
-        cmds = ["mark ", "mark list", "mark clear "]
+        cmds = ["mark ", "mark here * red", "mark list", "mark clear ", "mark clear here"]
         for system in list(state.galaxy.systems.values())[:8]:
             name = ascii_only(system.name)
             cmds.append(f"mark {name} * red")

@@ -22,11 +22,11 @@ class ShipType:
 
 SHIP_TYPES = (
     ShipType("venture", "Venture", 0, 100, 100.0, 100.0, 100.0, 1, 4),
-    ShipType("pioneer", "Pioneer", 12000, 150, 125.0, 120.0, 115.0, 2, 5),
-    ShipType("courier", "Courier", 28000, 220, 150.0, 145.0, 130.0, 3, 6),
-    ShipType("bulwark", "Bulwark", 55000, 300, 180.0, 175.0, 150.0, 4, 7),
-    ShipType("leviathan", "Leviathan", 105000, 400, 215.0, 210.0, 180.0, 5, 8),
-    ShipType("titan", "Titan", 185000, 550, 260.0, 255.0, 220.0, 6, 10),
+    ShipType("pioneer", "Pioneer", 6000, 150, 125.0, 120.0, 115.0, 2, 5),
+    ShipType("courier", "Courier", 14000, 220, 150.0, 145.0, 130.0, 3, 6),
+    ShipType("bulwark", "Bulwark", 27500, 300, 180.0, 175.0, 150.0, 4, 7),
+    ShipType("leviathan", "Leviathan", 52500, 400, 215.0, 210.0, 180.0, 5, 8),
+    ShipType("titan", "Titan", 92500, 550, 260.0, 255.0, 220.0, 6, 10),
 )
 SHIP_TYPES_BY_ID = {ship_type.id: ship_type for ship_type in SHIP_TYPES}
 
