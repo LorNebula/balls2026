@@ -1,6 +1,6 @@
 # LSL ONLINE
 
-LSL ONLINE is an ASCII terminal space trading with combat, travel, quests and scripts. 
+LSL ONLINE is an ASCII terminal space trading game with combat, travel, quests and scripts. 
 Plays in Finnish-inspired galaxy where you play as an LSL driver (now a spaceship driver).
 Uses Python + Textual.
 The sound effects were generated using https://sfxr.me/.
