@@ -14,6 +14,7 @@ from lsl_online.models import (
     Projectile,
     Ship,
     ShipComponent,
+    ShipStatus,
     Vec3,
 )
 from lsl_online.ship import (
@@ -208,6 +209,18 @@ def cease_fire(state: GameState) -> str | None:
     return None
 
 
+def exit_combat_for_transit(state: GameState) -> None:
+    ship = state.player.ship
+    if ship.weapons_active:
+        cease_fire(state)
+    else:
+        ship.weapons_active = False
+    ship.target_letter = None
+    ship.subtarget = None
+    if state.mode == GameMode.COMBAT:
+        _leave_combat(state)
+
+
 def _npc_by_letter(state: GameState, letter: str) -> NpcShip | None:
     return next((n for n in state.npc_ships if n.letter == letter and n.alive), None)
 
@@ -305,6 +318,9 @@ def _leave_combat(state: GameState, message: str | None = None) -> None:
 
 
 def _update_combat_engagement(state: GameState) -> None:
+    ship = state.player.ship
+    if ship.status in (ShipStatus.JUMPING, ShipStatus.WARPING) or state.mode == GameMode.HYPERSPACE:
+        return
     has_hostiles = any(
         n.alive and n.hostile and not n.asteroid for n in state.npc_ships
     )
@@ -351,6 +367,9 @@ def tick(state: GameState, dt: float) -> None:
     _decay_fx(state, dt)
     tick_projectiles(state, dt)
     if state.game_over:
+        return
+    ship = state.player.ship
+    if ship.status in (ShipStatus.JUMPING, ShipStatus.WARPING) or state.mode == GameMode.HYPERSPACE:
         return
     _update_combat_engagement(state)
     if state.mode != GameMode.COMBAT:

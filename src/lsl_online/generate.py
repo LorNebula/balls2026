@@ -36,19 +36,22 @@ def _system_layout(
     for index in range(ring_count % layer_count):
         layer_sizes[index] += 1
 
+    inner_base = 3.8 + math.sqrt(count) * 0.45
+    layer_step = 1.15 + count * 0.008
+    ring_jitter = 0.12
     ring_layers: list[list[int]] = []
     cursor = 0
     outer_radius = 0.0
     for layer, size in enumerate(layer_sizes):
-        outer_radius = 3.0 + layer * 0.9
+        outer_radius = inner_base + layer * layer_step
         indices = list(range(cursor, cursor + size))
         ring_layers.append(indices)
         phase = layer * math.pi / size
         for sector, index in enumerate(indices):
             angle = phase + 2 * math.pi * sector / size
             positions[index] = Vec3(
-                outer_radius * math.cos(angle) + rng.uniform(-0.08, 0.08),
-                outer_radius * math.sin(angle) + rng.uniform(-0.08, 0.08),
+                outer_radius * math.cos(angle) + rng.uniform(-ring_jitter, ring_jitter),
+                outer_radius * math.sin(angle) + rng.uniform(-ring_jitter, ring_jitter),
                 rng.uniform(-0.3, 0.3),
             )
         cursor += size

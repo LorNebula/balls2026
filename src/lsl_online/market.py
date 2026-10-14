@@ -52,6 +52,8 @@ REPAIR_CREDITS_PER_HP = 4.0
 MARKET_RESTOCK_INTERVAL = 60.0
 TUTORIAL_MIN_STATION_CREDITS = 20_000.0
 BID_SPREAD = 0.72
+BID_MODIFIER_DAMP = 0.35
+SAME_STATION_SELL_CAP = 0.95
 SUPPLY_MIN = 0.35
 SUPPLY_MAX = 2.0
 ROW_EVEN = Style(color="#ddeeff", bgcolor="#0a1520")
@@ -76,7 +78,12 @@ def ask_price(station, item_id: str) -> float:
 
 
 def bid_price(station, item_id: str) -> float:
-    return round(ask_price(station, item_id) * BID_SPREAD, 0)
+    base = station.prices.get(item_id, BASE_PRICES.get(item_id, 100.0))
+    stock = station.inventory.get(item_id, 0)
+    supply_factor = max(SUPPLY_MIN, min(SUPPLY_MAX, 1.0 + (20 - stock) / 35.0))
+    mod = _price_modifier(station, item_id)
+    bid_mod = 1.0 + (mod - 1.0) * BID_MODIFIER_DAMP
+    return round(base * supply_factor * bid_mod * BID_SPREAD, 0)
 
 
 def _station_price(station, item_id: str) -> float:
@@ -175,6 +182,8 @@ def sell_at_station(
     if quantity > stack.quantity:
         return f"Only {stack.quantity} units available."
     unit = bid_price(station, stack.item_id)
+    if stack.avg_unit_cost > 0:
+        unit = min(unit, stack.avg_unit_cost * SAME_STATION_SELL_CAP)
     total = unit * quantity
     err = _apply_station_payout(station, total)
     if err:

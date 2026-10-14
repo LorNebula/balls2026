@@ -237,6 +237,9 @@ def _tick_mining(state: GameState, dt: float) -> None:
         ship.mine_cooldown = max(0.0, ship.mine_cooldown - dt)
     if _pickup_sound_timer > 0:
         _pickup_sound_timer = max(0.0, _pickup_sound_timer - dt)
+    if ship.status in (ShipStatus.JUMPING, ShipStatus.WARPING) or state.mode == GameMode.HYPERSPACE:
+        state.mining_active = False
+        return
     if not state.mining_active:
         return
     if not ship.target_letter:

@@ -22,6 +22,16 @@ DOCK_RANGE = 200.0
 ORBIT_OFFSET = 15.0
 
 
+def _begin_transit(state: GameState, *, hyperspace: bool) -> None:
+    from lsl_online import combat, mining
+    from lsl_online.models import GameMode
+
+    mining.cease_mining(state)
+    combat.exit_combat_for_transit(state)
+    if hyperspace:
+        state.mode = GameMode.HYPERSPACE
+
+
 def current_ship_coords(state: GameState) -> Vec3:
     ship = state.player.ship
     sys = state.galaxy.get_system(ship.location.system_id)
@@ -53,10 +63,9 @@ def _set_warp(state: GameState, target: TravelTarget, dest: Vec3) -> str | None:
     if dist < 1.0:
         _arrive_at_target(state, target, dest)
         return None
-    from lsl_online import mining
     from lsl_online.vfx import trigger_flash
 
-    mining.cease_mining(state)
+    _begin_transit(state, hyperspace=False)
     ship.destination = target
     ship.eta_seconds = dist / ship.warp_speed
     ship.transit_total_seconds = ship.eta_seconds
@@ -180,9 +189,7 @@ def jump_system(state: GameState, system_name: str | None = None) -> str | None:
         return f"No stargate link to {dest.name}."
     if ship.fuel < ship.fuel_per_jump:
         return f"Not enough fuel (need {ship.fuel_per_jump:.0f}, have {ship.fuel:.0f})."
-    from lsl_online import mining
-
-    mining.cease_mining(state)
+    _begin_transit(state, hyperspace=True)
     ship.fuel -= ship.fuel_per_jump
     state.pending_jump_from_id = sys.id
     _sync_nav_path_after_jump(state, dest.id)
@@ -198,7 +205,6 @@ def jump_system(state: GameState, system_name: str | None = None) -> str | None:
     ship.eta_seconds = dist / ship.jump_speed
     ship.transit_total_seconds = max(ship.eta_seconds, 0.01)
     ship.status = ShipStatus.JUMPING
-    state.mode = GameMode.HYPERSPACE
     state.hyperspace_particles.clear()
     trigger_flash(state)
     state.log(f"Jumping to {dest.name} ({ship.eta_seconds:.1f}s)")
