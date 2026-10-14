@@ -12,7 +12,7 @@ from lsl_online.space_render import tutorial_arena
 ASTEROID_CAP = 9
 RESPAWN_INTERVAL = 8.0
 MINE_INTERVAL = 1.0
-MINE_RANGE = 150.0
+MINE_RANGE = 600.0
 PICKUP_SOUND_COOLDOWN = 0.3
 WORLD_SPAN = 600.0
 _pickup_sound_timer = 0.0

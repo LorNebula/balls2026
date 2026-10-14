@@ -86,6 +86,13 @@ def bid_price(station, item_id: str) -> float:
     return round(base * supply_factor * bid_mod * BID_SPREAD, 0)
 
 
+def effective_sell_unit(station, item_id: str, avg_unit_cost: float = 0.0) -> float:
+    unit = bid_price(station, item_id)
+    if avg_unit_cost > 0:
+        unit = min(unit, avg_unit_cost * SAME_STATION_SELL_CAP)
+    return unit
+
+
 def _station_price(station, item_id: str) -> float:
     return ask_price(station, item_id)
 
@@ -181,9 +188,7 @@ def sell_at_station(
         return "Quantity must be positive."
     if quantity > stack.quantity:
         return f"Only {stack.quantity} units available."
-    unit = bid_price(station, stack.item_id)
-    if stack.avg_unit_cost > 0:
-        unit = min(unit, stack.avg_unit_cost * SAME_STATION_SELL_CAP)
+    unit = effective_sell_unit(station, stack.item_id, stack.avg_unit_cost)
     total = unit * quantity
     err = _apply_station_payout(station, total)
     if err:
@@ -561,7 +566,7 @@ def buy_item(state: GameState, item_ref: str, quantity: int) -> str | None:
         state.player.cargo.append(
             CargoStack(item_id, ITEM_NAMES[item_id], quantity, avg_unit_cost=unit)
         )
-    state.log(f"Bought {quantity}x {ITEM_NAMES[item_id]} for {total:.0f} cr.")
+    state.log(f"Bought {quantity}x {ITEM_NAMES[item_id]} for {total:.0f} cr ({unit:.0f}/ea).")
     from lsl_online.quests import note_market_buy
 
     note_market_buy(state, item_id, quantity)
@@ -636,8 +641,8 @@ def _cargo_profit_suffix(state: GameState, item_id: str) -> str:
     station = _current_station(state)
     if not stack or stack.avg_unit_cost <= 0 or not station:
         return ""
-    bid = bid_price(station, item_id)
-    mult = bid / stack.avg_unit_cost if stack.avg_unit_cost > 0 else 0.0
+    unit = effective_sell_unit(station, item_id, stack.avg_unit_cost)
+    mult = unit / stack.avg_unit_cost
     if mult <= 0:
         return ""
     return f" x{mult:.1f}"
@@ -669,7 +674,12 @@ def _append_table_section(
             base_name = (base_name + _cargo_profit_suffix(state, item_id))[:name_width]
         name = base_name[:name_width]
         if cargo_rows:
-            local = local_bid(state, item_id)
+            stack = find_cargo(state.player, item_id)
+            station = _current_station(state)
+            if stack and station:
+                local = effective_sell_unit(station, item_id, stack.avg_unit_cost)
+            else:
+                local = local_bid(state, item_id)
         else:
             local = local_ask(state, item_id)
         local_text = f"{local:.0f}" if local is not None else "--"
@@ -729,7 +739,9 @@ def render_cargo_view(state: GameState, width: int, height: int) -> Text:
     out = Text(" CARGO HOLD ", style=Style(color="#c9a86a", bold=True))
     out.append(f"| {sum(stack.quantity for stack in state.player.cargo)} / {state.player.max_cargo} units\n")
     cargo = {stack.item_id: stack.quantity for stack in state.player.cargo if stack.quantity > 0}
-    _append_table_section(out, "CARGO", sorted(cargo), cargo, state, inner_width, row_limit)
+    _append_table_section(
+        out, "CARGO", sorted(cargo), cargo, state, inner_width, row_limit, cargo_rows=True
+    )
     return out
 
 
